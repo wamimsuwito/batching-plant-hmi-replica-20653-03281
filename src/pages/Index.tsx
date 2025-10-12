@@ -28,18 +28,18 @@ const Index = () => {
           >
             {/* Aggregate Section - Left Side */}
             <g id="aggregate-section">
-              {/* 4 Aggregate Hoppers */}
-              <AggregateHopper x={60} y={50} fillLevel={75} />
-              <AggregateHopper x={140} y={50} fillLevel={80} />
-              <AggregateHopper x={220} y={50} fillLevel={65} />
-              <AggregateHopper x={300} y={50} fillLevel={70} />
+              {/* 4 Aggregate Hoppers - positioned lower */}
+              <AggregateHopper x={60} y={160} fillLevel={75} />
+              <AggregateHopper x={140} y={160} fillLevel={80} />
+              <AggregateHopper x={220} y={160} fillLevel={65} />
+              <AggregateHopper x={300} y={160} fillLevel={70} />
 
-              {/* Conveyor Belt System */}
-              <ConveyorBelt x={120} y={180} width={280} angle={30} isRunning={true} />
+              {/* Conveyor Belt System - positioned lower and adjusted angle */}
+              <ConveyorBelt x={120} y={290} width={260} angle={32} isRunning={true} />
               
               {/* Collecting hopper at conveyor end */}
               <path
-                d="M 320 90 L 360 90 L 350 110 L 330 110 Z"
+                d="M 320 160 L 360 160 L 350 180 L 330 180 Z"
                 className="fill-equipment-aggregate stroke-hmi-border"
                 strokeWidth="2"
               />
@@ -93,19 +93,19 @@ const Index = () => {
 
             {/* Mixer Section - Center Bottom */}
             <g id="mixer-section">
-              {/* Main Mixer */}
-              <Mixer x={480} y={340} isRunning={true} />
+              {/* Main Mixer - Twin Shaft Horizontal */}
+              <Mixer x={455} y={350} isRunning={true} />
 
               {/* Pipes to mixer from weigh hoppers */}
-              <Pipe points="510,294 510,340" type="material" />
-              <Pipe points="570,294 570,320 520,320 520,340" type="material" />
-              <Pipe points="630,294 630,310 530,310 530,340" type="material" />
+              <Pipe points="510,294 510,360" type="material" />
+              <Pipe points="570,294 570,330 520,330 520,360" type="material" />
+              <Pipe points="630,294 630,320 530,320 530,360" type="material" />
               
-              {/* Pipe from aggregate */}
-              <Pipe points="340,100 420,100 420,350 480,350" type="material" />
+              {/* Pipe from aggregate collecting hopper */}
+              <Pipe points="340,180 420,180 420,370 455,370" type="material" />
               
               {/* Pipe from additive intermediate tank */}
-              <Pipe points="747,285 680,285 680,340 600,340" type="water" />
+              <Pipe points="747,285 680,285 680,360 605,360" type="water" />
             </g>
 
             {/* Additional visual elements */}
