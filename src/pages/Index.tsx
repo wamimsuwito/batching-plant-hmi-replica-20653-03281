@@ -28,18 +28,18 @@ const Index = () => {
           >
             {/* Aggregate Section - Left Side */}
             <g id="aggregate-section">
-              {/* 4 Aggregate Hoppers - positioned lower */}
+              {/* 4 Aggregate Hoppers */}
               <AggregateHopper x={60} y={160} fillLevel={75} />
               <AggregateHopper x={140} y={160} fillLevel={80} />
               <AggregateHopper x={220} y={160} fillLevel={65} />
               <AggregateHopper x={300} y={160} fillLevel={70} />
 
-              {/* Conveyor Belt System - positioned lower and adjusted angle */}
-              <ConveyorBelt x={120} y={290} width={260} angle={32} isRunning={true} />
+              {/* Conveyor Belt System - positioned at bottom, angled upward */}
+              <ConveyorBelt x={100} y={480} width={270} angle={30} isRunning={true} />
               
-              {/* Collecting hopper at conveyor end */}
+              {/* Collecting hopper at conveyor end (elevated position) */}
               <path
-                d="M 320 160 L 360 160 L 350 180 L 330 180 Z"
+                d="M 330 340 L 370 340 L 360 365 L 340 365 Z"
                 className="fill-equipment-aggregate stroke-hmi-border"
                 strokeWidth="2"
               />
@@ -101,8 +101,8 @@ const Index = () => {
               <Pipe points="570,294 570,330 520,330 520,360" type="material" />
               <Pipe points="630,294 630,320 530,320 530,360" type="material" />
               
-              {/* Pipe from aggregate collecting hopper */}
-              <Pipe points="340,180 420,180 420,370 455,370" type="material" />
+              {/* Pipe from aggregate collecting hopper (elevated) */}
+              <Pipe points="350,365 350,380 440,380 440,370 455,370" type="material" />
               
               {/* Pipe from additive intermediate tank */}
               <Pipe points="747,285 680,285 680,360 605,360" type="water" />
