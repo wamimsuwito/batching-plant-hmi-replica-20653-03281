@@ -47,14 +47,14 @@ const Index = () => {
               <AggregateHopper x={300} y={160} fillLevel={70} />
 
               {/* Conveyor Belt 1 - Below hoppers (horizontal) */}
-              <ConveyorBelt x={60} y={260} width={290} angle={0} isRunning={true} />
+              <ConveyorBelt x={60} y={260} width={290} angle={0} isRunning={isRunning} />
 
-              {/* Conveyor Belt 2 - From bottom, angled upward directly to mixer (50% shorter) */}
-              <ConveyorBelt x={280} y={400} width={120} angle={35} isRunning={isRunning} />
+              {/* Conveyor Belt 2 - From bottom left, angled upward to mixer */}
+              <ConveyorBelt x={180} y={470} width={260} angle={32} isRunning={isRunning} />
               
-              {/* Collecting hopper at conveyor 2 end (aligned with conveyor above mixer) */}
+              {/* Collecting hopper at conveyor 2 end (above mixer) */}
               <path
-                d="M 370 315 L 400 315 L 395 335 L 375 335 Z"
+                d="M 405 335 L 435 335 L 428 355 L 412 355 Z"
                 className="fill-equipment-aggregate stroke-hmi-border"
                 strokeWidth="2"
               />
@@ -116,7 +116,7 @@ const Index = () => {
               <Pipe points="600,294 600,340 530,340 530,360" type="material" />
               
               {/* Pipe from aggregate collecting hopper directly to mixer */}
-              <Pipe points="385,335 385,345 445,345 445,360 455,360" type="material" />
+              <Pipe points="420,355 420,365 455,365" type="material" />
               
               {/* Pipe from additive intermediate tank */}
               <Pipe points="797,285 720,285 720,360 605,360" type="water" />
