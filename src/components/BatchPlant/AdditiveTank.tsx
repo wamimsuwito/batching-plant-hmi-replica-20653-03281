@@ -2,9 +2,10 @@ interface AdditiveTankProps {
   x: number;
   y: number;
   fillLevel?: number;
+  label?: string;
 }
 
-export const AdditiveTank = ({ x, y, fillLevel = 80 }: AdditiveTankProps) => {
+export const AdditiveTank = ({ x, y, fillLevel = 80, label }: AdditiveTankProps) => {
   return (
     <g transform={`translate(${x}, ${y})`}>
       {/* Tank body */}
@@ -57,6 +58,17 @@ export const AdditiveTank = ({ x, y, fillLevel = 80 }: AdditiveTankProps) => {
         strokeWidth="1"
       />
       <circle cx="17.5" cy="100" r="3" className="fill-valve-active stroke-hmi-border" strokeWidth="1" />
+      {/* Label */}
+      {label && (
+        <text
+          x="17.5"
+          y="125"
+          textAnchor="middle"
+          className="fill-hmi-text text-xs font-semibold"
+        >
+          {label}
+        </text>
+      )}
     </g>
   );
 };

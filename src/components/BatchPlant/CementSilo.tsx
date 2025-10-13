@@ -11,23 +11,26 @@ export const CementSilo = ({ x, y, fillLevel = 60, label }: CementSiloProps) => 
       {/* Silo body */}
       <rect
         x="0"
-        y="30"
+        y="20"
         width="40"
-        height="100"
+        height="110"
         className="fill-equipment-silo stroke-hmi-border"
         strokeWidth="2"
       />
       {/* Fill level */}
       <rect
         x="2"
-        y={130 - fillLevel}
+        y={128 - fillLevel}
         width="36"
         height={fillLevel}
         className="fill-equipment-siloFill"
       />
-      {/* Top cone */}
-      <path
-        d="M 0 30 L 20 0 L 40 30 Z"
+      {/* Top flat (not cone) */}
+      <rect
+        x="0"
+        y="15"
+        width="40"
+        height="5"
         className="fill-equipment-silo stroke-hmi-border"
         strokeWidth="2"
       />
@@ -42,12 +45,23 @@ export const CementSilo = ({ x, y, fillLevel = 60, label }: CementSiloProps) => 
       {/* Top platform */}
       <rect
         x="-5"
-        y="25"
+        y="10"
         width="50"
         height="5"
         className="fill-equipment-conveyor stroke-hmi-border"
         strokeWidth="1"
       />
+      {/* Label */}
+      {label && (
+        <text
+          x="20"
+          y="175"
+          textAnchor="middle"
+          className="fill-hmi-text text-xs font-semibold"
+        >
+          {label}
+        </text>
+      )}
     </g>
   );
 };

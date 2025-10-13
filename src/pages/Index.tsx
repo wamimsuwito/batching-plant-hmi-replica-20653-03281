@@ -34,12 +34,15 @@ const Index = () => {
               <AggregateHopper x={220} y={160} fillLevel={65} />
               <AggregateHopper x={300} y={160} fillLevel={70} />
 
-              {/* Conveyor Belt System - positioned at bottom, angled upward */}
-              <ConveyorBelt x={100} y={480} width={270} angle={30} isRunning={true} />
+              {/* Conveyor Belt 1 - Below hoppers (horizontal) */}
+              <ConveyorBelt x={60} y={260} width={290} angle={0} isRunning={true} />
+
+              {/* Conveyor Belt 2 - From bottom, angled upward to mixer */}
+              <ConveyorBelt x={120} y={480} width={300} angle={28} isRunning={true} />
               
-              {/* Collecting hopper at conveyor end (elevated position) */}
+              {/* Collecting hopper at conveyor 2 end (elevated position, closer to mixer) */}
               <path
-                d="M 330 340 L 370 340 L 360 365 L 340 365 Z"
+                d="M 375 360 L 415 360 L 405 385 L 385 385 Z"
                 className="fill-equipment-aggregate stroke-hmi-border"
                 strokeWidth="2"
               />
@@ -47,32 +50,36 @@ const Index = () => {
 
             {/* Cement Silos Section - Center */}
             <g id="cement-section">
-              {/* 4 Cement Silos */}
-              <CementSilo x={480} y={50} fillLevel={70} />
-              <CementSilo x={540} y={50} fillLevel={65} />
-              <CementSilo x={600} y={50} fillLevel={75} />
-              <CementSilo x={660} y={50} fillLevel={60} />
+              {/* 6 Cement Silos */}
+              <CementSilo x={460} y={50} fillLevel={70} label="SILO 1" />
+              <CementSilo x={510} y={50} fillLevel={65} label="SILO 2" />
+              <CementSilo x={560} y={50} fillLevel={75} label="SILO 3" />
+              <CementSilo x={610} y={50} fillLevel={60} label="SILO 4" />
+              <CementSilo x={660} y={50} fillLevel={68} label="SILO 5" />
+              <CementSilo x={710} y={50} fillLevel={72} label="SILO 6" />
 
               {/* Weigh Hoppers below silos */}
               <WeighHopper x={480} y={250} fillLevel={35} />
-              <WeighHopper x={540} y={250} fillLevel={40} />
-              <WeighHopper x={600} y={250} fillLevel={30} />
+              <WeighHopper x={560} y={250} fillLevel={40} />
+              <WeighHopper x={640} y={250} fillLevel={30} />
 
               {/* Pipes from silos to weigh hoppers */}
-              <Pipe points="500,205 500,250" type="material" />
-              <Pipe points="560,205 560,250" type="material" />
-              <Pipe points="620,205 620,250" type="material" />
+              <Pipe points="480,220 480,250" type="material" />
+              <Pipe points="530,220 530,235 500,235 500,250" type="material" />
+              <Pipe points="580,220 580,250" type="material" />
+              <Pipe points="630,220 630,235 600,235 600,250" type="material" />
+              <Pipe points="680,220 680,240 660,240 660,250" type="material" />
+              <Pipe points="730,220 730,240 680,240 680,250" type="material" />
             </g>
 
             {/* Additive Tanks Section - Right Side */}
             <g id="additive-section">
-              {/* 3 Additive Tanks */}
-              <AdditiveTank x={730} y={80} fillLevel={85} />
-              <AdditiveTank x={780} y={80} fillLevel={75} />
-              <AdditiveTank x={830} y={80} fillLevel={80} />
+              {/* 2 Additive Tanks */}
+              <AdditiveTank x={780} y={80} fillLevel={85} label="AIR" />
+              <AdditiveTank x={840} y={80} fillLevel={75} label="ADDITIVE" />
 
               {/* Intermediate tank */}
-              <g transform="translate(730, 230)">
+              <g transform="translate(780, 230)">
                 <rect
                   x="0"
                   y="0"
@@ -86,9 +93,8 @@ const Index = () => {
               </g>
 
               {/* Pipes from additive tanks */}
-              <Pipe points="747,190 747,230" type="water" />
-              <Pipe points="797,190 797,210 747,210" type="water" />
-              <Pipe points="847,190 847,210" type="water" />
+              <Pipe points="797,205 797,230" type="water" />
+              <Pipe points="857,205 857,220 797,220" type="water" />
             </g>
 
             {/* Mixer Section - Center Bottom */}
@@ -98,14 +104,14 @@ const Index = () => {
 
               {/* Pipes to mixer from weigh hoppers */}
               <Pipe points="510,294 510,360" type="material" />
-              <Pipe points="570,294 570,330 520,330 520,360" type="material" />
-              <Pipe points="630,294 630,320 530,320 530,360" type="material" />
+              <Pipe points="590,294 590,330 520,330 520,360" type="material" />
+              <Pipe points="670,294 670,320 530,320 530,360" type="material" />
               
-              {/* Pipe from aggregate collecting hopper (elevated) */}
-              <Pipe points="350,365 350,380 440,380 440,370 455,370" type="material" />
+              {/* Pipe from aggregate collecting hopper (elevated, closer to mixer) */}
+              <Pipe points="395,385 395,395 445,395 445,370 455,370" type="material" />
               
               {/* Pipe from additive intermediate tank */}
-              <Pipe points="747,285 680,285 680,360 605,360" type="water" />
+              <Pipe points="797,285 720,285 720,360 605,360" type="water" />
             </g>
 
             {/* Additional visual elements */}
