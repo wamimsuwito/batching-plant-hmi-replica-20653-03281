@@ -37,12 +37,12 @@ const Index = () => {
               {/* Conveyor Belt 1 - Below hoppers (horizontal) */}
               <ConveyorBelt x={60} y={260} width={290} angle={0} isRunning={true} />
 
-              {/* Conveyor Belt 2 - From bottom, angled upward to mixer */}
-              <ConveyorBelt x={120} y={480} width={300} angle={28} isRunning={true} />
+              {/* Conveyor Belt 2 - From bottom, angled upward directly to mixer */}
+              <ConveyorBelt x={200} y={450} width={240} angle={35} isRunning={true} />
               
-              {/* Collecting hopper at conveyor 2 end (elevated position, closer to mixer) */}
+              {/* Collecting hopper at conveyor 2 end (right at mixer entrance) */}
               <path
-                d="M 375 360 L 415 360 L 405 385 L 385 385 Z"
+                d="M 400 345 L 430 345 L 425 365 L 405 365 Z"
                 className="fill-equipment-aggregate stroke-hmi-border"
                 strokeWidth="2"
               />
@@ -58,18 +58,16 @@ const Index = () => {
               <CementSilo x={660} y={50} fillLevel={68} label="SILO 5" />
               <CementSilo x={710} y={50} fillLevel={72} label="SILO 6" />
 
-              {/* Weigh Hoppers below silos */}
-              <WeighHopper x={480} y={250} fillLevel={35} />
-              <WeighHopper x={560} y={250} fillLevel={40} />
-              <WeighHopper x={640} y={250} fillLevel={30} />
+              {/* Single Weigh Hopper below silos */}
+              <WeighHopper x={570} y={250} fillLevel={45} />
 
-              {/* Pipes from silos to weigh hoppers */}
-              <Pipe points="480,220 480,250" type="material" />
-              <Pipe points="530,220 530,235 500,235 500,250" type="material" />
+              {/* Pipes from silos to single weigh hopper with elbows */}
+              <Pipe points="480,220 480,235 590,235 590,250" type="material" />
+              <Pipe points="530,220 530,240 590,240 590,250" type="material" />
               <Pipe points="580,220 580,250" type="material" />
-              <Pipe points="630,220 630,235 600,235 600,250" type="material" />
-              <Pipe points="680,220 680,240 660,240 660,250" type="material" />
-              <Pipe points="730,220 730,240 680,240 680,250" type="material" />
+              <Pipe points="630,220 630,240 600,240 600,250" type="material" />
+              <Pipe points="680,220 680,235 600,235 600,250" type="material" />
+              <Pipe points="730,220 730,230 600,230 600,250" type="material" />
             </g>
 
             {/* Additive Tanks Section - Right Side */}
@@ -102,13 +100,11 @@ const Index = () => {
               {/* Main Mixer - Twin Shaft Horizontal */}
               <Mixer x={455} y={350} isRunning={true} />
 
-              {/* Pipes to mixer from weigh hoppers */}
-              <Pipe points="510,294 510,360" type="material" />
-              <Pipe points="590,294 590,330 520,330 520,360" type="material" />
-              <Pipe points="670,294 670,320 530,320 530,360" type="material" />
+              {/* Pipe to mixer from single weigh hopper */}
+              <Pipe points="600,294 600,340 530,340 530,360" type="material" />
               
-              {/* Pipe from aggregate collecting hopper (elevated, closer to mixer) */}
-              <Pipe points="395,385 395,395 445,395 445,370 455,370" type="material" />
+              {/* Pipe from aggregate collecting hopper directly to mixer */}
+              <Pipe points="415,365 415,375 445,375 445,365 455,365" type="material" />
               
               {/* Pipe from additive intermediate tank */}
               <Pipe points="797,285 720,285 720,360 605,360" type="water" />
