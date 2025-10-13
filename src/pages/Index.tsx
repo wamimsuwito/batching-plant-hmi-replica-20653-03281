@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { CementSilo } from "@/components/BatchPlant/CementSilo";
 import { AggregateHopper } from "@/components/BatchPlant/AggregateHopper";
 import { AdditiveTank } from "@/components/BatchPlant/AdditiveTank";
@@ -5,8 +6,19 @@ import { Mixer } from "@/components/BatchPlant/Mixer";
 import { ConveyorBelt } from "@/components/BatchPlant/ConveyorBelt";
 import { WeighHopper } from "@/components/BatchPlant/WeighHopper";
 import { Pipe } from "@/components/BatchPlant/Pipe";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
+  const [isRunning, setIsRunning] = useState(false);
+  const [mode, setMode] = useState<"auto" | "manual">("manual");
+
+  const handleStart = () => setIsRunning(true);
+  const handleStop = () => setIsRunning(false);
+  const handleReset = () => {
+    setIsRunning(false);
+    setMode("manual");
+  };
+
   return (
     <div className="min-h-screen bg-hmi-background flex flex-col">
       {/* Header */}
@@ -18,7 +30,7 @@ const Index = () => {
 
       {/* Main HMI Panel */}
       <main className="flex-1 p-4">
-        <div className="w-full h-[calc(100vh-80px)] border-4 border-hmi-border bg-hmi-panel">
+        <div className="w-full h-[calc(100vh-80px)] border-4 border-hmi-border bg-hmi-panel relative">
           <svg
             width="100%"
             height="100%"
@@ -37,12 +49,12 @@ const Index = () => {
               {/* Conveyor Belt 1 - Below hoppers (horizontal) */}
               <ConveyorBelt x={60} y={260} width={290} angle={0} isRunning={true} />
 
-              {/* Conveyor Belt 2 - From bottom, angled upward directly to mixer */}
-              <ConveyorBelt x={200} y={450} width={240} angle={35} isRunning={true} />
+              {/* Conveyor Belt 2 - From bottom, angled upward directly to mixer (50% shorter) */}
+              <ConveyorBelt x={280} y={400} width={120} angle={35} isRunning={isRunning} />
               
-              {/* Collecting hopper at conveyor 2 end (right at mixer entrance) */}
+              {/* Collecting hopper at conveyor 2 end (aligned with conveyor above mixer) */}
               <path
-                d="M 400 345 L 430 345 L 425 365 L 405 365 Z"
+                d="M 370 315 L 400 315 L 395 335 L 375 335 Z"
                 className="fill-equipment-aggregate stroke-hmi-border"
                 strokeWidth="2"
               />
@@ -98,32 +110,115 @@ const Index = () => {
             {/* Mixer Section - Center Bottom */}
             <g id="mixer-section">
               {/* Main Mixer - Twin Shaft Horizontal */}
-              <Mixer x={455} y={350} isRunning={true} />
+              <Mixer x={455} y={350} isRunning={isRunning} />
 
               {/* Pipe to mixer from single weigh hopper */}
               <Pipe points="600,294 600,340 530,340 530,360" type="material" />
               
               {/* Pipe from aggregate collecting hopper directly to mixer */}
-              <Pipe points="415,365 415,375 445,375 445,365 455,365" type="material" />
+              <Pipe points="385,335 385,345 445,345 445,360 455,360" type="material" />
               
               {/* Pipe from additive intermediate tank */}
               <Pipe points="797,285 720,285 720,360 605,360" type="water" />
             </g>
 
-            {/* Additional visual elements */}
-            {/* Section divider on right */}
-            <line x1="900" y1="40" x2="900" y2="560" className="stroke-hmi-border" strokeWidth="3" />
-            
-            {/* Bottom section divider */}
-            <rect
-              x="910"
-              y="40"
-              width="170"
-              height="520"
-              className="fill-hmi-panel stroke-hmi-border"
-              strokeWidth="3"
-            />
+            {/* Control Panel Section */}
+            <g id="control-panel">
+              {/* Panel background */}
+              <rect
+                x="920"
+                y="60"
+                width="150"
+                height="480"
+                className="fill-hmi-header stroke-hmi-border"
+                strokeWidth="3"
+                rx="8"
+              />
+              
+              {/* Panel title */}
+              <text x="995" y="90" className="fill-white text-sm font-bold" textAnchor="middle">
+                CONTROL PANEL
+              </text>
+              
+              {/* Mode buttons */}
+              <rect
+                x="935"
+                y="110"
+                width="60"
+                height="35"
+                rx="4"
+                className={mode === "auto" ? "fill-equipment-conveyor" : "fill-muted"}
+                strokeWidth="2"
+                stroke="white"
+                style={{ cursor: "pointer" }}
+              />
+              <text x="965" y="133" className="fill-white text-xs font-semibold" textAnchor="middle">
+                AUTO
+              </text>
+              
+              <rect
+                x="1000"
+                y="110"
+                width="60"
+                height="35"
+                rx="4"
+                className={mode === "manual" ? "fill-primary" : "fill-muted"}
+                strokeWidth="2"
+                stroke="white"
+                style={{ cursor: "pointer" }}
+              />
+              <text x="1030" y="133" className="fill-white text-xs font-semibold" textAnchor="middle">
+                MANUAL
+              </text>
+              
+              {/* Status display */}
+              <rect
+                x="935"
+                y="440"
+                width="125"
+                height="80"
+                rx="4"
+                className="fill-muted stroke-hmi-border"
+                strokeWidth="2"
+              />
+              <text x="997" y="465" className="fill-white text-xs font-semibold" textAnchor="middle">
+                STATUS
+              </text>
+              <text 
+                x="997" 
+                y="495" 
+                className={isRunning ? "fill-green-500 text-lg font-bold" : "fill-red-500 text-lg font-bold"} 
+                textAnchor="middle"
+              >
+                {isRunning ? "RUNNING" : "STOPPED"}
+              </text>
+            </g>
           </svg>
+          
+          {/* Control buttons positioned over SVG */}
+          <div className="absolute top-[220px] right-[40px] flex flex-col gap-3 w-[130px]">
+            <Button
+              onClick={handleStart}
+              disabled={isRunning}
+              className="h-14 bg-green-600 hover:bg-green-700 text-white font-bold text-base shadow-lg"
+            >
+              ▶ START
+            </Button>
+            <Button
+              onClick={handleStop}
+              disabled={!isRunning}
+              className="h-14 bg-red-600 hover:bg-red-700 text-white font-bold text-base shadow-lg"
+            >
+              ■ STOP
+            </Button>
+            <Button
+              onClick={handleReset}
+              variant="outline"
+              className="h-14 bg-muted hover:bg-muted/80 text-white font-bold text-base border-2 border-hmi-border shadow-lg"
+            >
+              ↻ RESET
+            </Button>
+          </div>
         </div>
       </main>
     </div>
