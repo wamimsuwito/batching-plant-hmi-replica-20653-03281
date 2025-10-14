@@ -41,13 +41,13 @@ const Index = () => {
             {/* Aggregate Section - Left Side */}
             <g id="aggregate-section">
               {/* 4 Aggregate Hoppers */}
-              <AggregateHopper x={60} y={160} fillLevel={75} />
-              <AggregateHopper x={140} y={160} fillLevel={80} />
-              <AggregateHopper x={220} y={160} fillLevel={65} />
-              <AggregateHopper x={300} y={160} fillLevel={70} />
+              <AggregateHopper x={40} y={240} fillLevel={75} />
+              <AggregateHopper x={120} y={240} fillLevel={80} />
+              <AggregateHopper x={200} y={240} fillLevel={65} />
+              <AggregateHopper x={280} y={240} fillLevel={70} />
 
               {/* Conveyor Belt 1 - Below hoppers (horizontal) */}
-              <ConveyorBelt x={60} y={260} width={290} angle={0} isRunning={isRunning} />
+              <ConveyorBelt x={40} y={340} width={290} angle={0} isRunning={isRunning} />
 
               {/* Conveyor Belt 2 - From bottom left, angled upward to mixer */}
               <ConveyorBelt x={240} y={460} width={260} angle={32} isRunning={isRunning} />
