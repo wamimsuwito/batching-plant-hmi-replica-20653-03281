@@ -15,6 +15,7 @@ import { SiloFillDialog, SiloData } from "@/components/BatchPlant/SiloFillDialog
 import { useAuth } from "@/contexts/AuthContext";
 import { LogIn, Settings, Package } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useProductionSequence } from "@/hooks/useProductionSequence";
 
 const Index = () => {
   const [isRunning, setIsRunning] = useState(false);
@@ -98,20 +99,33 @@ const Index = () => {
     }));
   };
 
-  // Material weight states (in kg)
-  const [materialWeights] = useState({
-    pasir: 0,
-    batu: 0,
-    semen1: 0,
-    semen2: 0,
-    air: 0
-  });
+  // Load relay settings
+  const [relaySettings, setRelaySettings] = useState<any[]>([]);
+  useEffect(() => {
+    const saved = localStorage.getItem('relay_settings');
+    if (saved) {
+      try {
+        setRelaySettings(JSON.parse(saved));
+      } catch (error) {
+        console.error('Error loading relay settings:', error);
+      }
+    }
+  }, []);
+
+  // Production sequence hook
+  const { productionState, componentStates, startProduction, stopProduction } = useProductionSequence(
+    handleCementDeduction,
+    relaySettings
+  );
 
   const handleStart = () => {
     setIsRunning(true);
   };
   
-  const handleStop = () => setIsRunning(false);
+  const handleStop = () => {
+    setIsRunning(false);
+    stopProduction();
+  };
 
   return (
     <div className="min-h-screen bg-hmi-background flex flex-col">
@@ -172,9 +186,11 @@ const Index = () => {
       <BatchStartDialog 
         open={batchStartOpen} 
         onOpenChange={setBatchStartOpen}
-        onStart={handleStart}
+        onStart={(config) => {
+          startProduction(config);
+          handleStart();
+        }}
         silos={silos}
-        onCementDeduction={handleCementDeduction}
       />
       <SiloFillDialog
         open={siloFillOpen}
@@ -196,10 +212,10 @@ const Index = () => {
             {/* Aggregate Section - Left Side */}
             <g id="aggregate-section">
               {/* 4 Storage Bins - Above hoppers */}
-              <StorageBin x={25} y={130} fillLevel={85} gateOpen={binGates[0]} label="BIN 1" />
-              <StorageBin x={105} y={130} fillLevel={90} gateOpen={binGates[1]} label="BIN 2" />
-              <StorageBin x={185} y={130} fillLevel={75} gateOpen={binGates[2]} label="BIN 3" />
-              <StorageBin x={265} y={130} fillLevel={80} gateOpen={binGates[3]} label="BIN 4" />
+              <StorageBin x={25} y={130} fillLevel={85} gateOpen={componentStates.sandBinValve} label="PASIR" />
+              <StorageBin x={105} y={130} fillLevel={90} gateOpen={componentStates.stoneBinValve} label="BATU 1" />
+              <StorageBin x={185} y={130} fillLevel={75} gateOpen={false} label="BATU 2" />
+              <StorageBin x={265} y={130} fillLevel={80} gateOpen={false} label="BIN 4" />
               
               {/* Support structure connecting bins to hoppers */}
               <line x1="60" y1="252" x2="65" y2="270" className="stroke-hmi-border" strokeWidth="2" />
@@ -214,10 +230,10 @@ const Index = () => {
               <AggregateHopper x={280} y={270} fillLevel={70} />
 
               {/* Conveyor Belt 1 - Below hoppers (horizontal) */}
-              <ConveyorBelt x={40} y={370} width={290} angle={0} isRunning={isRunning} />
+              <ConveyorBelt x={40} y={370} width={290} angle={0} isRunning={componentStates.beltBawah} />
 
               {/* Conveyor Belt 2 - From bottom left, angled upward to mixer */}
-              <ConveyorBelt x={320} y={420} width={180} angle={32} isRunning={isRunning} />
+              <ConveyorBelt x={320} y={420} width={180} angle={32} isRunning={componentStates.beltAtas} />
             </g>
 
             {/* Cement Silos Section - Center */}
@@ -229,6 +245,7 @@ const Index = () => {
                 label="SILO 1"
                 currentVolume={silos[0].currentVolume}
                 capacity={silos[0].capacity}
+                isActive={componentStates.siloValves[0]}
               />
               <CementSilo 
                 x={510} 
@@ -236,6 +253,7 @@ const Index = () => {
                 label="SILO 2"
                 currentVolume={silos[1].currentVolume}
                 capacity={silos[1].capacity}
+                isActive={componentStates.siloValves[1]}
               />
               <CementSilo 
                 x={560} 
@@ -243,6 +261,7 @@ const Index = () => {
                 label="SILO 3"
                 currentVolume={silos[2].currentVolume}
                 capacity={silos[2].capacity}
+                isActive={componentStates.siloValves[2]}
               />
               <CementSilo 
                 x={610} 
@@ -250,6 +269,7 @@ const Index = () => {
                 label="SILO 4"
                 currentVolume={silos[3].currentVolume}
                 capacity={silos[3].capacity}
+                isActive={componentStates.siloValves[3]}
               />
               <CementSilo 
                 x={660} 
@@ -257,6 +277,7 @@ const Index = () => {
                 label="SILO 5"
                 currentVolume={silos[4].currentVolume}
                 capacity={silos[4].capacity}
+                isActive={componentStates.siloValves[4]}
               />
               <CementSilo 
                 x={710} 
@@ -264,10 +285,17 @@ const Index = () => {
                 label="SILO 6"
                 currentVolume={silos[5].currentVolume}
                 capacity={silos[5].capacity}
+                isActive={componentStates.siloValves[5]}
               />
 
               {/* Single Weigh Hopper below silos (BIGGER) */}
-              <WeighHopper x={550} y={250} fillLevel={45} />
+              <WeighHopper 
+                x={550} 
+                y={250} 
+                currentWeight={productionState.currentWeights.semen}
+                targetWeight={productionState.targetWeights.semen}
+                isWeighing={productionState.currentStep === 'weighing'}
+              />
 
               {/* Pipes from silos to single weigh hopper with elbows */}
               <Pipe points="480,220 480,235 570,235 570,250" type="material" />
@@ -306,7 +334,13 @@ const Index = () => {
             {/* Mixer Section - Center Bottom */}
             <g id="mixer-section">
               {/* Main Mixer - Twin Shaft Horizontal */}
-              <Mixer x={455} y={350} isRunning={isRunning} />
+              <Mixer 
+                x={455} 
+                y={350} 
+                isRunning={componentStates.mixer}
+                doorOpen={componentStates.mixerDoor}
+                mixingTimeRemaining={productionState.mixingTimeRemaining}
+              />
 
               {/* Pipe to mixer from single weigh hopper */}
               <Pipe points="600,326 600,340 530,340 530,360" type="material" />
@@ -356,32 +390,42 @@ const Index = () => {
             {/* Pasir */}
             <div className="bg-hmi-header/90 backdrop-blur-sm border-2 border-hmi-border rounded px-3 py-1.5 min-w-[90px]">
               <div className="text-[10px] text-muted-foreground font-semibold">PASIR</div>
-              <div className="text-sm font-bold text-white">{materialWeights.pasir} kg</div>
+              <div className="text-sm font-bold text-white">
+                {productionState.currentWeights.pasir.toFixed(0)} / {productionState.targetWeights.pasir.toFixed(0)} kg
+              </div>
             </div>
             
             {/* Batu */}
             <div className="bg-hmi-header/90 backdrop-blur-sm border-2 border-hmi-border rounded px-3 py-1.5 min-w-[90px]">
               <div className="text-[10px] text-muted-foreground font-semibold">BATU</div>
-              <div className="text-sm font-bold text-white">{materialWeights.batu} kg</div>
+              <div className="text-sm font-bold text-white">
+                {productionState.currentWeights.batu.toFixed(0)} / {productionState.targetWeights.batu.toFixed(0)} kg
+              </div>
             </div>
             
-            {/* Semen 1 */}
+            {/* Semen */}
             <div className="bg-hmi-header/90 backdrop-blur-sm border-2 border-hmi-border rounded px-3 py-1.5 min-w-[90px]">
-              <div className="text-[10px] text-muted-foreground font-semibold">SEMEN 1</div>
-              <div className="text-sm font-bold text-white">{materialWeights.semen1} kg</div>
-            </div>
-            
-            {/* Semen 2 */}
-            <div className="bg-hmi-header/90 backdrop-blur-sm border-2 border-hmi-border rounded px-3 py-1.5 min-w-[90px]">
-              <div className="text-[10px] text-muted-foreground font-semibold">SEMEN 2</div>
-              <div className="text-sm font-bold text-white">{materialWeights.semen2} kg</div>
+              <div className="text-[10px] text-muted-foreground font-semibold">SEMEN</div>
+              <div className="text-sm font-bold text-white">
+                {productionState.currentWeights.semen.toFixed(0)} / {productionState.targetWeights.semen.toFixed(0)} kg
+              </div>
             </div>
             
             {/* Air */}
             <div className="bg-hmi-header/90 backdrop-blur-sm border-2 border-hmi-border rounded px-3 py-1.5 min-w-[90px]">
               <div className="text-[10px] text-muted-foreground font-semibold">AIR</div>
-              <div className="text-sm font-bold text-white">{materialWeights.air} kg</div>
+              <div className="text-sm font-bold text-white">
+                {productionState.currentWeights.air.toFixed(0)} / {productionState.targetWeights.air.toFixed(0)} kg
+              </div>
             </div>
+
+            {/* Production Status */}
+            {productionState.isProducing && (
+              <div className="bg-green-600/90 backdrop-blur-sm border-2 border-green-800 rounded px-3 py-1.5 min-w-[120px]">
+                <div className="text-[10px] text-white font-semibold">STATUS</div>
+                <div className="text-sm font-bold text-white uppercase">{productionState.currentStep}</div>
+              </div>
+            )}
           </div>
         </div>
       </main>

@@ -2,9 +2,20 @@ interface WeighHopperProps {
   x: number;
   y: number;
   fillLevel?: number;
+  currentWeight?: number;
+  targetWeight?: number;
+  isWeighing?: boolean;
 }
 
-export const WeighHopper = ({ x, y, fillLevel = 40 }: WeighHopperProps) => {
+export const WeighHopper = ({ 
+  x, 
+  y, 
+  fillLevel = 40,
+  currentWeight = 0,
+  targetWeight = 0,
+  isWeighing = false
+}: WeighHopperProps) => {
+  const displayFillLevel = targetWeight > 0 ? (currentWeight / targetWeight) * 50 : fillLevel;
   return (
     <g transform={`translate(${x}, ${y})`}>
       {/* Hopper body - trapezoid shape (BIGGER) */}
@@ -15,12 +26,25 @@ export const WeighHopper = ({ x, y, fillLevel = 40 }: WeighHopperProps) => {
       />
       
       {/* Fill level */}
-      {fillLevel > 0 && (
+      {displayFillLevel > 0 && (
         <path
-          d={`M ${10 + (50 - fillLevel) * 0.4} ${50 - fillLevel} L ${90 - (50 - fillLevel) * 0.4} ${50 - fillLevel} L ${70} 50 L 30 50 Z`}
-          className="fill-equipment-aggregate"
+          d={`M ${10 + (50 - displayFillLevel) * 0.4} ${50 - displayFillLevel} L ${90 - (50 - displayFillLevel) * 0.4} ${50 - displayFillLevel} L ${70} 50 L 30 50 Z`}
+          className={`fill-equipment-aggregate ${isWeighing ? 'animate-pulse' : ''}`}
           opacity="0.9"
         />
+      )}
+      
+      {/* Weight display */}
+      {targetWeight > 0 && (
+        <text
+          x="50"
+          y="30"
+          className="fill-white text-xs font-bold"
+          textAnchor="middle"
+          style={{ textShadow: '0 0 3px rgba(0,0,0,0.8)' }}
+        >
+          {currentWeight.toFixed(0)}/{targetWeight.toFixed(0)} kg
+        </text>
       )}
       
       {/* Bottom outlet (LONGER) */}

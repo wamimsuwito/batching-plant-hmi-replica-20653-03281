@@ -15,7 +15,8 @@ interface RelayConfig {
 }
 
 const defaultRelays: RelayConfig[] = [
-  { name: 'Konveyor atas', relayNumber: '', timer1: '', timer2: '', timer3: '', timer4: '' },
+  { name: 'Waktu Mixing (detik)', relayNumber: 'N/A', timer1: '120', timer2: '', timer3: '', timer4: '' },
+  { name: 'Konveyor atas', relayNumber: '', timer1: '1000', timer2: '', timer3: '', timer4: '' },
   { name: 'Konveyor bawah', relayNumber: '', timer1: '', timer2: '', timer3: '', timer4: '' },
   { name: 'Kompressor', relayNumber: '', timer1: '', timer2: '', timer3: '', timer4: '' },
   { name: 'Pasir 1', relayNumber: '', timer1: '', timer2: '', timer3: '', timer4: '' },

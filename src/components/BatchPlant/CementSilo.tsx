@@ -5,6 +5,7 @@ interface CementSiloProps {
   label?: string;
   currentVolume?: number;
   capacity?: number;
+  isActive?: boolean;
 }
 
 export const CementSilo = ({ 
@@ -13,7 +14,8 @@ export const CementSilo = ({
   fillLevel = 0, 
   label,
   currentVolume = 0,
-  capacity = 120000
+  capacity = 120000,
+  isActive = false
 }: CementSiloProps) => {
   // Calculate percentage for fill level (0-100)
   const percentage = capacity > 0 ? (currentVolume / capacity) * 100 : 0;
@@ -64,7 +66,14 @@ export const CementSilo = ({
         strokeWidth="2"
       />
       {/* Valve at bottom */}
-      <circle cx="20" cy="155" r="5" className="fill-valve-active stroke-hmi-border" strokeWidth="1" />
+      <circle 
+        cx="20" 
+        cy="155" 
+        r="5" 
+        className={isActive ? "fill-green-500 animate-pulse" : "fill-valve-active"} 
+        stroke="white" 
+        strokeWidth="1" 
+      />
       {/* Top platform */}
       <rect
         x="-5"

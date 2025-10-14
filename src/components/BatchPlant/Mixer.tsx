@@ -2,9 +2,11 @@ interface MixerProps {
   x: number;
   y: number;
   isRunning?: boolean;
+  doorOpen?: boolean;
+  mixingTimeRemaining?: number;
 }
 
-export const Mixer = ({ x, y, isRunning = true }: MixerProps) => {
+export const Mixer = ({ x, y, isRunning = true, doorOpen = false, mixingTimeRemaining = 0 }: MixerProps) => {
   return (
     <g transform={`translate(${x}, ${y})`}>
       {/* Main mixer body - horizontal twin shaft design */}
@@ -56,7 +58,15 @@ export const Mixer = ({ x, y, isRunning = true }: MixerProps) => {
         className="fill-equipment-aggregate stroke-hmi-border"
         strokeWidth="2"
       />
-      <rect x="68" y="88" width="14" height="8" className="fill-valve-active stroke-hmi-border" strokeWidth="1" />
+      <rect 
+        x="68" 
+        y="88" 
+        width="14" 
+        height="8" 
+        className={doorOpen ? "fill-green-500" : "fill-valve-active"} 
+        stroke="white" 
+        strokeWidth="1" 
+      />
       
       {/* Status indicators */}
       {isRunning && (
@@ -64,6 +74,19 @@ export const Mixer = ({ x, y, isRunning = true }: MixerProps) => {
           <circle cx="135" cy="20" r="4" className="fill-valve-active animate-pulse" />
           <circle cx="145" cy="20" r="4" className="fill-valve-active animate-pulse" />
         </>
+      )}
+      
+      {/* Mixing countdown display */}
+      {mixingTimeRemaining > 0 && (
+        <text
+          x="75"
+          y="50"
+          className="fill-white text-sm font-bold"
+          textAnchor="middle"
+          style={{ textShadow: '0 0 3px rgba(0,0,0,0.8)' }}
+        >
+          MIXING: {mixingTimeRemaining}s
+        </text>
       )}
     </g>
   );

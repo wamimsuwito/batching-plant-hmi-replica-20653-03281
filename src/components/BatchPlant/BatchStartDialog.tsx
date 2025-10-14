@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 
@@ -28,12 +29,21 @@ export interface SiloData {
 interface BatchStartDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onStart: () => void;
+  onStart: (config: {
+    selectedSilos: number[];
+    targetWeights: {
+      pasir: number;
+      batu: number;
+      semen: number;
+      air: number;
+      additive: number;
+    };
+    mixingTime: number;
+  }) => void;
   silos: SiloData[];
-  onCementDeduction: (siloId: number, amount: number) => void;
 }
 
-export function BatchStartDialog({ open, onOpenChange, onStart, silos, onCementDeduction }: BatchStartDialogProps) {
+export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchStartDialogProps) {
   const [mutuBeton, setMutuBeton] = useState("");
   const [volume, setVolume] = useState("");
   const [slump, setSlump] = useState("");
@@ -41,70 +51,94 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos, onCementD
   const [lokasi, setLokasi] = useState("");
   const [noKendaraan, setNoKendaraan] = useState("");
   const [sopir, setSopir] = useState("");
-  const [selectedSilo, setSelectedSilo] = useState<string>("");
-  const [jmfOptions, setJmfOptions] = useState<string[]>([]);
+  const [selectedSilos, setSelectedSilos] = useState<number[]>([]);
+  const [mixingTime, setMixingTime] = useState<string>("120");
+  const [jmfOptions, setJmfOptions] = useState<any[]>([]);
   const { toast } = useToast();
 
-  // Load JMF data from localStorage
+  // Load JMF data and relay settings
   useEffect(() => {
     const savedFormulas = localStorage.getItem('job_mix_formulas');
     if (savedFormulas) {
       try {
         const formulas = JSON.parse(savedFormulas);
-        const mutuBetonList = formulas.map((f: any) => f.mutuBeton).filter(Boolean);
-        setJmfOptions(mutuBetonList);
+        setJmfOptions(formulas);
       } catch (error) {
         console.error('Error loading JMF data:', error);
         setJmfOptions([]);
       }
     }
+
+    const savedRelaySettings = localStorage.getItem('relay_settings');
+    if (savedRelaySettings) {
+      try {
+        const relaySettings = JSON.parse(savedRelaySettings);
+        const mixingRelay = relaySettings.find((r: any) => r.name === 'Waktu Mixing (detik)');
+        if (mixingRelay?.timer1) {
+          setMixingTime(mixingRelay.timer1);
+        }
+      } catch (error) {
+        console.error('Error loading relay settings:', error);
+      }
+    }
   }, [open]);
 
-  const isFormValid = mutuBeton !== "" && volume !== "" && slump !== "" && selectedSilo !== "";
+  const isFormValid = mutuBeton !== "" && volume !== "" && slump !== "" && selectedSilos.length > 0;
+
+  const handleSiloToggle = (siloId: number) => {
+    setSelectedSilos(prev => 
+      prev.includes(siloId) 
+        ? prev.filter(id => id !== siloId)
+        : [...prev, siloId]
+    );
+  };
 
   const handleStart = () => {
     if (!isFormValid) return;
 
-    // Get selected silo data
-    const siloId = parseInt(selectedSilo);
-    const selectedSiloData = silos.find(s => s.id === siloId);
-    
-    if (!selectedSiloData) {
+    // Get selected JMF data
+    const selectedFormula = jmfOptions.find((f: any) => f.mutuBeton === mutuBeton);
+    if (!selectedFormula) {
       toast({
         title: "Error",
-        description: "Silo tidak ditemukan",
+        description: "Formula tidak ditemukan",
         variant: "destructive",
       });
       return;
     }
 
-    // Calculate cement requirement (example: 350 kg/m³)
-    // In real system, this should come from JMF data
-    const cementPerCubicMeter = 350; // kg
+    // Calculate material requirements based on volume
     const batchVolume = parseFloat(volume);
-    const requiredCement = cementPerCubicMeter * batchVolume;
+    const targetWeights = {
+      semen: (parseFloat(selectedFormula.semen) || 0) * batchVolume,
+      pasir: (parseFloat(selectedFormula.pasir) || 0) * batchVolume,
+      batu: (parseFloat(selectedFormula.batu1) || 0) * batchVolume + (parseFloat(selectedFormula.batu2) || 0) * batchVolume,
+      air: (parseFloat(selectedFormula.air) || 0) * batchVolume,
+      additive: (parseFloat(selectedFormula.additive) || 0) * batchVolume,
+    };
 
-    // Check if silo has enough cement
-    if (selectedSiloData.currentVolume < requiredCement) {
+    // Check if selected silos have enough cement
+    const totalAvailableCement = selectedSilos.reduce((sum, siloId) => {
+      const silo = silos.find(s => s.id === siloId);
+      return sum + (silo?.currentVolume || 0);
+    }, 0);
+
+    if (totalAvailableCement < targetWeights.semen) {
       toast({
         title: "Volume Tidak Mencukupi",
-        description: `Volume semen di Silo ${siloId} tidak mencukupi. Tersedia: ${selectedSiloData.currentVolume.toLocaleString('id-ID')} kg, Dibutuhkan: ${requiredCement.toLocaleString('id-ID')} kg`,
+        description: `Total semen tidak mencukupi. Tersedia: ${totalAvailableCement.toLocaleString('id-ID')} kg, Dibutuhkan: ${targetWeights.semen.toLocaleString('id-ID')} kg`,
         variant: "destructive",
       });
       return;
     }
 
-    // Deduct cement from selected silo
-    onCementDeduction(siloId, requiredCement);
-
-    // Show success message
-    toast({
-      title: "Batch Dimulai",
-      description: `Menggunakan ${requiredCement.toLocaleString('id-ID')} kg semen dari Silo ${siloId}`,
+    // Start production
+    onStart({
+      selectedSilos,
+      targetWeights,
+      mixingTime: parseInt(mixingTime),
     });
 
-    // Start the batch
-    onStart();
     onOpenChange(false);
     
     // Reset form
@@ -115,7 +149,8 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos, onCementD
     setLokasi("");
     setNoKendaraan("");
     setSopir("");
-    setSelectedSilo("");
+    setSelectedSilos([]);
+    setMixingTime("120");
   };
 
   return (
@@ -143,9 +178,9 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos, onCementD
                       Silakan tambahkan di menu Job Mix Formula.
                     </div>
                   ) : (
-                    jmfOptions.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
+                    jmfOptions.map((formula: any) => (
+                      <SelectItem key={formula.id} value={formula.mutuBeton}>
+                        {formula.mutuBeton}
                       </SelectItem>
                     ))
                   )}
@@ -185,37 +220,52 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos, onCementD
               />
             </div>
 
-            {/* Pilih Silo Semen - Required */}
+            {/* Pilih Silo Semen - Required (Multiple Selection) */}
             <div className="grid gap-2">
-              <Label htmlFor="silo">
-                Pilih Silo Semen <span className="text-destructive">*</span>
+              <Label>
+                Pilih Silo Semen (bisa pilih lebih dari 1) <span className="text-destructive">*</span>
               </Label>
-              <Select value={selectedSilo} onValueChange={setSelectedSilo}>
-                <SelectTrigger id="silo">
-                  <SelectValue placeholder="Pilih silo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {silos.map((silo) => {
-                    const percentage = (silo.currentVolume / silo.capacity) * 100;
-                    const isLow = percentage < 20;
-                    const isEmpty = silo.currentVolume === 0;
-                    
-                    return (
-                      <SelectItem 
-                        key={silo.id} 
-                        value={silo.id.toString()}
+              <div className="border rounded-md p-3 space-y-2 max-h-[150px] overflow-y-auto">
+                {silos.map((silo) => {
+                  const percentage = (silo.currentVolume / silo.capacity) * 100;
+                  const isLow = percentage < 20;
+                  const isEmpty = silo.currentVolume === 0;
+                  
+                  return (
+                    <div key={silo.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`silo-${silo.id}`}
+                        checked={selectedSilos.includes(silo.id)}
+                        onCheckedChange={() => handleSiloToggle(silo.id)}
                         disabled={isEmpty}
+                      />
+                      <label
+                        htmlFor={`silo-${silo.id}`}
+                        className={`text-sm flex-1 ${isEmpty ? "text-muted-foreground" : ""} cursor-pointer`}
                       >
-                        <span className={isEmpty ? "text-muted-foreground" : ""}>
-                          Silo {silo.id} - {silo.currentVolume.toLocaleString('id-ID')} kg
-                          {isEmpty && " (kosong)"}
-                          {!isEmpty && isLow && " ⚠️"}
-                        </span>
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
+                        Silo {silo.id} - {silo.currentVolume.toLocaleString('id-ID')} kg
+                        {isEmpty && " (kosong)"}
+                        {!isEmpty && isLow && " ⚠️"}
+                      </label>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Mixing Time */}
+            <div className="grid gap-2">
+              <Label htmlFor="mixing-time">
+                Waktu Mixing (detik) <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="mixing-time"
+                type="number"
+                placeholder="Masukkan waktu mixing"
+                value={mixingTime}
+                onChange={(e) => setMixingTime(e.target.value)}
+                min="1"
+              />
             </div>
 
             {/* Pelanggan - Optional */}
