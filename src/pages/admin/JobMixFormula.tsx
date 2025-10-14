@@ -44,6 +44,19 @@ export default function JobMixFormula() {
     }
   }, []);
 
+  // Auto-calculate total volume whenever material values change
+  useEffect(() => {
+    const total = 
+      (parseFloat(formData.semen) || 0) +
+      (parseFloat(formData.pasir) || 0) +
+      (parseFloat(formData.batu1) || 0) +
+      (parseFloat(formData.batu2) || 0) +
+      (parseFloat(formData.air) || 0) +
+      (parseFloat(formData.additive) || 0);
+    
+    setFormData(prev => ({ ...prev, totalVolume: total.toString() }));
+  }, [formData.semen, formData.pasir, formData.batu1, formData.batu2, formData.air, formData.additive]);
+
   const saveToStorage = (data: MixFormula[]) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   };
@@ -213,13 +226,14 @@ export default function JobMixFormula() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="totalVolume">Total Volume (kg)</Label>
+              <Label htmlFor="totalVolume">Total (kg)</Label>
               <Input
                 id="totalVolume"
                 type="number"
                 value={formData.totalVolume}
-                onChange={(e) => setFormData({ ...formData, totalVolume: e.target.value })}
                 placeholder="0"
+                readOnly
+                className="bg-muted"
               />
             </div>
           </div>
