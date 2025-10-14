@@ -9,8 +9,7 @@ import { Trash2, Plus } from 'lucide-react';
 
 interface MixFormula {
   id: string;
-  kode: string;
-  nama: string;
+  mutuBeton: string;
   semen: string;
   pasir: string;
   batu1: string;
@@ -27,8 +26,7 @@ export default function JobMixFormula() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<MixFormula>({
     id: '',
-    kode: '',
-    nama: '',
+    mutuBeton: '',
     semen: '',
     pasir: '',
     batu1: '',
@@ -51,10 +49,10 @@ export default function JobMixFormula() {
   };
 
   const handleAdd = () => {
-    if (!formData.kode || !formData.nama) {
+    if (!formData.mutuBeton) {
       toast({
         title: 'Error',
-        description: 'Kode dan Nama wajib diisi',
+        description: 'Mutu Beton wajib diisi',
         variant: 'destructive',
       });
       return;
@@ -69,8 +67,7 @@ export default function JobMixFormula() {
     saveToStorage(updated);
     setFormData({
       id: '',
-      kode: '',
-      nama: '',
+      mutuBeton: '',
       semen: '',
       pasir: '',
       batu1: '',
@@ -92,8 +89,7 @@ export default function JobMixFormula() {
     setEditingId(null);
     setFormData({
       id: '',
-      kode: '',
-      nama: '',
+      mutuBeton: '',
       semen: '',
       pasir: '',
       batu1: '',
@@ -127,8 +123,7 @@ export default function JobMixFormula() {
     setEditingId(null);
     setFormData({
       id: '',
-      kode: '',
-      nama: '',
+      mutuBeton: '',
       semen: '',
       pasir: '',
       batu1: '',
@@ -147,23 +142,14 @@ export default function JobMixFormula() {
           <CardDescription>Konfigurasi formula campuran beton</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="kode">Kode Mix *</Label>
+              <Label htmlFor="mutuBeton">Mutu Beton *</Label>
               <Input
-                id="kode"
-                value={formData.kode}
-                onChange={(e) => setFormData({ ...formData, kode: e.target.value })}
+                id="mutuBeton"
+                value={formData.mutuBeton}
+                onChange={(e) => setFormData({ ...formData, mutuBeton: e.target.value })}
                 placeholder="Contoh: K300"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="nama">Nama Campuran *</Label>
-              <Input
-                id="nama"
-                value={formData.nama}
-                onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
-                placeholder="Contoh: Beton K300"
               />
             </div>
             <div className="space-y-2">
@@ -217,7 +203,7 @@ export default function JobMixFormula() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="additive">Additive (ml)</Label>
+              <Label htmlFor="additive">Additive (liter)</Label>
               <Input
                 id="additive"
                 type="number"
@@ -227,7 +213,7 @@ export default function JobMixFormula() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="totalVolume">Total Volume (m³)</Label>
+              <Label htmlFor="totalVolume">Total Volume (kg)</Label>
               <Input
                 id="totalVolume"
                 type="number"
@@ -262,30 +248,28 @@ export default function JobMixFormula() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Kode</TableHead>
-                  <TableHead>Nama</TableHead>
+                  <TableHead>Mutu Beton</TableHead>
                   <TableHead>Semen (kg)</TableHead>
                   <TableHead>Pasir (kg)</TableHead>
                   <TableHead>Batu 1 (kg)</TableHead>
                   <TableHead>Batu 2 (kg)</TableHead>
                   <TableHead>Air (L)</TableHead>
-                  <TableHead>Additive (ml)</TableHead>
-                  <TableHead>Volume (m³)</TableHead>
+                  <TableHead>Additive (L)</TableHead>
+                  <TableHead>Total (kg)</TableHead>
                   <TableHead>Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {formulas.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center text-muted-foreground">
+                    <TableCell colSpan={9} className="text-center text-muted-foreground">
                       Belum ada formula. Tambahkan formula baru di atas.
                     </TableCell>
                   </TableRow>
                 ) : (
                   formulas.map((formula) => (
                     <TableRow key={formula.id}>
-                      <TableCell className="font-medium">{formula.kode}</TableCell>
-                      <TableCell>{formula.nama}</TableCell>
+                      <TableCell className="font-medium">{formula.mutuBeton}</TableCell>
                       <TableCell>{formula.semen || '-'}</TableCell>
                       <TableCell>{formula.pasir || '-'}</TableCell>
                       <TableCell>{formula.batu1 || '-'}</TableCell>
