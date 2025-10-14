@@ -21,6 +21,15 @@ const Index = () => {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
 
+  // Material weight states (in kg)
+  const [materialWeights] = useState({
+    pasir: 0,
+    batu: 0,
+    semen1: 0,
+    semen2: 0,
+    air: 0
+  });
+
   const handleStart = () => setIsRunning(true);
   const handleStop = () => setIsRunning(false);
   const handleReset = () => {
@@ -245,6 +254,39 @@ const Index = () => {
             </g>
           </svg>
           
+          {/* Material Weight Indicators */}
+          <div className="absolute bottom-4 left-4 flex gap-2">
+            {/* Pasir */}
+            <div className="bg-hmi-header/90 backdrop-blur-sm border-2 border-hmi-border rounded px-3 py-1.5 min-w-[90px]">
+              <div className="text-[10px] text-muted-foreground font-semibold">PASIR</div>
+              <div className="text-sm font-bold text-white">{materialWeights.pasir} kg</div>
+            </div>
+            
+            {/* Batu */}
+            <div className="bg-hmi-header/90 backdrop-blur-sm border-2 border-hmi-border rounded px-3 py-1.5 min-w-[90px]">
+              <div className="text-[10px] text-muted-foreground font-semibold">BATU</div>
+              <div className="text-sm font-bold text-white">{materialWeights.batu} kg</div>
+            </div>
+            
+            {/* Semen 1 */}
+            <div className="bg-hmi-header/90 backdrop-blur-sm border-2 border-hmi-border rounded px-3 py-1.5 min-w-[90px]">
+              <div className="text-[10px] text-muted-foreground font-semibold">SEMEN 1</div>
+              <div className="text-sm font-bold text-white">{materialWeights.semen1} kg</div>
+            </div>
+            
+            {/* Semen 2 */}
+            <div className="bg-hmi-header/90 backdrop-blur-sm border-2 border-hmi-border rounded px-3 py-1.5 min-w-[90px]">
+              <div className="text-[10px] text-muted-foreground font-semibold">SEMEN 2</div>
+              <div className="text-sm font-bold text-white">{materialWeights.semen2} kg</div>
+            </div>
+            
+            {/* Air */}
+            <div className="bg-hmi-header/90 backdrop-blur-sm border-2 border-hmi-border rounded px-3 py-1.5 min-w-[90px]">
+              <div className="text-[10px] text-muted-foreground font-semibold">AIR</div>
+              <div className="text-sm font-bold text-white">{materialWeights.air} kg</div>
+            </div>
+          </div>
+
           {/* Control buttons positioned over SVG */}
           <div className="absolute top-[220px] right-[40px] flex flex-col gap-3 w-[130px]">
             <Button
