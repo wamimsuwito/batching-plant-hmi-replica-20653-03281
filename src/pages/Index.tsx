@@ -10,6 +10,7 @@ import { Pipe } from "@/components/BatchPlant/Pipe";
 import { StorageBin } from "@/components/BatchPlant/StorageBin";
 import { Button } from "@/components/ui/button";
 import { LoginDialog } from "@/components/auth/LoginDialog";
+import { BatchStartDialog } from "@/components/BatchPlant/BatchStartDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { LogIn, Settings } from "lucide-react";
 
@@ -18,6 +19,7 @@ const Index = () => {
   const [mode, setMode] = useState<"auto" | "manual">("manual");
   const [binGates, setBinGates] = useState([false, false, false, false]);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [batchStartOpen, setBatchStartOpen] = useState(false);
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
 
@@ -30,7 +32,10 @@ const Index = () => {
     air: 0
   });
 
-  const handleStart = () => setIsRunning(true);
+  const handleStart = () => {
+    setIsRunning(true);
+  };
+  
   const handleStop = () => setIsRunning(false);
 
   return (
@@ -80,6 +85,11 @@ const Index = () => {
       </header>
 
       <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
+      <BatchStartDialog 
+        open={batchStartOpen} 
+        onOpenChange={setBatchStartOpen}
+        onStart={handleStart}
+      />
 
       {/* Main HMI Panel */}
       <main className="flex-1 p-4">
@@ -185,7 +195,7 @@ const Index = () => {
             <div className="flex gap-4">
               {/* Start Button */}
               <button
-                onClick={handleStart}
+                onClick={() => setBatchStartOpen(true)}
                 disabled={isRunning}
                 className="w-16 h-16 rounded-full bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center border-4 border-green-800 shadow-lg transition-all"
               >
