@@ -74,6 +74,17 @@ export const CementSilo = ({
         className="fill-equipment-conveyor stroke-hmi-border"
         strokeWidth="1"
       />
+      {/* Percentage display inside silo */}
+      <text
+        x="20"
+        y="80"
+        textAnchor="middle"
+        className="fill-white text-xl font-bold"
+        style={{ textShadow: '0 0 3px rgba(0,0,0,0.8)' }}
+      >
+        {percentage.toFixed(0)}%
+      </text>
+      
       {/* Label */}
       {label && (
         <text
@@ -93,22 +104,7 @@ export const CementSilo = ({
         textAnchor="middle"
         className="fill-hmi-text text-[9px]"
       >
-        {currentVolume.toLocaleString('id-ID')} kg
-      </text>
-      
-      {/* Percentage display */}
-      <text
-        x="20"
-        y="197"
-        textAnchor="middle"
-        className={`text-[8px] font-semibold ${
-          percentage === 0 ? 'fill-gray-400' :
-          percentage < 20 ? 'fill-red-500' :
-          percentage < 50 ? 'fill-yellow-500' :
-          'fill-green-500'
-        }`}
-      >
-        {percentage.toFixed(0)}%
+        {currentVolume.toLocaleString("id-ID")} kg
       </text>
     </g>
   );
