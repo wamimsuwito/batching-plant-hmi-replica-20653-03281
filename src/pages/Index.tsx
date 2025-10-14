@@ -190,11 +190,6 @@ const Index = () => {
                 rx="8"
               />
               
-              {/* Panel title */}
-              <text x="995" y="90" className="fill-white text-sm font-bold" textAnchor="middle">
-                CONTROL PANEL
-              </text>
-              
               {/* Mode buttons - Row 1 */}
               <rect
                 x="935"
@@ -220,28 +215,6 @@ const Index = () => {
               />
               <text x="1030" y="423" className="fill-white text-xs font-semibold" textAnchor="middle">
                 MANUAL
-              </text>
-              
-              {/* Status display - Bottom */}
-              <rect
-                x="935"
-                y="485"
-                width="125"
-                height="45"
-                rx="4"
-                className="fill-muted stroke-hmi-border"
-                strokeWidth="2"
-              />
-              <text x="997" y="503" className="fill-white text-xs font-semibold" textAnchor="middle">
-                STATUS
-              </text>
-              <text 
-                x="997" 
-                y="522" 
-                className={isRunning ? "fill-green-500 text-sm font-bold" : "fill-red-500 text-sm font-bold"} 
-                textAnchor="middle"
-              >
-                {isRunning ? "RUNNING" : "STOPPED"}
               </text>
             </g>
           </svg>
