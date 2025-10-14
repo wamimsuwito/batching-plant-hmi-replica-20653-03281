@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { CementSilo } from "@/components/BatchPlant/CementSilo";
 import { AggregateHopper } from "@/components/BatchPlant/AggregateHopper";
 import { AdditiveTank } from "@/components/BatchPlant/AdditiveTank";
@@ -8,11 +9,17 @@ import { WeighHopper } from "@/components/BatchPlant/WeighHopper";
 import { Pipe } from "@/components/BatchPlant/Pipe";
 import { StorageBin } from "@/components/BatchPlant/StorageBin";
 import { Button } from "@/components/ui/button";
+import { LoginDialog } from "@/components/auth/LoginDialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { LogIn, Settings } from "lucide-react";
 
 const Index = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [mode, setMode] = useState<"auto" | "manual">("manual");
   const [binGates, setBinGates] = useState([false, false, false, false]);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const { user, logout, isAdmin } = useAuth();
+  const navigate = useNavigate();
 
   const handleStart = () => setIsRunning(true);
   const handleStop = () => setIsRunning(false);
@@ -24,11 +31,50 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-hmi-background flex flex-col">
       {/* Header */}
-      <header className="bg-hmi-header text-white py-3 px-6 border-b-2 border-hmi-border">
-        <h1 className="text-2xl font-bold text-center tracking-wide">
+      <header className="bg-hmi-header text-white py-3 px-6 border-b-2 border-hmi-border flex items-center justify-between">
+        <div className="flex-1" />
+        <h1 className="text-2xl font-bold text-center tracking-wide flex-1">
           BATCH PLANT CONTROL SYSTEM
         </h1>
+        <div className="flex-1 flex justify-end items-center gap-2">
+          {user ? (
+            <>
+              <span className="text-sm">
+                {user.name}
+              </span>
+              {isAdmin() && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => navigate('/admin')}
+                  className="gap-2"
+                >
+                  <Settings className="w-4 h-4" />
+                  Admin
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={logout}
+              >
+                Logout
+              </Button>
+            </>
+          ) : (
+            <Button
+              size="sm"
+              onClick={() => setLoginOpen(true)}
+              className="gap-2"
+            >
+              <LogIn className="w-4 h-4" />
+              Login Admin
+            </Button>
+          )}
+        </div>
       </header>
+
+      <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
 
       {/* Main HMI Panel */}
       <main className="flex-1 p-4">

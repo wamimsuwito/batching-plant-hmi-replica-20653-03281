@@ -8,53 +8,56 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Industrial HMI Color System */
-    --background: 210 15% 85%;
-    --foreground: 220 15% 15%;
+    /* Futuristic Dark Theme - Modern & Hi-tech */
+    --background: 220 25% 8%;
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 95%;
-    --card-foreground: 220 15% 15%;
+    --card: 220 20% 12%;
+    --card-foreground: 210 40% 98%;
 
-    --primary: 210 80% 45%;
-    --primary-foreground: 0 0% 100%;
+    --popover: 220 25% 10%;
+    --popover-foreground: 210 40% 98%;
 
-    --secondary: 0 0% 60%;
-    --secondary-foreground: 0 0% 100%;
+    --primary: 195 100% 50%;
+    --primary-foreground: 220 25% 8%;
 
-    --muted: 210 10% 70%;
-    --muted-foreground: 220 15% 30%;
+    --secondary: 260 60% 50%;
+    --secondary-foreground: 210 40% 98%;
 
-    --accent: 210 80% 45%;
-    --accent-foreground: 0 0% 100%;
+    --muted: 220 20% 20%;
+    --muted-foreground: 215 20% 65%;
 
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 0 0% 100%;
+    --accent: 195 80% 45%;
+    --accent-foreground: 210 40% 98%;
 
-    --border: 220 15% 30%;
-    --input: 220 15% 85%;
-    --ring: 210 80% 45%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
 
-    --radius: 0.25rem;
+    --border: 220 25% 20%;
+    --input: 220 25% 15%;
+    --ring: 195 100% 50%;
 
-    /* HMI Specific Colors */
-    --hmi-header: 210 80% 45%;
-    --hmi-background: 210 15% 85%;
-    --hmi-border: 220 15% 30%;
-    --hmi-panel: 0 0% 95%;
+    --radius: 0.5rem;
+
+    /* HMI Specific Colors - Futuristic */
+    --hmi-header: 220 30% 15%;
+    --hmi-background: 220 25% 8%;
+    --hmi-border: 195 80% 45%;
+    --hmi-panel: 220 20% 10%;
     
-    /* Equipment Colors */
-    --equipment-silo: 0 0% 85%;
-    --equipment-silo-fill: 210 70% 55%;
-    --equipment-tank: 210 70% 55%;
+    /* Equipment Colors - Enhanced for dark theme */
+    --equipment-silo: 220 15% 25%;
+    --equipment-silo-fill: 195 70% 55%;
+    --equipment-tank: 195 60% 45%;
     --equipment-mixer: 30 85% 60%;
-    --equipment-conveyor: 0 0% 45%;
+    --equipment-conveyor: 220 15% 30%;
     --equipment-aggregate: 30 35% 50%;
     
-    /* Pipe & Valve Colors */
-    --pipe-material: 120 60% 45%;
-    --pipe-water: 210 80% 55%;
-    --valve-active: 120 60% 45%;
-    --valve-inactive: 0 0% 50%;
+    /* Pipe & Valve Colors - Neon accents */
+    --pipe-material: 120 80% 55%;
+    --pipe-water: 195 100% 60%;
+    --valve-active: 120 80% 55%;
+    --valve-inactive: 220 10% 40%;
   }
 }
 
@@ -65,5 +68,41 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    background: linear-gradient(135deg, hsl(220 25% 8%) 0%, hsl(260 30% 12%) 50%, hsl(195 25% 10%) 100%);
+    background-attachment: fixed;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    right: -50%;
+    bottom: -50%;
+    background: radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.1) 0%, transparent 50%);
+    animation: glow-pulse 8s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.1); }
   }
 }
