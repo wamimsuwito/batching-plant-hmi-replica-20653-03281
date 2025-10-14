@@ -10,12 +10,12 @@ interface WeighHopperProps {
 export const WeighHopper = ({ 
   x, 
   y, 
-  fillLevel = 40,
+  fillLevel = 0,
   currentWeight = 0,
   targetWeight = 0,
   isWeighing = false
 }: WeighHopperProps) => {
-  const displayFillLevel = targetWeight > 0 ? (currentWeight / targetWeight) * 50 : fillLevel;
+  const displayFillLevel = targetWeight > 0 ? (currentWeight / targetWeight) * 50 : 0;
   return (
     <g transform={`translate(${x}, ${y})`}>
       {/* Hopper body - trapezoid shape (BIGGER) */}
@@ -34,7 +34,7 @@ export const WeighHopper = ({
         />
       )}
       
-      {/* Weight display */}
+      {/* Weight display - only during weighing */}
       {targetWeight > 0 && (
         <text
           x="50"
@@ -44,6 +44,18 @@ export const WeighHopper = ({
           style={{ textShadow: '0 0 3px rgba(0,0,0,0.8)' }}
         >
           {currentWeight.toFixed(0)}/{targetWeight.toFixed(0)} kg
+        </text>
+      )}
+      
+      {/* Standby label when idle */}
+      {targetWeight === 0 && (
+        <text
+          x="50"
+          y="30"
+          className="fill-gray-400 text-[10px] font-semibold"
+          textAnchor="middle"
+        >
+          STANDBY
         </text>
       )}
       
