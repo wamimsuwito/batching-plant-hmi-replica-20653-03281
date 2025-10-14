@@ -50,7 +50,7 @@ const Index = () => {
               <ConveyorBelt x={40} y={340} width={290} angle={0} isRunning={isRunning} />
 
               {/* Conveyor Belt 2 - From bottom left, angled upward to mixer */}
-              <ConveyorBelt x={320} y={460} width={180} angle={32} isRunning={isRunning} />
+              <ConveyorBelt x={320} y={420} width={180} angle={32} isRunning={isRunning} />
             </g>
 
             {/* Cement Silos Section - Center */}
