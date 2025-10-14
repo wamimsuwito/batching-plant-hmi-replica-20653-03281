@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -31,18 +31,22 @@ export function BatchStartDialog({ open, onOpenChange, onStart }: BatchStartDial
   const [lokasi, setLokasi] = useState("");
   const [noKendaraan, setNoKendaraan] = useState("");
   const [sopir, setSopir] = useState("");
+  const [jmfOptions, setJmfOptions] = useState<string[]>([]);
 
-  // Mock JMF data - replace with actual data from your system
-  const jmfOptions = [
-    "K-175",
-    "K-200",
-    "K-225",
-    "K-250",
-    "K-275",
-    "K-300",
-    "K-350",
-    "K-400",
-  ];
+  // Load JMF data from localStorage
+  useEffect(() => {
+    const savedFormulas = localStorage.getItem('job_mix_formulas');
+    if (savedFormulas) {
+      try {
+        const formulas = JSON.parse(savedFormulas);
+        const mutuBetonList = formulas.map((f: any) => f.mutuBeton).filter(Boolean);
+        setJmfOptions(mutuBetonList);
+      } catch (error) {
+        console.error('Error loading JMF data:', error);
+        setJmfOptions([]);
+      }
+    }
+  }, [open]);
 
   const isFormValid = mutuBeton !== "" && volume !== "" && slump !== "";
 
@@ -79,11 +83,19 @@ export function BatchStartDialog({ open, onOpenChange, onStart }: BatchStartDial
                   <SelectValue placeholder="Pilih mutu beton" />
                 </SelectTrigger>
                 <SelectContent>
-                  {jmfOptions.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
+                  {jmfOptions.length === 0 ? (
+                    <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                      Belum ada formula yang tersimpan.
+                      <br />
+                      Silakan tambahkan di menu Job Mix Formula.
+                    </div>
+                  ) : (
+                    jmfOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
