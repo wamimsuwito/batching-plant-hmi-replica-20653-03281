@@ -6,11 +6,13 @@ import { Mixer } from "@/components/BatchPlant/Mixer";
 import { ConveyorBelt } from "@/components/BatchPlant/ConveyorBelt";
 import { WeighHopper } from "@/components/BatchPlant/WeighHopper";
 import { Pipe } from "@/components/BatchPlant/Pipe";
+import { StorageBin } from "@/components/BatchPlant/StorageBin";
 import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [mode, setMode] = useState<"auto" | "manual">("manual");
+  const [binGates, setBinGates] = useState([false, false, false, false]);
 
   const handleStart = () => setIsRunning(true);
   const handleStop = () => setIsRunning(false);
@@ -40,6 +42,18 @@ const Index = () => {
           >
             {/* Aggregate Section - Left Side */}
             <g id="aggregate-section">
+              {/* 4 Storage Bins - Above hoppers */}
+              <StorageBin x={25} y={130} fillLevel={85} gateOpen={binGates[0]} label="BIN 1" />
+              <StorageBin x={105} y={130} fillLevel={90} gateOpen={binGates[1]} label="BIN 2" />
+              <StorageBin x={185} y={130} fillLevel={75} gateOpen={binGates[2]} label="BIN 3" />
+              <StorageBin x={265} y={130} fillLevel={80} gateOpen={binGates[3]} label="BIN 4" />
+              
+              {/* Support structure connecting bins to hoppers */}
+              <line x1="60" y1="252" x2="65" y2="270" className="stroke-hmi-border" strokeWidth="2" />
+              <line x1="140" y1="252" x2="145" y2="270" className="stroke-hmi-border" strokeWidth="2" />
+              <line x1="220" y1="252" x2="225" y2="270" className="stroke-hmi-border" strokeWidth="2" />
+              <line x1="300" y1="252" x2="305" y2="270" className="stroke-hmi-border" strokeWidth="2" />
+              
               {/* 4 Aggregate Hoppers */}
               <AggregateHopper x={40} y={270} fillLevel={75} />
               <AggregateHopper x={120} y={270} fillLevel={80} />
