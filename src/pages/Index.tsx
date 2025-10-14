@@ -179,6 +179,40 @@ const Index = () => {
 
           </svg>
           
+          {/* Control Buttons - Right Side */}
+          <div className="absolute bottom-32 right-8 flex flex-col gap-4 items-center">
+            {/* Start and Stop Buttons */}
+            <div className="flex gap-4">
+              {/* Start Button */}
+              <button
+                onClick={handleStart}
+                disabled={isRunning}
+                className="w-16 h-16 rounded-full bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center border-4 border-green-800 shadow-lg transition-all"
+              >
+                <span className="text-white font-bold text-sm">Start</span>
+              </button>
+              
+              {/* Stop Button */}
+              <button
+                onClick={handleStop}
+                disabled={!isRunning}
+                className="w-16 h-16 rounded-full bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center border-4 border-red-800 shadow-lg transition-all"
+              >
+                <span className="text-white font-bold text-sm">STOP</span>
+              </button>
+            </div>
+            
+            {/* Auto/Manual Button */}
+            <button
+              onClick={() => setMode(mode === "auto" ? "manual" : "auto")}
+              className="w-32 h-20 bg-hmi-header border-4 border-hmi-border rounded-lg hover:bg-hmi-header/80 transition-all shadow-lg flex flex-col items-center justify-center gap-1"
+            >
+              <div className="text-yellow-400 text-2xl">⏻</div>
+              <div className="text-white font-bold text-xs">AUTO</div>
+              <div className="text-white font-bold text-xs">ON/OFF</div>
+            </button>
+          </div>
+          
           {/* Material Weight Indicators */}
           <div className="absolute bottom-4 left-4 flex gap-2">
             {/* Pasir */}
