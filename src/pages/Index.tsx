@@ -178,6 +178,39 @@ const Index = () => {
             </g>
 
           </svg>
+          
+          {/* Material Weight Indicators */}
+          <div className="absolute bottom-4 left-4 flex gap-2">
+            {/* Pasir */}
+            <div className="bg-hmi-header/90 backdrop-blur-sm border-2 border-hmi-border rounded px-3 py-1.5 min-w-[90px]">
+              <div className="text-[10px] text-muted-foreground font-semibold">PASIR</div>
+              <div className="text-sm font-bold text-white">{materialWeights.pasir} kg</div>
+            </div>
+            
+            {/* Batu */}
+            <div className="bg-hmi-header/90 backdrop-blur-sm border-2 border-hmi-border rounded px-3 py-1.5 min-w-[90px]">
+              <div className="text-[10px] text-muted-foreground font-semibold">BATU</div>
+              <div className="text-sm font-bold text-white">{materialWeights.batu} kg</div>
+            </div>
+            
+            {/* Semen 1 */}
+            <div className="bg-hmi-header/90 backdrop-blur-sm border-2 border-hmi-border rounded px-3 py-1.5 min-w-[90px]">
+              <div className="text-[10px] text-muted-foreground font-semibold">SEMEN 1</div>
+              <div className="text-sm font-bold text-white">{materialWeights.semen1} kg</div>
+            </div>
+            
+            {/* Semen 2 */}
+            <div className="bg-hmi-header/90 backdrop-blur-sm border-2 border-hmi-border rounded px-3 py-1.5 min-w-[90px]">
+              <div className="text-[10px] text-muted-foreground font-semibold">SEMEN 2</div>
+              <div className="text-sm font-bold text-white">{materialWeights.semen2} kg</div>
+            </div>
+            
+            {/* Air */}
+            <div className="bg-hmi-header/90 backdrop-blur-sm border-2 border-hmi-border rounded px-3 py-1.5 min-w-[90px]">
+              <div className="text-[10px] text-muted-foreground font-semibold">AIR</div>
+              <div className="text-sm font-bold text-white">{materialWeights.air} kg</div>
+            </div>
+          </div>
         </div>
       </main>
     </div>
