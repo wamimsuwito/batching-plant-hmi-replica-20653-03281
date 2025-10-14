@@ -32,10 +32,6 @@ const Index = () => {
 
   const handleStart = () => setIsRunning(true);
   const handleStop = () => setIsRunning(false);
-  const handleReset = () => {
-    setIsRunning(false);
-    setMode("manual");
-  };
 
   return (
     <div className="min-h-screen bg-hmi-background flex flex-col">
@@ -292,23 +288,16 @@ const Index = () => {
             <Button
               onClick={handleStart}
               disabled={isRunning}
-              className="h-14 bg-green-600 hover:bg-green-700 text-white font-bold text-base shadow-lg"
+              className="h-14 w-full bg-green-600 hover:bg-green-700 text-white font-bold text-base shadow-lg"
             >
               ▶ START
             </Button>
             <Button
               onClick={handleStop}
               disabled={!isRunning}
-              className="h-14 bg-red-600 hover:bg-red-700 text-white font-bold text-base shadow-lg"
+              className="h-14 w-full bg-red-600 hover:bg-red-700 text-white font-bold text-base shadow-lg"
             >
               ■ STOP
-            </Button>
-            <Button
-              onClick={handleReset}
-              variant="outline"
-              className="h-14 bg-muted hover:bg-muted/80 text-white font-bold text-base border-2 border-hmi-border shadow-lg"
-            >
-              ↻ RESET
             </Button>
           </div>
         </div>
