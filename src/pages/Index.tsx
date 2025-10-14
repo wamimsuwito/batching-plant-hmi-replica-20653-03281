@@ -266,16 +266,16 @@ const Index = () => {
                 capacity={silos[5].capacity}
               />
 
-              {/* Single Weigh Hopper below silos */}
-              <WeighHopper x={570} y={250} fillLevel={45} />
+              {/* Single Weigh Hopper below silos (BIGGER) */}
+              <WeighHopper x={550} y={250} fillLevel={45} />
 
               {/* Pipes from silos to single weigh hopper with elbows */}
-              <Pipe points="480,220 480,235 590,235 590,250" type="material" />
-              <Pipe points="530,220 530,240 590,240 590,250" type="material" />
+              <Pipe points="480,220 480,235 570,235 570,250" type="material" />
+              <Pipe points="530,220 530,240 580,240 580,250" type="material" />
               <Pipe points="580,220 580,250" type="material" />
-              <Pipe points="630,220 630,240 600,240 600,250" type="material" />
-              <Pipe points="680,220 680,235 600,235 600,250" type="material" />
-              <Pipe points="730,220 730,230 600,230 600,250" type="material" />
+              <Pipe points="630,220 630,240 610,240 610,250" type="material" />
+              <Pipe points="680,220 680,235 620,235 620,250" type="material" />
+              <Pipe points="730,220 730,230 620,230 620,250" type="material" />
             </g>
 
             {/* Additive Tanks Section - Right Side */}
@@ -309,7 +309,7 @@ const Index = () => {
               <Mixer x={455} y={350} isRunning={isRunning} />
 
               {/* Pipe to mixer from single weigh hopper */}
-              <Pipe points="600,294 600,340 530,340 530,360" type="material" />
+              <Pipe points="600,326 600,340 530,340 530,360" type="material" />
               
               {/* Pipe from additive intermediate tank */}
               <Pipe points="797,285 720,285 720,360 605,360" type="water" />
