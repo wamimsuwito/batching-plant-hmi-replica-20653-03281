@@ -203,8 +203,6 @@ const Index = () => {
                 height="35"
                 rx="4"
                 className={mode === "auto" ? "fill-equipment-conveyor" : "fill-muted"}
-                strokeWidth="2"
-                stroke="white"
                 style={{ cursor: "pointer" }}
               />
               <text x="965" y="133" className="fill-white text-xs font-semibold" textAnchor="middle">
@@ -218,8 +216,6 @@ const Index = () => {
                 height="35"
                 rx="4"
                 className={mode === "manual" ? "fill-primary" : "fill-muted"}
-                strokeWidth="2"
-                stroke="white"
                 style={{ cursor: "pointer" }}
               />
               <text x="1030" y="133" className="fill-white text-xs font-semibold" textAnchor="middle">
