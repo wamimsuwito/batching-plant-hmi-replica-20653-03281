@@ -16,14 +16,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
+
+export interface SiloData {
+  id: number;
+  currentVolume: number;
+  capacity: number;
+  lastFilled?: string;
+}
 
 interface BatchStartDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onStart: () => void;
+  silos: SiloData[];
+  onCementDeduction: (siloId: number, amount: number) => void;
 }
 
-export function BatchStartDialog({ open, onOpenChange, onStart }: BatchStartDialogProps) {
+export function BatchStartDialog({ open, onOpenChange, onStart, silos, onCementDeduction }: BatchStartDialogProps) {
   const [mutuBeton, setMutuBeton] = useState("");
   const [volume, setVolume] = useState("");
   const [slump, setSlump] = useState("");
@@ -31,7 +41,9 @@ export function BatchStartDialog({ open, onOpenChange, onStart }: BatchStartDial
   const [lokasi, setLokasi] = useState("");
   const [noKendaraan, setNoKendaraan] = useState("");
   const [sopir, setSopir] = useState("");
+  const [selectedSilo, setSelectedSilo] = useState<string>("");
   const [jmfOptions, setJmfOptions] = useState<string[]>([]);
+  const { toast } = useToast();
 
   // Load JMF data from localStorage
   useEffect(() => {
@@ -48,21 +60,62 @@ export function BatchStartDialog({ open, onOpenChange, onStart }: BatchStartDial
     }
   }, [open]);
 
-  const isFormValid = mutuBeton !== "" && volume !== "" && slump !== "";
+  const isFormValid = mutuBeton !== "" && volume !== "" && slump !== "" && selectedSilo !== "";
 
   const handleStart = () => {
-    if (isFormValid) {
-      onStart();
-      onOpenChange(false);
-      // Reset form
-      setMutuBeton("");
-      setVolume("");
-      setSlump("");
-      setPelanggan("");
-      setLokasi("");
-      setNoKendaraan("");
-      setSopir("");
+    if (!isFormValid) return;
+
+    // Get selected silo data
+    const siloId = parseInt(selectedSilo);
+    const selectedSiloData = silos.find(s => s.id === siloId);
+    
+    if (!selectedSiloData) {
+      toast({
+        title: "Error",
+        description: "Silo tidak ditemukan",
+        variant: "destructive",
+      });
+      return;
     }
+
+    // Calculate cement requirement (example: 350 kg/m³)
+    // In real system, this should come from JMF data
+    const cementPerCubicMeter = 350; // kg
+    const batchVolume = parseFloat(volume);
+    const requiredCement = cementPerCubicMeter * batchVolume;
+
+    // Check if silo has enough cement
+    if (selectedSiloData.currentVolume < requiredCement) {
+      toast({
+        title: "Volume Tidak Mencukupi",
+        description: `Volume semen di Silo ${siloId} tidak mencukupi. Tersedia: ${selectedSiloData.currentVolume.toLocaleString('id-ID')} kg, Dibutuhkan: ${requiredCement.toLocaleString('id-ID')} kg`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Deduct cement from selected silo
+    onCementDeduction(siloId, requiredCement);
+
+    // Show success message
+    toast({
+      title: "Batch Dimulai",
+      description: `Menggunakan ${requiredCement.toLocaleString('id-ID')} kg semen dari Silo ${siloId}`,
+    });
+
+    // Start the batch
+    onStart();
+    onOpenChange(false);
+    
+    // Reset form
+    setMutuBeton("");
+    setVolume("");
+    setSlump("");
+    setPelanggan("");
+    setLokasi("");
+    setNoKendaraan("");
+    setSopir("");
+    setSelectedSilo("");
   };
 
   return (
@@ -130,6 +183,39 @@ export function BatchStartDialog({ open, onOpenChange, onStart }: BatchStartDial
                 min="0"
                 step="1"
               />
+            </div>
+
+            {/* Pilih Silo Semen - Required */}
+            <div className="grid gap-2">
+              <Label htmlFor="silo">
+                Pilih Silo Semen <span className="text-destructive">*</span>
+              </Label>
+              <Select value={selectedSilo} onValueChange={setSelectedSilo}>
+                <SelectTrigger id="silo">
+                  <SelectValue placeholder="Pilih silo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {silos.map((silo) => {
+                    const percentage = (silo.currentVolume / silo.capacity) * 100;
+                    const isLow = percentage < 20;
+                    const isEmpty = silo.currentVolume === 0;
+                    
+                    return (
+                      <SelectItem 
+                        key={silo.id} 
+                        value={silo.id.toString()}
+                        disabled={isEmpty}
+                      >
+                        <span className={isEmpty ? "text-muted-foreground" : ""}>
+                          Silo {silo.id} - {silo.currentVolume.toLocaleString('id-ID')} kg
+                          {isEmpty && " (kosong)"}
+                          {!isEmpty && isLow && " ⚠️"}
+                        </span>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Pelanggan - Optional */}

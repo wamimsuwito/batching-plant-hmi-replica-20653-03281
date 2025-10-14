@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CementSilo } from "@/components/BatchPlant/CementSilo";
 import { AggregateHopper } from "@/components/BatchPlant/AggregateHopper";
@@ -11,8 +11,10 @@ import { StorageBin } from "@/components/BatchPlant/StorageBin";
 import { Button } from "@/components/ui/button";
 import { LoginDialog } from "@/components/auth/LoginDialog";
 import { BatchStartDialog } from "@/components/BatchPlant/BatchStartDialog";
+import { SiloFillDialog, SiloData } from "@/components/BatchPlant/SiloFillDialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogIn, Settings } from "lucide-react";
+import { LogIn, Settings, Package } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [isRunning, setIsRunning] = useState(false);
@@ -20,8 +22,81 @@ const Index = () => {
   const [binGates, setBinGates] = useState([false, false, false, false]);
   const [loginOpen, setLoginOpen] = useState(false);
   const [batchStartOpen, setBatchStartOpen] = useState(false);
+  const [siloFillOpen, setSiloFillOpen] = useState(false);
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  // Initialize 6 cement silos with 120,000 kg capacity each
+  const [silos, setSilos] = useState<SiloData[]>([
+    { id: 1, currentVolume: 0, capacity: 120000 },
+    { id: 2, currentVolume: 0, capacity: 120000 },
+    { id: 3, currentVolume: 0, capacity: 120000 },
+    { id: 4, currentVolume: 0, capacity: 120000 },
+    { id: 5, currentVolume: 0, capacity: 120000 },
+    { id: 6, currentVolume: 0, capacity: 120000 },
+  ]);
+
+  // Load silo data from localStorage on mount
+  useEffect(() => {
+    const savedSilos = localStorage.getItem('cement_silos');
+    if (savedSilos) {
+      try {
+        const parsedSilos = JSON.parse(savedSilos);
+        setSilos(parsedSilos);
+      } catch (error) {
+        console.error('Error loading silo data:', error);
+      }
+    }
+  }, []);
+
+  // Save silo data to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('cement_silos', JSON.stringify(silos));
+  }, [silos]);
+
+  // Handle silo filling
+  const handleSiloFill = (siloId: number, volume: number) => {
+    setSilos(prev => prev.map(silo => {
+      if (silo.id === siloId) {
+        return {
+          ...silo,
+          currentVolume: silo.currentVolume + volume,
+          lastFilled: new Date().toISOString(),
+        };
+      }
+      return silo;
+    }));
+
+    // Check for low level warning
+    const updatedSilo = silos.find(s => s.id === siloId);
+    if (updatedSilo) {
+      const newVolume = updatedSilo.currentVolume + volume;
+      const percentage = (newVolume / updatedSilo.capacity) * 100;
+      
+      if (percentage < 20 && percentage > 0) {
+        toast({
+          title: "Peringatan",
+          description: `Silo ${siloId} masih dalam level rendah (${percentage.toFixed(0)}%)`,
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  // Handle cement deduction from silo (called during production)
+  const handleCementDeduction = (siloId: number, amount: number) => {
+    setSilos(prev => prev.map(silo => {
+      if (silo.id === siloId) {
+        const newVolume = Math.max(0, silo.currentVolume - amount);
+        return {
+          ...silo,
+          currentVolume: newVolume,
+        };
+      }
+      return silo;
+    }));
+  };
 
   // Material weight states (in kg)
   const [materialWeights] = useState({
@@ -52,6 +127,15 @@ const Index = () => {
               <span className="text-sm">
                 {user.name}
               </span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setSiloFillOpen(true)}
+                className="gap-2"
+              >
+                <Package className="w-4 h-4" />
+                Isi Silo
+              </Button>
               {isAdmin() && (
                 <Button
                   size="sm"
@@ -89,6 +173,14 @@ const Index = () => {
         open={batchStartOpen} 
         onOpenChange={setBatchStartOpen}
         onStart={handleStart}
+        silos={silos}
+        onCementDeduction={handleCementDeduction}
+      />
+      <SiloFillDialog
+        open={siloFillOpen}
+        onOpenChange={setSiloFillOpen}
+        silos={silos}
+        onFill={handleSiloFill}
       />
 
       {/* Main HMI Panel */}
@@ -131,12 +223,48 @@ const Index = () => {
             {/* Cement Silos Section - Center */}
             <g id="cement-section">
               {/* 6 Cement Silos */}
-              <CementSilo x={460} y={50} fillLevel={70} label="SILO 1" />
-              <CementSilo x={510} y={50} fillLevel={65} label="SILO 2" />
-              <CementSilo x={560} y={50} fillLevel={75} label="SILO 3" />
-              <CementSilo x={610} y={50} fillLevel={60} label="SILO 4" />
-              <CementSilo x={660} y={50} fillLevel={68} label="SILO 5" />
-              <CementSilo x={710} y={50} fillLevel={72} label="SILO 6" />
+              <CementSilo 
+                x={460} 
+                y={50} 
+                label="SILO 1"
+                currentVolume={silos[0].currentVolume}
+                capacity={silos[0].capacity}
+              />
+              <CementSilo 
+                x={510} 
+                y={50} 
+                label="SILO 2"
+                currentVolume={silos[1].currentVolume}
+                capacity={silos[1].capacity}
+              />
+              <CementSilo 
+                x={560} 
+                y={50} 
+                label="SILO 3"
+                currentVolume={silos[2].currentVolume}
+                capacity={silos[2].capacity}
+              />
+              <CementSilo 
+                x={610} 
+                y={50} 
+                label="SILO 4"
+                currentVolume={silos[3].currentVolume}
+                capacity={silos[3].capacity}
+              />
+              <CementSilo 
+                x={660} 
+                y={50} 
+                label="SILO 5"
+                currentVolume={silos[4].currentVolume}
+                capacity={silos[4].capacity}
+              />
+              <CementSilo 
+                x={710} 
+                y={50} 
+                label="SILO 6"
+                currentVolume={silos[5].currentVolume}
+                capacity={silos[5].capacity}
+              />
 
               {/* Single Weigh Hopper below silos */}
               <WeighHopper x={570} y={250} fillLevel={45} />

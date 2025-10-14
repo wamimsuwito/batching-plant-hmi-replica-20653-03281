@@ -3,9 +3,32 @@ interface CementSiloProps {
   y: number;
   fillLevel?: number;
   label?: string;
+  currentVolume?: number;
+  capacity?: number;
 }
 
-export const CementSilo = ({ x, y, fillLevel = 60, label }: CementSiloProps) => {
+export const CementSilo = ({ 
+  x, 
+  y, 
+  fillLevel = 0, 
+  label,
+  currentVolume = 0,
+  capacity = 120000
+}: CementSiloProps) => {
+  // Calculate percentage for fill level (0-100)
+  const percentage = capacity > 0 ? (currentVolume / capacity) * 100 : 0;
+  const calculatedFillLevel = (percentage / 100) * 108; // 108 is the height of silo body
+  
+  // Determine fill color based on percentage
+  const getFillColor = () => {
+    if (percentage === 0) return "fill-gray-400";
+    if (percentage < 20) return "fill-red-500";
+    if (percentage < 50) return "fill-yellow-500";
+    return "fill-green-500";
+  };
+
+  const fillColor = getFillColor();
+
   return (
     <g transform={`translate(${x}, ${y})`}>
       {/* Silo body */}
@@ -17,13 +40,13 @@ export const CementSilo = ({ x, y, fillLevel = 60, label }: CementSiloProps) => 
         className="fill-equipment-silo stroke-hmi-border"
         strokeWidth="2"
       />
-      {/* Fill level */}
+      {/* Fill level with smooth transition */}
       <rect
         x="2"
-        y={128 - fillLevel}
+        y={128 - calculatedFillLevel}
         width="36"
-        height={fillLevel}
-        className="fill-equipment-siloFill"
+        height={calculatedFillLevel}
+        className={`${fillColor} transition-all duration-1000 ease-in-out`}
       />
       {/* Top flat (not cone) */}
       <rect
@@ -62,6 +85,31 @@ export const CementSilo = ({ x, y, fillLevel = 60, label }: CementSiloProps) => 
           {label}
         </text>
       )}
+      
+      {/* Volume display */}
+      <text
+        x="20"
+        y="188"
+        textAnchor="middle"
+        className="fill-hmi-text text-[9px]"
+      >
+        {currentVolume.toLocaleString('id-ID')} kg
+      </text>
+      
+      {/* Percentage display */}
+      <text
+        x="20"
+        y="197"
+        textAnchor="middle"
+        className={`text-[8px] font-semibold ${
+          percentage === 0 ? 'fill-gray-400' :
+          percentage < 20 ? 'fill-red-500' :
+          percentage < 50 ? 'fill-yellow-500' :
+          'fill-green-500'
+        }`}
+      >
+        {percentage.toFixed(0)}%
+      </text>
     </g>
   );
 };
