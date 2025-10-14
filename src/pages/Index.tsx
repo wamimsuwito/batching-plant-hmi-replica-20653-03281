@@ -54,7 +54,7 @@ const Index = () => {
               
               {/* Collecting hopper at conveyor 2 end (above mixer) */}
               <path
-                d="M 405 370 L 435 370 L 428 390 L 412 390 Z"
+                d="M 405 410 L 435 410 L 428 430 L 412 430 Z"
                 className="fill-equipment-aggregate stroke-hmi-border"
                 strokeWidth="2"
               />
@@ -116,7 +116,7 @@ const Index = () => {
               <Pipe points="600,294 600,340 530,340 530,360" type="material" />
               
               {/* Pipe from aggregate collecting hopper directly to mixer */}
-              <Pipe points="420,390 420,395 455,395" type="material" />
+              <Pipe points="420,430 420,435 455,435" type="material" />
               
               {/* Pipe from additive intermediate tank */}
               <Pipe points="797,285 720,285 720,360 605,360" type="water" />
