@@ -195,50 +195,50 @@ const Index = () => {
                 CONTROL PANEL
               </text>
               
-              {/* Mode buttons */}
+              {/* Mode buttons - Row 1 */}
               <rect
                 x="935"
-                y="110"
+                y="400"
                 width="60"
                 height="35"
                 rx="4"
                 className={mode === "auto" ? "fill-equipment-conveyor" : "fill-muted"}
                 style={{ cursor: "pointer" }}
               />
-              <text x="965" y="133" className="fill-white text-xs font-semibold" textAnchor="middle">
+              <text x="965" y="423" className="fill-white text-xs font-semibold" textAnchor="middle">
                 AUTO
               </text>
               
               <rect
                 x="1000"
-                y="110"
+                y="400"
                 width="60"
                 height="35"
                 rx="4"
                 className={mode === "manual" ? "fill-primary" : "fill-muted"}
                 style={{ cursor: "pointer" }}
               />
-              <text x="1030" y="133" className="fill-white text-xs font-semibold" textAnchor="middle">
+              <text x="1030" y="423" className="fill-white text-xs font-semibold" textAnchor="middle">
                 MANUAL
               </text>
               
-              {/* Status display */}
+              {/* Status display - Bottom */}
               <rect
                 x="935"
-                y="440"
+                y="485"
                 width="125"
-                height="80"
+                height="45"
                 rx="4"
                 className="fill-muted stroke-hmi-border"
                 strokeWidth="2"
               />
-              <text x="997" y="465" className="fill-white text-xs font-semibold" textAnchor="middle">
+              <text x="997" y="503" className="fill-white text-xs font-semibold" textAnchor="middle">
                 STATUS
               </text>
               <text 
                 x="997" 
-                y="495" 
-                className={isRunning ? "fill-green-500 text-lg font-bold" : "fill-red-500 text-lg font-bold"} 
+                y="522" 
+                className={isRunning ? "fill-green-500 text-sm font-bold" : "fill-red-500 text-sm font-bold"} 
                 textAnchor="middle"
               >
                 {isRunning ? "RUNNING" : "STOPPED"}
@@ -279,21 +279,21 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Control buttons positioned over SVG */}
-          <div className="absolute top-[220px] right-[40px] flex flex-col gap-3 w-[130px]">
+          {/* Control buttons positioned over SVG - Row 2 */}
+          <div className="absolute bottom-[80px] right-[40px] flex gap-3 w-[130px]">
             <Button
               onClick={handleStart}
               disabled={isRunning}
-              className="h-14 w-full bg-green-600 hover:bg-green-700 text-white font-bold text-base shadow-lg"
+              className="h-10 flex-1 bg-green-600 hover:bg-green-700 text-white font-bold text-xs shadow-lg"
             >
-              ▶ START
+              START
             </Button>
             <Button
               onClick={handleStop}
               disabled={!isRunning}
-              className="h-14 w-full bg-red-600 hover:bg-red-700 text-white font-bold text-base shadow-lg"
+              className="h-10 flex-1 bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-lg"
             >
-              ■ STOP
+              STOP
             </Button>
           </div>
         </div>
