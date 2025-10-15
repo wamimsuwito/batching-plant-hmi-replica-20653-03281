@@ -46,10 +46,12 @@ export interface ComponentStates {
   beltAtas: boolean;
   beltBawah: boolean;
   siloValves: boolean[];
-  sandBinValve: boolean;
-  stoneBinValve: boolean;
-  waterValve: boolean;
-  cementValve: boolean;
+  sandBinValve: boolean; // BIN gate for PASIR (fills hopper during weighing)
+  stoneBinValve: boolean; // BIN gate for BATU (fills hopper during weighing)
+  hopperValvePasir: boolean; // HOPPER discharge valve (A1) - only during discharge
+  hopperValveBatu: boolean; // HOPPER discharge valve (A2) - only during discharge
+  waterValve: boolean; // Discharge valve for AIR to mixer (OFF during weighing)
+  cementValve: boolean; // Discharge valve for SEMEN from weigh hopper
   additiveValve: boolean;
   mixerDoor: boolean;
   vibrator: boolean;
@@ -97,6 +99,8 @@ const initialComponentStates: ComponentStates = {
   siloValves: [false, false, false, false, false, false],
   sandBinValve: false,
   stoneBinValve: false,
+  hopperValvePasir: false,
+  hopperValveBatu: false,
   waterValve: false,
   cementValve: false,
   additiveValve: false,
@@ -343,7 +347,7 @@ export const useProductionSequence = (
     } else if (material === 'semen') {
       // Semen uses selected silo valve (already opened)
     } else if (material === 'air') {
-      setComponentStates(prev => ({ ...prev, waterValve: true }));
+      // Water filling valve ON (hidden from HMI; discharge valve remains OFF)
       controlRelay('tuang_air', true);
     }
 
@@ -432,7 +436,7 @@ export const useProductionSequence = (
             setComponentStates(prev => ({ ...prev, stoneBinValve: shouldBeOn }));
             controlRelay('pintu_batu_1', shouldBeOn);
           } else if (material === 'air') {
-            setComponentStates(prev => ({ ...prev, waterValve: shouldBeOn }));
+            // Water filling valve toggled (hidden from HMI)
             controlRelay('tuang_air', shouldBeOn);
           }
         }
@@ -452,7 +456,6 @@ export const useProductionSequence = (
           setComponentStates(prev => ({ ...prev, stoneBinValve: false }));
         } else if (material === 'air') {
           controlRelay('tuang_air', false);
-          setComponentStates(prev => ({ ...prev, waterValve: false }));
         }
         
         weighingStatus[material] = true;
@@ -527,6 +530,8 @@ export const useProductionSequence = (
         ...prev,
         cementValve: false,
         waterValve: false,
+        hopperValvePasir: false,
+        hopperValveBatu: false,
         vibrator: false,
       }));
       controlRelay('vibrator', false);
@@ -539,7 +544,12 @@ export const useProductionSequence = (
   const dischargeMaterial = (material: string, targetWeight: number) => {
     // Turn on vibrator for aggregate discharge
     if (material === 'pasir' || material === 'batu') {
-      setComponentStates(prev => ({ ...prev, vibrator: true }));
+      setComponentStates(prev => ({ 
+        ...prev, 
+        vibrator: true,
+        hopperValvePasir: material === 'pasir' ? true : prev.hopperValvePasir,
+        hopperValveBatu: material === 'batu' ? true : prev.hopperValveBatu,
+      }));
       controlRelay('vibrator', true);
       controlRelay('dump_material', true); // Valve hopper
     } else if (material === 'semen') {
@@ -555,6 +565,11 @@ export const useProductionSequence = (
     const closeTimer = setTimeout(() => {
       if (material === 'pasir' || material === 'batu') {
         controlRelay('dump_material', false);
+        setComponentStates(prev => ({ 
+          ...prev,
+          hopperValvePasir: material === 'pasir' ? false : prev.hopperValvePasir,
+          hopperValveBatu: material === 'batu' ? false : prev.hopperValveBatu,
+        }));
       } else if (material === 'semen') {
         setComponentStates(prev => ({ ...prev, cementValve: false }));
       } else if (material === 'air') {

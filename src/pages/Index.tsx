@@ -254,7 +254,7 @@ const Index = () => {
                     ? Math.min(100, (productionState.currentWeights.pasir / productionState.targetWeights.pasir * 100))
                     : 0
                 } 
-                isActive={componentStates.sandBinValve} 
+                isActive={componentStates.hopperValvePasir} 
               />
               <AggregateHopper 
                 x={120} 
@@ -264,7 +264,7 @@ const Index = () => {
                     ? Math.min(100, (productionState.currentWeights.batu / productionState.targetWeights.batu * 100))
                     : 0
                 } 
-                isActive={componentStates.stoneBinValve} 
+                isActive={componentStates.hopperValveBatu} 
               />
               <AggregateHopper x={200} y={270} fillLevel={0} isActive={false} />
               <AggregateHopper x={280} y={270} fillLevel={0} isActive={false} />
