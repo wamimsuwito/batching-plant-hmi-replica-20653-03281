@@ -46,14 +46,14 @@ export const ConveyorBelt = ({ x, y, width = 250, angle = 35, isRunning = true }
         cx="0" 
         cy="0" 
         r="15" 
-        className={isRunning ? "fill-green-500 stroke-hmi-border animate-rotate" : "fill-gray-500 stroke-hmi-border"} 
+        className={isRunning ? "fill-green-500 stroke-hmi-border animate-pulse" : "fill-gray-500 stroke-hmi-border"} 
         strokeWidth="2" 
       />
       <circle 
         cx={endX} 
         cy={endY} 
         r="15" 
-        className={isRunning ? "fill-green-500 stroke-hmi-border animate-rotate" : "fill-gray-500 stroke-hmi-border"} 
+        className={isRunning ? "fill-green-500 stroke-hmi-border animate-pulse" : "fill-gray-500 stroke-hmi-border"} 
         strokeWidth="2" 
       />
       
