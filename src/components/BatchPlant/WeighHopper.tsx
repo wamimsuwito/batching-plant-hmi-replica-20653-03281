@@ -5,6 +5,7 @@ interface WeighHopperProps {
   currentWeight?: number;
   targetWeight?: number;
   isWeighing?: boolean;
+  isDischargingActive?: boolean;
 }
 
 export const WeighHopper = ({ 
@@ -13,7 +14,8 @@ export const WeighHopper = ({
   fillLevel = 0,
   currentWeight = 0,
   targetWeight = 0,
-  isWeighing = false
+  isWeighing = false,
+  isDischargingActive = false
 }: WeighHopperProps) => {
   const displayFillLevel = targetWeight > 0 ? (currentWeight / targetWeight) * 50 : 0;
   return (
@@ -66,8 +68,30 @@ export const WeighHopper = ({
         strokeWidth="2"
       />
       
-      {/* Valve (BIGGER) */}
-      <circle cx="50" cy="76" r="6" className="fill-valve-active stroke-hmi-border" strokeWidth="1" />
+      {/* Discharge Valve with indicator */}
+      <circle 
+        cx="50" 
+        cy="76" 
+        r="6" 
+        className={isDischargingActive ? "fill-green-500 animate-pulse" : "fill-red-500"} 
+        stroke="white" 
+        strokeWidth="1" 
+      />
+      
+      {/* LED Indicator */}
+      {isDischargingActive && (
+        <>
+          <circle cx="60" cy="76" r="2" className="fill-green-400 animate-pulse" />
+          <text
+            x="50"
+            y="90"
+            textAnchor="middle"
+            className="fill-green-400 text-[8px] font-semibold animate-pulse"
+          >
+            DISCHARGING
+          </text>
+        </>
+      )}
     </g>
   );
 };

@@ -99,10 +99,15 @@ export const useProductionSequence = (
   const timersRef = useRef<NodeJS.Timeout[]>([]);
 
   const controlRelay = (relayName: string, state: boolean) => {
+    console.log(`🔌 Relay Control: ${relayName} = ${state ? 'ON' : 'OFF'}`);
+    
     if (raspberryPi?.isConnected) {
       const relay = relaySettings.find(r => r.name.toLowerCase().replace(/ /g, '_') === relayName.toLowerCase());
       const gpioPin = relay ? parseInt(relay.gpioPin) : undefined;
+      console.log(`📍 GPIO Pin: ${gpioPin}`);
       raspberryPi.sendRelayCommand(relayName, state, gpioPin);
+    } else {
+      console.log('⚠️ Raspberry Pi not connected - running in simulation mode');
     }
   };
 

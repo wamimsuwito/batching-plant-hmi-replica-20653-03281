@@ -20,7 +20,7 @@ export const Mixer = ({ x, y, isRunning = true, doorOpen = false, mixingTimeRema
         strokeWidth="3"
       />
       
-      {/* Motor housing left */}
+      {/* Motor housing left with indicator */}
       <rect
         x="-25"
         y="25"
@@ -29,7 +29,29 @@ export const Mixer = ({ x, y, isRunning = true, doorOpen = false, mixingTimeRema
         className="fill-equipment-conveyor stroke-hmi-border"
         strokeWidth="2"
       />
-      <circle cx="-11" cy="45" r="8" className="fill-muted stroke-hmi-border" strokeWidth="2" />
+      <circle 
+        cx="-11" 
+        cy="45" 
+        r="8" 
+        className={isRunning ? "fill-green-500 animate-pulse" : "fill-muted"} 
+        stroke={isRunning ? "white" : "hsl(var(--hmi-border))"} 
+        strokeWidth="2" 
+      />
+      
+      {/* Motor LED indicator */}
+      {isRunning && (
+        <>
+          <circle cx="-11" cy="60" r="3" className="fill-green-400 animate-pulse" />
+          <text 
+            x="-11" 
+            y="70" 
+            className="fill-white text-[8px] font-semibold" 
+            textAnchor="middle"
+          >
+            MOTOR
+          </text>
+        </>
+      )}
       
       {/* Twin paddle shafts */}
       {/* Top shaft with paddles */}
@@ -52,7 +74,7 @@ export const Mixer = ({ x, y, isRunning = true, doorOpen = false, mixingTimeRema
         <rect x="125" y="45" width="8" height="30" rx="1" className="fill-equipment-conveyor" transform="rotate(-25 129 60)" />
       </g>
 
-      {/* Discharge gate at bottom */}
+      {/* Discharge gate at bottom with enhanced indicator */}
       <path
         d="M 60 80 L 75 95 L 90 80"
         className="fill-equipment-aggregate stroke-hmi-border"
@@ -63,10 +85,36 @@ export const Mixer = ({ x, y, isRunning = true, doorOpen = false, mixingTimeRema
         y="88" 
         width="14" 
         height="8" 
-        className={doorOpen ? "fill-green-500" : "fill-valve-active"} 
+        className={doorOpen ? "fill-green-500 animate-pulse" : "fill-red-500"} 
         stroke="white" 
-        strokeWidth="1" 
+        strokeWidth="2" 
       />
+      
+      {/* Door status text and LED */}
+      {doorOpen && (
+        <>
+          <circle cx="85" cy="92" r="2" className="fill-green-400 animate-pulse" />
+          <text
+            x="75"
+            y="107"
+            className="fill-green-400 text-[8px] font-semibold animate-pulse"
+            textAnchor="middle"
+          >
+            DOOR OPEN
+          </text>
+        </>
+      )}
+      
+      {!doorOpen && (
+        <text
+          x="75"
+          y="107"
+          className="fill-red-400 text-[8px] font-semibold"
+          textAnchor="middle"
+        >
+          DOOR CLOSED
+        </text>
+      )}
       
       {/* Status indicators */}
       {isRunning && (

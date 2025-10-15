@@ -243,11 +243,11 @@ const Index = () => {
               <line x1="220" y1="252" x2="225" y2="270" className="stroke-hmi-border" strokeWidth="2" />
               <line x1="300" y1="252" x2="305" y2="270" className="stroke-hmi-border" strokeWidth="2" />
               
-              {/* 4 Aggregate Hoppers */}
-              <AggregateHopper x={40} y={270} fillLevel={75} />
-              <AggregateHopper x={120} y={270} fillLevel={80} />
-              <AggregateHopper x={200} y={270} fillLevel={65} />
-              <AggregateHopper x={280} y={270} fillLevel={70} />
+              {/* 4 Aggregate Hoppers with valve indicators */}
+              <AggregateHopper x={40} y={270} fillLevel={75} isActive={componentStates.sandBinValve} />
+              <AggregateHopper x={120} y={270} fillLevel={80} isActive={componentStates.stoneBinValve} />
+              <AggregateHopper x={200} y={270} fillLevel={65} isActive={false} />
+              <AggregateHopper x={280} y={270} fillLevel={70} isActive={false} />
 
               {/* Conveyor Belt 1 - Below hoppers (horizontal) */}
               <ConveyorBelt x={40} y={370} width={290} angle={0} isRunning={componentStates.beltBawah} />
@@ -315,6 +315,7 @@ const Index = () => {
                 currentWeight={productionState.currentWeights.semen}
                 targetWeight={productionState.targetWeights.semen}
                 isWeighing={productionState.currentStep === 'weighing'}
+                isDischargingActive={componentStates.cementValve}
               />
 
               {/* Pipes from silos to single weigh hopper with elbows */}
@@ -328,9 +329,9 @@ const Index = () => {
 
             {/* Additive Tanks Section - Right Side */}
             <g id="additive-section">
-              {/* 2 Additive Tanks */}
-              <AdditiveTank x={780} y={80} fillLevel={85} label="AIR" />
-              <AdditiveTank x={840} y={80} fillLevel={75} label="ADDITIVE" />
+              {/* 2 Additive Tanks with valve indicators */}
+              <AdditiveTank x={780} y={80} fillLevel={85} label="AIR" isValveActive={componentStates.waterValve} />
+              <AdditiveTank x={840} y={80} fillLevel={75} label="ADDITIVE" isValveActive={componentStates.additiveValve} />
 
               {/* Intermediate tank */}
               <g transform="translate(780, 230)">
@@ -454,6 +455,25 @@ const Index = () => {
                 <div className="text-sm font-bold text-white uppercase">{productionState.currentStep}</div>
               </div>
             )}
+          </div>
+          
+          {/* Legend Panel - Bottom Right */}
+          <div className="absolute bottom-4 left-[460px] bg-card/90 backdrop-blur-sm border-2 border-hmi-border rounded p-3 shadow-lg">
+            <h3 className="text-xs font-bold mb-2 text-foreground">Component Status Legend</h3>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-[10px] font-semibold text-foreground">ACTIVE / ON</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                <span className="text-[10px] font-semibold text-foreground">INACTIVE / OFF</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
+                <span className="text-[10px] font-semibold text-foreground">WARNING</span>
+              </div>
+            </div>
           </div>
         </div>
       </main>

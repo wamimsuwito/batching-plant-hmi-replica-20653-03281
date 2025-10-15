@@ -2,9 +2,10 @@ interface AggregateHopperProps {
   x: number;
   y: number;
   fillLevel?: number;
+  isActive?: boolean;
 }
 
-export const AggregateHopper = ({ x, y, fillLevel = 70 }: AggregateHopperProps) => {
+export const AggregateHopper = ({ x, y, fillLevel = 70, isActive = false }: AggregateHopperProps) => {
   return (
     <g transform={`translate(${x}, ${y})`}>
       {/* Hopper body */}
@@ -24,8 +25,30 @@ export const AggregateHopper = ({ x, y, fillLevel = 70 }: AggregateHopperProps) 
         className="fill-equipment-silo stroke-hmi-border"
         strokeWidth="2"
       />
-      {/* Valve */}
-      <circle cx="25" cy="80" r="5" className="fill-valve-active stroke-hmi-border" strokeWidth="1" />
+      {/* Valve with status indicator */}
+      <circle 
+        cx="25" 
+        cy="80" 
+        r="5" 
+        className={isActive ? "fill-green-500 animate-pulse" : "fill-red-500"} 
+        stroke="white" 
+        strokeWidth="1" 
+      />
+      
+      {/* LED Indicator */}
+      {isActive && (
+        <circle cx="33" cy="80" r="2" className="fill-green-400 animate-pulse" />
+      )}
+      
+      {/* Status Text */}
+      <text
+        x="25"
+        y="92"
+        textAnchor="middle"
+        className={`text-[8px] font-semibold ${isActive ? 'fill-green-400' : 'fill-red-400'}`}
+      >
+        {isActive ? 'OPEN' : 'CLOSED'}
+      </text>
     </g>
   );
 };

@@ -3,9 +3,10 @@ interface AdditiveTankProps {
   y: number;
   fillLevel?: number;
   label?: string;
+  isValveActive?: boolean;
 }
 
-export const AdditiveTank = ({ x, y, fillLevel = 80, label }: AdditiveTankProps) => {
+export const AdditiveTank = ({ x, y, fillLevel = 80, label, isValveActive = false }: AdditiveTankProps) => {
   return (
     <g transform={`translate(${x}, ${y})`}>
       {/* Tank body */}
@@ -48,7 +49,7 @@ export const AdditiveTank = ({ x, y, fillLevel = 80, label }: AdditiveTankProps)
       {/* Support legs */}
       <line x1="5" y1="89" x2="5" y2="110" className="stroke-hmi-border" strokeWidth="2" />
       <line x1="30" y1="89" x2="30" y2="110" className="stroke-hmi-border" strokeWidth="2" />
-      {/* Pump/valve at bottom */}
+      {/* Pump/valve at bottom with indicator */}
       <rect
         x="10"
         y="95"
@@ -57,17 +58,50 @@ export const AdditiveTank = ({ x, y, fillLevel = 80, label }: AdditiveTankProps)
         className="fill-equipment-tank stroke-hmi-border"
         strokeWidth="1"
       />
-      <circle cx="17.5" cy="100" r="3" className="fill-valve-active stroke-hmi-border" strokeWidth="1" />
-      {/* Label */}
+      <circle 
+        cx="17.5" 
+        cy="100" 
+        r="3" 
+        className={isValveActive ? "fill-green-500 animate-pulse" : "fill-red-500"} 
+        stroke="white" 
+        strokeWidth="1" 
+      />
+      
+      {/* Flow indicator when active */}
+      {isValveActive && (
+        <>
+          <line 
+            x1="17.5" 
+            y1="105" 
+            x2="17.5" 
+            y2="115" 
+            className="stroke-blue-400 animate-pulse" 
+            strokeWidth="3" 
+            strokeDasharray="5,5"
+          />
+          <circle cx="25" cy="100" r="2" className="fill-green-400 animate-pulse" />
+        </>
+      )}
+      {/* Label and Status */}
       {label && (
-        <text
-          x="17.5"
-          y="125"
-          textAnchor="middle"
-          className="fill-hmi-text text-xs font-semibold"
-        >
-          {label}
-        </text>
+        <>
+          <text
+            x="17.5"
+            y="125"
+            textAnchor="middle"
+            className="fill-hmi-text text-xs font-semibold"
+          >
+            {label}
+          </text>
+          <text
+            x="17.5"
+            y="135"
+            textAnchor="middle"
+            className={`text-[8px] font-semibold ${isValveActive ? 'fill-green-400' : 'fill-red-400'}`}
+          >
+            {isValveActive ? 'ACTIVE' : 'IDLE'}
+          </text>
+        </>
       )}
     </g>
   );
