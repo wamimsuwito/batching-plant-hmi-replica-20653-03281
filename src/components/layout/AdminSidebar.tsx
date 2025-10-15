@@ -7,7 +7,8 @@ import {
   Database, 
   Printer,
   LogOut,
-  LayoutDashboard
+  LayoutDashboard,
+  ListOrdered
 } from 'lucide-react';
 import {
   Sidebar,
@@ -27,6 +28,7 @@ import { useAuth } from '@/contexts/AuthContext';
 const menuItems = [
   { title: 'Dashboard', url: '/admin', icon: LayoutDashboard, end: true },
   { title: 'Job Mix Formula', url: '/admin/job-mix-formula', icon: FlaskConical },
+  { title: 'Urutan Mixing', url: '/admin/mixing-sequence', icon: ListOrdered },
   { title: 'Pengaturan Relay & Pintu Mixer', url: '/admin/relay-settings', icon: Settings },
   { title: 'Manajemen User', url: '/admin/user-management', icon: Users },
   { title: 'Joging Material', url: '/admin/material-jogging', icon: PackageSearch },

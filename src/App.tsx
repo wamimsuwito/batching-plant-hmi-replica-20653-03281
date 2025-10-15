@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/admin/Dashboard";
 import JobMixFormula from "./pages/admin/JobMixFormula";
+import MixingSequence from "./pages/admin/MixingSequence";
 import RelaySettings from "./pages/admin/RelaySettings";
 import UserManagement from "./pages/admin/UserManagement";
 import MaterialJogging from "./pages/admin/MaterialJogging";
@@ -36,6 +37,7 @@ const App = () => (
             }>
               <Route index element={<Dashboard />} />
               <Route path="job-mix-formula" element={<JobMixFormula />} />
+              <Route path="mixing-sequence" element={<MixingSequence />} />
               <Route path="relay-settings" element={<RelaySettings />} />
               <Route path="user-management" element={<UserManagement />} />
               <Route path="material-jogging" element={<MaterialJogging />} />
