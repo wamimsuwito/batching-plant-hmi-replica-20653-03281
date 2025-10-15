@@ -4,9 +4,23 @@ interface AdditiveTankProps {
   fillLevel?: number;
   label?: string;
   isValveActive?: boolean;
+  currentVolume?: number;
+  targetVolume?: number;
 }
 
-export const AdditiveTank = ({ x, y, fillLevel = 80, label, isValveActive = false }: AdditiveTankProps) => {
+export const AdditiveTank = ({ 
+  x, 
+  y, 
+  fillLevel = 80, 
+  label, 
+  isValveActive = false,
+  currentVolume = 0,
+  targetVolume = 0
+}: AdditiveTankProps) => {
+  // Dynamic fill level calculation
+  const displayFillLevel = targetVolume > 0
+    ? Math.max(0, 100 - (currentVolume / targetVolume * 100))
+    : fillLevel;
   return (
     <g transform={`translate(${x}, ${y})`}>
       {/* Tank body */}
@@ -22,9 +36,9 @@ export const AdditiveTank = ({ x, y, fillLevel = 80, label, isValveActive = fals
       {/* Fill level */}
       <rect
         x="2"
-        y={83 - fillLevel * 0.7}
+        y={83 - displayFillLevel * 0.7}
         width="31"
-        height={fillLevel * 0.7}
+        height={displayFillLevel * 0.7}
         rx="4"
         className="fill-equipment-tank"
       />

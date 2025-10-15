@@ -243,11 +243,29 @@ const Index = () => {
               <line x1="220" y1="252" x2="225" y2="270" className="stroke-hmi-border" strokeWidth="2" />
               <line x1="300" y1="252" x2="305" y2="270" className="stroke-hmi-border" strokeWidth="2" />
               
-              {/* 4 Aggregate Hoppers with valve indicators */}
-              <AggregateHopper x={40} y={270} fillLevel={75} isActive={componentStates.sandBinValve} />
-              <AggregateHopper x={120} y={270} fillLevel={80} isActive={componentStates.stoneBinValve} />
-              <AggregateHopper x={200} y={270} fillLevel={65} isActive={false} />
-              <AggregateHopper x={280} y={270} fillLevel={70} isActive={false} />
+              {/* 4 Aggregate Hoppers with valve indicators and dynamic fill levels */}
+              <AggregateHopper 
+                x={40} 
+                y={270} 
+                fillLevel={
+                  productionState.targetWeights.pasir > 0
+                    ? Math.max(0, 100 - (productionState.currentWeights.pasir / productionState.targetWeights.pasir * 100))
+                    : 100
+                } 
+                isActive={componentStates.sandBinValve} 
+              />
+              <AggregateHopper 
+                x={120} 
+                y={270} 
+                fillLevel={
+                  productionState.targetWeights.batu > 0
+                    ? Math.max(0, 100 - (productionState.currentWeights.batu / productionState.targetWeights.batu * 100))
+                    : 100
+                } 
+                isActive={componentStates.stoneBinValve} 
+              />
+              <AggregateHopper x={200} y={270} fillLevel={100} isActive={false} />
+              <AggregateHopper x={280} y={270} fillLevel={100} isActive={false} />
 
               {/* Conveyor Belt 1 - Below hoppers (horizontal) */}
               <ConveyorBelt x={40} y={370} width={290} angle={0} isRunning={componentStates.beltBawah} />
@@ -329,9 +347,25 @@ const Index = () => {
 
             {/* Additive Tanks Section - Right Side */}
             <g id="additive-section">
-              {/* 2 Additive Tanks with valve indicators */}
-              <AdditiveTank x={780} y={80} fillLevel={85} label="AIR" isValveActive={componentStates.waterValve} />
-              <AdditiveTank x={840} y={80} fillLevel={75} label="ADDITIVE" isValveActive={componentStates.additiveValve} />
+              {/* 2 Additive Tanks with valve indicators and dynamic fill levels */}
+              <AdditiveTank 
+                x={780} 
+                y={80} 
+                fillLevel={85} 
+                label="AIR" 
+                isValveActive={componentStates.waterValve}
+                currentVolume={productionState.currentWeights.air}
+                targetVolume={productionState.targetWeights.air}
+              />
+              <AdditiveTank 
+                x={840} 
+                y={80} 
+                fillLevel={75} 
+                label="ADDITIVE" 
+                isValveActive={componentStates.additiveValve}
+                currentVolume={productionState.currentWeights.additive}
+                targetVolume={productionState.targetWeights.additive}
+              />
 
               {/* Intermediate tank */}
               <g transform="translate(780, 230)">
@@ -410,42 +444,66 @@ const Index = () => {
           <div className="absolute bottom-4 left-4 flex gap-2">
             {/* Pasir */}
             <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] ${
-              raspberryPi.isConnected ? 'bg-green-900/40 border-green-500/50' : 'bg-hmi-header/90 border-hmi-border'
+              productionState.targetWeights.pasir > 0 
+                ? 'bg-green-900/40 border-green-500/50 animate-pulse' 
+                : 'bg-gray-800/40 border-gray-600'
             }`}>
               <div className="text-[10px] text-muted-foreground font-semibold">PASIR</div>
-              <div className={`text-sm font-bold ${raspberryPi.isConnected ? 'text-green-300' : 'text-white'}`}>
-                {productionState.currentWeights.pasir.toFixed(0)} / {productionState.targetWeights.pasir.toFixed(0)} kg
-              </div>
+              {productionState.targetWeights.pasir > 0 ? (
+                <div className="text-sm font-bold text-green-300">
+                  {productionState.currentWeights.pasir.toFixed(0)} / {productionState.targetWeights.pasir.toFixed(0)} kg
+                </div>
+              ) : (
+                <div className="text-sm font-bold text-gray-400">0</div>
+              )}
             </div>
             
             {/* Batu */}
             <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] ${
-              raspberryPi.isConnected ? 'bg-green-900/40 border-green-500/50' : 'bg-hmi-header/90 border-hmi-border'
+              productionState.targetWeights.batu > 0 
+                ? 'bg-green-900/40 border-green-500/50 animate-pulse' 
+                : 'bg-gray-800/40 border-gray-600'
             }`}>
               <div className="text-[10px] text-muted-foreground font-semibold">BATU</div>
-              <div className={`text-sm font-bold ${raspberryPi.isConnected ? 'text-green-300' : 'text-white'}`}>
-                {productionState.currentWeights.batu.toFixed(0)} / {productionState.targetWeights.batu.toFixed(0)} kg
-              </div>
+              {productionState.targetWeights.batu > 0 ? (
+                <div className="text-sm font-bold text-green-300">
+                  {productionState.currentWeights.batu.toFixed(0)} / {productionState.targetWeights.batu.toFixed(0)} kg
+                </div>
+              ) : (
+                <div className="text-sm font-bold text-gray-400">0</div>
+              )}
             </div>
             
             {/* Semen */}
             <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] ${
-              raspberryPi.isConnected ? 'bg-green-900/40 border-green-500/50' : 'bg-hmi-header/90 border-hmi-border'
+              productionState.targetWeights.semen > 0 
+                ? 'bg-green-900/40 border-green-500/50 animate-pulse' 
+                : 'bg-gray-800/40 border-gray-600'
             }`}>
               <div className="text-[10px] text-muted-foreground font-semibold">SEMEN</div>
-              <div className={`text-sm font-bold ${raspberryPi.isConnected ? 'text-green-300' : 'text-white'}`}>
-                {productionState.currentWeights.semen.toFixed(0)} / {productionState.targetWeights.semen.toFixed(0)} kg
-              </div>
+              {productionState.targetWeights.semen > 0 ? (
+                <div className="text-sm font-bold text-green-300">
+                  {productionState.currentWeights.semen.toFixed(0)} / {productionState.targetWeights.semen.toFixed(0)} kg
+                </div>
+              ) : (
+                <div className="text-sm font-bold text-gray-400">0</div>
+              )}
             </div>
             
             {/* Air */}
             <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] ${
-              raspberryPi.isConnected ? 'bg-green-900/40 border-green-500/50' : 'bg-hmi-header/90 border-hmi-border'
+              productionState.targetWeights.air > 0 
+                ? 'bg-green-900/40 border-green-500/50 animate-pulse' 
+                : 'bg-gray-800/40 border-gray-600'
             }`}>
               <div className="text-[10px] text-muted-foreground font-semibold">AIR</div>
-              <div className={`text-sm font-bold ${raspberryPi.isConnected ? 'text-green-300' : 'text-white'}`}>
-                {productionState.currentWeights.air.toFixed(0)} / {productionState.targetWeights.air.toFixed(0)} kg
-              </div>
+              {productionState.targetWeights.air > 0 ? (
+                <div className="text-sm font-bold text-green-300">
+                  {productionState.currentWeights.air.toFixed(0)} / {productionState.targetWeights.air.toFixed(0)} kg
+                </div>
+              ) : (
+                <div className="text-sm font-bold text-gray-400">0</div>
+              )}
             </div>
 
             {/* Production Status */}
