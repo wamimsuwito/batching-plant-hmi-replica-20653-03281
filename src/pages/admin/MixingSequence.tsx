@@ -13,6 +13,7 @@ interface MixingData {
 interface MixingSequence {
   pasir: MixingData;
   batu: MixingData;
+  semen: MixingData;
   air: MixingData;
 }
 
@@ -21,6 +22,7 @@ export default function MixingSequence() {
   const [sequence, setSequence] = useState<MixingSequence>({
     pasir: { mixing: 0, timer: 0 },
     batu: { mixing: 0, timer: 0 },
+    semen: { mixing: 0, timer: 0 },
     air: { mixing: 0, timer: 0 },
   });
 
@@ -95,6 +97,25 @@ export default function MixingSequence() {
                 type="number"
                 value={sequence.batu.timer}
                 onChange={(e) => handleChange('batu', 'timer', e.target.value)}
+                className="text-center"
+                min="0"
+              />
+            </div>
+
+            {/* SEMEN */}
+            <div className="grid grid-cols-3 gap-4 items-center">
+              <Label className="text-base font-medium">SEMEN</Label>
+              <Input
+                type="number"
+                value={sequence.semen.mixing}
+                onChange={(e) => handleChange('semen', 'mixing', e.target.value)}
+                className="text-center"
+                min="0"
+              />
+              <Input
+                type="number"
+                value={sequence.semen.timer}
+                onChange={(e) => handleChange('semen', 'timer', e.target.value)}
                 className="text-center"
                 min="0"
               />
