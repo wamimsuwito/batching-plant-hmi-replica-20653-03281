@@ -20,7 +20,7 @@ import { useRaspberryPi } from "@/hooks/useRaspberryPi";
 
 const Index = () => {
   const [isRunning, setIsRunning] = useState(false);
-  const [mode, setMode] = useState<"auto" | "manual">("manual");
+  const [isAutoMode, setIsAutoMode] = useState(false); // Auto mode toggle
   const [binGates, setBinGates] = useState([false, false, false, false]);
   const [loginOpen, setLoginOpen] = useState(false);
   const [batchStartOpen, setBatchStartOpen] = useState(false);
@@ -116,11 +116,12 @@ const Index = () => {
   // Raspberry Pi connection
   const raspberryPi = useRaspberryPi();
 
-  // Production sequence hook with Raspberry Pi integration
+  // Production sequence hook with Raspberry Pi integration and auto mode
   const { productionState, componentStates, startProduction, stopProduction } = useProductionSequence(
     handleCementDeduction,
     relaySettings,
-    raspberryPi
+    raspberryPi,
+    isAutoMode
   );
 
   const handleStart = () => {
@@ -231,11 +232,11 @@ const Index = () => {
           >
             {/* Aggregate Section - Left Side */}
             <g id="aggregate-section">
-              {/* 4 Storage Bins - Above hoppers */}
-              <StorageBin x={25} y={130} fillLevel={85} gateOpen={componentStates.sandBinValve} label="PASIR" />
-              <StorageBin x={105} y={130} fillLevel={90} gateOpen={componentStates.stoneBinValve} label="BATU 1" />
-              <StorageBin x={185} y={130} fillLevel={75} gateOpen={false} label="BATU 2" />
-              <StorageBin x={265} y={130} fillLevel={80} gateOpen={false} label="BIN 4" />
+              {/* 4 Storage Bins - Above hoppers - Always FULL initially */}
+              <StorageBin x={25} y={130} fillLevel={100} gateOpen={componentStates.sandBinValve} label="PASIR" />
+              <StorageBin x={105} y={130} fillLevel={100} gateOpen={componentStates.stoneBinValve} label="BATU 1" />
+              <StorageBin x={185} y={130} fillLevel={100} gateOpen={false} label="BATU 2" />
+              <StorageBin x={265} y={130} fillLevel={100} gateOpen={false} label="BIN 4" />
               
               {/* Support structure connecting bins to hoppers */}
               <line x1="60" y1="252" x2="65" y2="270" className="stroke-hmi-border" strokeWidth="2" />
@@ -244,13 +245,14 @@ const Index = () => {
               <line x1="300" y1="252" x2="305" y2="270" className="stroke-hmi-border" strokeWidth="2" />
               
               {/* 4 Aggregate Hoppers with valve indicators and dynamic fill levels */}
+              {/* HOPPER fillLevel: 0 = empty, 100 = full */}
               <AggregateHopper 
                 x={40} 
                 y={270} 
                 fillLevel={
                   productionState.targetWeights.pasir > 0
-                    ? Math.max(0, 100 - (productionState.currentWeights.pasir / productionState.targetWeights.pasir * 100))
-                    : 100
+                    ? Math.min(100, (productionState.currentWeights.pasir / productionState.targetWeights.pasir * 100))
+                    : 0
                 } 
                 isActive={componentStates.sandBinValve} 
               />
@@ -259,13 +261,13 @@ const Index = () => {
                 y={270} 
                 fillLevel={
                   productionState.targetWeights.batu > 0
-                    ? Math.max(0, 100 - (productionState.currentWeights.batu / productionState.targetWeights.batu * 100))
-                    : 100
+                    ? Math.min(100, (productionState.currentWeights.batu / productionState.targetWeights.batu * 100))
+                    : 0
                 } 
                 isActive={componentStates.stoneBinValve} 
               />
-              <AggregateHopper x={200} y={270} fillLevel={100} isActive={false} />
-              <AggregateHopper x={280} y={270} fillLevel={100} isActive={false} />
+              <AggregateHopper x={200} y={270} fillLevel={0} isActive={false} />
+              <AggregateHopper x={280} y={270} fillLevel={0} isActive={false} />
 
               {/* Conveyor Belt 1 - Below hoppers (horizontal) */}
               <ConveyorBelt x={40} y={370} width={290} angle={0} isRunning={componentStates.beltBawah} />
@@ -431,12 +433,17 @@ const Index = () => {
             
             {/* Auto/Manual Button */}
             <button
-              onClick={() => setMode(mode === "auto" ? "manual" : "auto")}
-              className="w-32 h-20 bg-hmi-header border-4 border-hmi-border rounded-lg hover:bg-hmi-header/80 transition-all shadow-lg flex flex-col items-center justify-center gap-1"
+              onClick={() => setIsAutoMode(!isAutoMode)}
+              className={`w-32 h-20 border-4 rounded-lg transition-all shadow-lg flex flex-col items-center justify-center gap-1 ${
+                isAutoMode 
+                  ? 'bg-green-600 border-green-800 hover:bg-green-700' 
+                  : 'bg-gray-600 border-gray-800 hover:bg-gray-700'
+              }`}
             >
-              <div className="text-yellow-400 text-2xl">⏻</div>
-              <div className="text-white font-bold text-xs">AUTO</div>
-              <div className="text-white font-bold text-xs">ON/OFF</div>
+              <div className="text-white text-2xl">⏻</div>
+              <div className="text-white font-bold text-xs">
+                AUTO: {isAutoMode ? 'ON' : 'OFF'}
+              </div>
             </button>
           </div>
           
@@ -508,9 +515,16 @@ const Index = () => {
 
             {/* Production Status */}
             {productionState.isProducing && (
-              <div className="bg-green-600/90 backdrop-blur-sm border-2 border-green-800 rounded px-3 py-1.5 min-w-[120px]">
-                <div className="text-[10px] text-white font-semibold">STATUS</div>
-                <div className="text-sm font-bold text-white uppercase">{productionState.currentStep}</div>
+              <div className="bg-blue-600/90 backdrop-blur-sm border-2 border-blue-800 rounded px-4 py-2 min-w-[180px]">
+                <div className="text-[10px] text-white font-semibold">STATUS PRODUKSI</div>
+                <div className="text-sm font-bold text-white uppercase">
+                  {productionState.currentStep === 'weighing' && 'PENIMBANGAN'}
+                  {productionState.currentStep.startsWith('jogging-') && `JOGGING ${productionState.currentStep.split('-')[1].toUpperCase()}`}
+                  {productionState.currentStep === 'discharging' && 'DISCHARGE MATERIAL'}
+                  {productionState.currentStep === 'mixing' && `MIXING ${productionState.mixingTimeRemaining}s`}
+                  {productionState.currentStep === 'door_cycle' && `BUKA PINTU ${productionState.mixerDoorCycle}/2`}
+                  {productionState.currentStep === 'complete' && 'SELESAI'}
+                </div>
               </div>
             )}
           </div>

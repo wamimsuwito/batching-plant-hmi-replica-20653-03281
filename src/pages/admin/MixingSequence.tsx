@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,14 +17,27 @@ interface MixingSequence {
   air: MixingData;
 }
 
+const STORAGE_KEY = 'mixing_sequence_settings';
+
 export default function MixingSequence() {
   const { toast } = useToast();
   const [sequence, setSequence] = useState<MixingSequence>({
-    pasir: { mixing: 0, timer: 0 },
-    batu: { mixing: 0, timer: 0 },
-    semen: { mixing: 0, timer: 0 },
-    air: { mixing: 0, timer: 0 },
+    pasir: { mixing: 1, timer: 0 },
+    batu: { mixing: 1, timer: 0 },
+    semen: { mixing: 1, timer: 0 },
+    air: { mixing: 1, timer: 0 },
   });
+
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        setSequence(JSON.parse(saved));
+      } catch (error) {
+        console.error('Error loading mixing sequence:', error);
+      }
+    }
+  }, []);
 
   const handleChange = (material: keyof MixingSequence, field: keyof MixingData, value: string) => {
     const numValue = parseInt(value) || 0;
@@ -38,6 +51,7 @@ export default function MixingSequence() {
   };
 
   const handleSave = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sequence));
     toast({
       title: "Tersimpan",
       description: "Urutan mixing berhasil disimpan",
