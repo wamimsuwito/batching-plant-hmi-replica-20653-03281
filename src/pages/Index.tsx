@@ -231,6 +231,24 @@ const Index = () => {
           >
             {/* Aggregate Section - Left Side */}
             <g id="aggregate-section">
+              {/* === LABELS UNTUK STORAGE BINS === */}
+              <g transform="translate(25, 118)">
+                <rect x="0" y="0" width="35" height="12" fill="rgba(0,0,0,0.8)" stroke="#fbbf24" strokeWidth="1" rx="2"/>
+                <text x="17.5" y="8.5" fontSize="7" fontWeight="bold" fill="#fbbf24" textAnchor="middle" fontFamily="monospace">BIN-1</text>
+              </g>
+              <g transform="translate(105, 118)">
+                <rect x="0" y="0" width="35" height="12" fill="rgba(0,0,0,0.8)" stroke="#fbbf24" strokeWidth="1" rx="2"/>
+                <text x="17.5" y="8.5" fontSize="7" fontWeight="bold" fill="#fbbf24" textAnchor="middle" fontFamily="monospace">BIN-2</text>
+              </g>
+              <g transform="translate(185, 118)">
+                <rect x="0" y="0" width="35" height="12" fill="rgba(0,0,0,0.8)" stroke="#fbbf24" strokeWidth="1" rx="2"/>
+                <text x="17.5" y="8.5" fontSize="7" fontWeight="bold" fill="#fbbf24" textAnchor="middle" fontFamily="monospace">BIN-3</text>
+              </g>
+              <g transform="translate(265, 118)">
+                <rect x="0" y="0" width="35" height="12" fill="rgba(0,0,0,0.8)" stroke="#fbbf24" strokeWidth="1" rx="2"/>
+                <text x="17.5" y="8.5" fontSize="7" fontWeight="bold" fill="#fbbf24" textAnchor="middle" fontFamily="monospace">BIN-4</text>
+              </g>
+              
               {/* 4 Storage Bins - Above hoppers */}
               <StorageBin x={25} y={130} fillLevel={85} gateOpen={componentStates.sandBinValve} label="PASIR" />
               <StorageBin x={105} y={130} fillLevel={90} gateOpen={componentStates.stoneBinValve} label="BATU 1" />
@@ -243,6 +261,24 @@ const Index = () => {
               <line x1="220" y1="252" x2="225" y2="270" className="stroke-hmi-border" strokeWidth="2" />
               <line x1="300" y1="252" x2="305" y2="270" className="stroke-hmi-border" strokeWidth="2" />
               
+              {/* === LABELS UNTUK AGGREGATE HOPPERS === */}
+              <g transform="translate(23, 260)">
+                <rect x="0" y="0" width="52" height="11" fill="rgba(0,0,0,0.8)" stroke="#fbbf24" strokeWidth="1" rx="2"/>
+                <text x="26" y="8" fontSize="7" fontWeight="bold" fill="#fbbf24" textAnchor="middle" fontFamily="monospace">HOPPER-A1</text>
+              </g>
+              <g transform="translate(103, 260)">
+                <rect x="0" y="0" width="52" height="11" fill="rgba(0,0,0,0.8)" stroke="#fbbf24" strokeWidth="1" rx="2"/>
+                <text x="26" y="8" fontSize="7" fontWeight="bold" fill="#fbbf24" textAnchor="middle" fontFamily="monospace">HOPPER-A2</text>
+              </g>
+              <g transform="translate(183, 260)">
+                <rect x="0" y="0" width="52" height="11" fill="rgba(0,0,0,0.8)" stroke="#fbbf24" strokeWidth="1" rx="2"/>
+                <text x="26" y="8" fontSize="7" fontWeight="bold" fill="#fbbf24" textAnchor="middle" fontFamily="monospace">HOPPER-A3</text>
+              </g>
+              <g transform="translate(263, 260)">
+                <rect x="0" y="0" width="52" height="11" fill="rgba(0,0,0,0.8)" stroke="#fbbf24" strokeWidth="1" rx="2"/>
+                <text x="26" y="8" fontSize="7" fontWeight="bold" fill="#fbbf24" textAnchor="middle" fontFamily="monospace">HOPPER-A4</text>
+              </g>
+
               {/* 4 Aggregate Hoppers with valve indicators and dynamic fill levels */}
               <AggregateHopper 
                 x={40} 
@@ -266,6 +302,16 @@ const Index = () => {
               />
               <AggregateHopper x={200} y={270} fillLevel={100} isActive={false} />
               <AggregateHopper x={280} y={270} fillLevel={100} isActive={false} />
+
+              {/* === LABELS UNTUK CONVEYOR BELTS === */}
+              <g transform="translate(38, 360)">
+                <rect x="0" y="0" width="35" height="11" fill="rgba(0,0,0,0.8)" stroke="#fbbf24" strokeWidth="1" rx="2"/>
+                <text x="17.5" y="8" fontSize="7" fontWeight="bold" fill="#fbbf24" textAnchor="middle" fontFamily="monospace">BELT-1</text>
+              </g>
+              <g transform="translate(318, 410)">
+                <rect x="0" y="0" width="35" height="11" fill="rgba(0,0,0,0.8)" stroke="#fbbf24" strokeWidth="1" rx="2"/>
+                <text x="17.5" y="8" fontSize="7" fontWeight="bold" fill="#fbbf24" textAnchor="middle" fontFamily="monospace">BELT-2</text>
+              </g>
 
               {/* Conveyor Belt 1 - Below hoppers (horizontal) */}
               <ConveyorBelt x={40} y={370} width={290} angle={0} isRunning={componentStates.beltBawah} />
@@ -326,6 +372,12 @@ const Index = () => {
                 isActive={componentStates.siloValves[5]}
               />
 
+              {/* === LABEL UNTUK WEIGH HOPPER === */}
+              <g transform="translate(550, 240)">
+                <rect x="0" y="0" width="75" height="11" fill="rgba(0,0,0,0.8)" stroke="#fbbf24" strokeWidth="1" rx="2"/>
+                <text x="37.5" y="8" fontSize="7" fontWeight="bold" fill="#fbbf24" textAnchor="middle" fontFamily="monospace">WEIGH-CEMENT</text>
+              </g>
+
               {/* Single Weigh Hopper below silos (BIGGER) */}
               <WeighHopper 
                 x={550} 
@@ -347,6 +399,16 @@ const Index = () => {
 
             {/* Additive Tanks Section - Right Side */}
             <g id="additive-section">
+              {/* === LABELS UNTUK ADDITIVE TANKS === */}
+              <g transform="translate(770, 68)">
+                <rect x="0" y="0" width="50" height="11" fill="rgba(0,0,0,0.8)" stroke="#fbbf24" strokeWidth="1" rx="2"/>
+                <text x="25" y="8" fontSize="7" fontWeight="bold" fill="#fbbf24" textAnchor="middle" fontFamily="monospace">TANK-AIR</text>
+              </g>
+              <g transform="translate(830, 68)">
+                <rect x="0" y="0" width="50" height="11" fill="rgba(0,0,0,0.8)" stroke="#fbbf24" strokeWidth="1" rx="2"/>
+                <text x="25" y="8" fontSize="7" fontWeight="bold" fill="#fbbf24" textAnchor="middle" fontFamily="monospace">TANK-ADD</text>
+              </g>
+
               {/* 2 Additive Tanks with valve indicators and dynamic fill levels */}
               <AdditiveTank 
                 x={780} 
@@ -366,6 +428,12 @@ const Index = () => {
                 currentVolume={productionState.currentWeights.additive}
                 targetVolume={productionState.targetWeights.additive}
               />
+
+              {/* === LABEL UNTUK INTERMEDIATE TANK === */}
+              <g transform="translate(770, 220)">
+                <rect x="0" y="0" width="50" height="11" fill="rgba(0,0,0,0.8)" stroke="#fbbf24" strokeWidth="1" rx="2"/>
+                <text x="25" y="8" fontSize="7" fontWeight="bold" fill="#fbbf24" textAnchor="middle" fontFamily="monospace">TANK-INT</text>
+              </g>
 
               {/* Intermediate tank */}
               <g transform="translate(780, 230)">
@@ -388,6 +456,12 @@ const Index = () => {
 
             {/* Mixer Section - Center Bottom */}
             <g id="mixer-section">
+              {/* === LABEL UNTUK MIXER === */}
+              <g transform="translate(453, 340)">
+                <rect x="0" y="0" width="43" height="11" fill="rgba(0,0,0,0.8)" stroke="#fbbf24" strokeWidth="1" rx="2"/>
+                <text x="21.5" y="8" fontSize="7" fontWeight="bold" fill="#fbbf24" textAnchor="middle" fontFamily="monospace">MIXER-1</text>
+              </g>
+
               {/* Main Mixer - Twin Shaft Horizontal */}
               <Mixer 
                 x={455} 
@@ -443,11 +517,12 @@ const Index = () => {
           {/* Material Weight Indicators */}
           <div className="absolute bottom-4 left-4 flex gap-2">
             {/* Pasir */}
-            <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] ${
+            <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] relative ${
               productionState.targetWeights.pasir > 0 
                 ? 'bg-green-900/40 border-green-500/50 animate-pulse' 
                 : 'bg-gray-800/40 border-gray-600'
             }`}>
+              <span className="absolute -top-1.5 -left-1.5 px-1.5 py-0.5 bg-yellow-500 text-black text-[8px] font-bold rounded border border-yellow-600">IND-PASIR</span>
               <div className="text-[10px] text-muted-foreground font-semibold">PASIR</div>
               {productionState.targetWeights.pasir > 0 ? (
                 <div className="text-sm font-bold text-green-300">
@@ -459,11 +534,12 @@ const Index = () => {
             </div>
             
             {/* Batu */}
-            <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] ${
+            <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] relative ${
               productionState.targetWeights.batu > 0 
                 ? 'bg-green-900/40 border-green-500/50 animate-pulse' 
                 : 'bg-gray-800/40 border-gray-600'
             }`}>
+              <span className="absolute -top-1.5 -left-1.5 px-1.5 py-0.5 bg-yellow-500 text-black text-[8px] font-bold rounded border border-yellow-600">IND-BATU</span>
               <div className="text-[10px] text-muted-foreground font-semibold">BATU</div>
               {productionState.targetWeights.batu > 0 ? (
                 <div className="text-sm font-bold text-green-300">
@@ -475,11 +551,12 @@ const Index = () => {
             </div>
             
             {/* Semen */}
-            <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] ${
+            <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] relative ${
               productionState.targetWeights.semen > 0 
                 ? 'bg-green-900/40 border-green-500/50 animate-pulse' 
                 : 'bg-gray-800/40 border-gray-600'
             }`}>
+              <span className="absolute -top-1.5 -left-1.5 px-1.5 py-0.5 bg-yellow-500 text-black text-[8px] font-bold rounded border border-yellow-600">IND-SEMEN</span>
               <div className="text-[10px] text-muted-foreground font-semibold">SEMEN</div>
               {productionState.targetWeights.semen > 0 ? (
                 <div className="text-sm font-bold text-green-300">
@@ -491,11 +568,12 @@ const Index = () => {
             </div>
             
             {/* Air */}
-            <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] ${
+            <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] relative ${
               productionState.targetWeights.air > 0 
                 ? 'bg-green-900/40 border-green-500/50 animate-pulse' 
                 : 'bg-gray-800/40 border-gray-600'
             }`}>
+              <span className="absolute -top-1.5 -left-1.5 px-1.5 py-0.5 bg-yellow-500 text-black text-[8px] font-bold rounded border border-yellow-600">IND-AIR</span>
               <div className="text-[10px] text-muted-foreground font-semibold">AIR</div>
               {productionState.targetWeights.air > 0 ? (
                 <div className="text-sm font-bold text-green-300">
