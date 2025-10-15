@@ -325,11 +325,13 @@ export const useProductionSequence = (
     const triggerWeight = targetWeight * (jogging.trigger / 100);
     const finalWeight = targetWeight - jogging.toleransi;
     
-    console.log(`⚖️ Weighing ${material}: trigger=${triggerWeight.toFixed(1)}kg, final=${finalWeight.toFixed(1)}kg`);
+    console.log(`⚖️ Weighing ${material}: trigger=${triggerWeight.toFixed(1)}kg, final=${finalWeight.toFixed(1)}kg, jogging=${jogging.jogingOn}s/${jogging.jogingOff}s`);
 
     // Phase 1: Normal weighing until trigger %
     let phase = 1;
     let joggingState = false;
+    let joggingCycleStart = 0;
+    let simulatedWeight = 0;
 
     // Open material relay
     if (material === 'pasir') {
@@ -338,6 +340,8 @@ export const useProductionSequence = (
     } else if (material === 'batu') {
       setComponentStates(prev => ({ ...prev, stoneBinValve: true }));
       controlRelay('pintu_batu_1', true);
+    } else if (material === 'semen') {
+      // Semen uses selected silo valve (already opened)
     } else if (material === 'air') {
       setComponentStates(prev => ({ ...prev, waterValve: true }));
       controlRelay('tuang_air', true);
@@ -349,10 +353,33 @@ export const useProductionSequence = (
       if (raspberryPi?.isConnected) {
         currentWeight = raspberryPi.actualWeights[material] || 0;
       } else {
-        // Simulation mode
-        currentWeight = productionState.currentWeights[material];
-        const increment = phase === 1 ? 5 : (joggingState ? 0.5 : 0);
-        currentWeight = Math.min(currentWeight + increment, finalWeight);
+        // SIMULATION MODE - Realistic weighing simulation
+        if (phase === 1) {
+          // Phase 1: Fast weighing until trigger point
+          // Simulate realistic flow rate: ~50kg/second for aggregate, ~30kg/s for cement, ~20kg/s for water
+          let flowRate = 50; // kg/s
+          if (material === 'semen') flowRate = 30;
+          if (material === 'air') flowRate = 20;
+          
+          const increment = (flowRate / 5); // Divided by 5 because we check every 200ms
+          simulatedWeight = Math.min(simulatedWeight + increment + (Math.random() * 2 - 1), triggerWeight);
+          currentWeight = simulatedWeight;
+        } else if (phase === 2) {
+          // Phase 2: Jogging - slower, controlled increments
+          const now = Date.now();
+          const cycleTime = (jogging.jogingOn + jogging.jogingOff) * 1000;
+          const timeSinceCycleStart = now - joggingCycleStart;
+          const position = timeSinceCycleStart % cycleTime;
+          const shouldBeOn = position < (jogging.jogingOn * 1000);
+          
+          // Only increment when valve is ON
+          if (shouldBeOn && joggingState) {
+            // Slower flow during jogging: ~5-10kg per ON cycle
+            const joggingIncrement = (10 / (jogging.jogingOn * 5)); // Spread over jogging ON duration
+            simulatedWeight = Math.min(simulatedWeight + joggingIncrement + (Math.random() * 0.5), finalWeight);
+          }
+          currentWeight = simulatedWeight;
+        }
       }
 
       // Update weight display
@@ -365,6 +392,7 @@ export const useProductionSequence = (
       if (phase === 1 && currentWeight >= triggerWeight) {
         console.log(`📍 ${material} reached trigger point (${currentWeight.toFixed(1)}kg), starting jogging`);
         phase = 2;
+        joggingCycleStart = Date.now();
         
         // Turn off relay
         if (material === 'pasir') {
@@ -375,23 +403,28 @@ export const useProductionSequence = (
           setComponentStates(prev => ({ ...prev, stoneBinValve: false }));
         } else if (material === 'air') {
           controlRelay('tuang_air', false);
-          setProductionState(prev => ({
-            ...prev,
-            currentStep: `jogging-${material}`
-          }));
         }
+        
+        // Update status to show jogging
+        setProductionState(prev => ({
+          ...prev,
+          currentStep: `jogging-${material}`
+        }));
       }
 
       // Phase 2: Jogging
       if (phase === 2 && currentWeight < finalWeight) {
         // Toggle relay based on jogging timer
         const now = Date.now();
+        const timeSinceCycleStart = now - joggingCycleStart;
         const cycleTime = (jogging.jogingOn + jogging.jogingOff) * 1000;
-        const position = now % cycleTime;
+        const position = timeSinceCycleStart % cycleTime;
         const shouldBeOn = position < (jogging.jogingOn * 1000);
 
         if (shouldBeOn !== joggingState) {
           joggingState = shouldBeOn;
+          console.log(`🔄 ${material} jogging: ${shouldBeOn ? 'ON' : 'OFF'} (${currentWeight.toFixed(1)}kg / ${finalWeight.toFixed(1)}kg)`);
+          
           if (material === 'pasir') {
             setComponentStates(prev => ({ ...prev, sandBinValve: shouldBeOn }));
             controlRelay('pintu_pasir_1', shouldBeOn);
@@ -399,6 +432,7 @@ export const useProductionSequence = (
             setComponentStates(prev => ({ ...prev, stoneBinValve: shouldBeOn }));
             controlRelay('pintu_batu_1', shouldBeOn);
           } else if (material === 'air') {
+            setComponentStates(prev => ({ ...prev, waterValve: shouldBeOn }));
             controlRelay('tuang_air', shouldBeOn);
           }
         }
@@ -418,12 +452,14 @@ export const useProductionSequence = (
           setComponentStates(prev => ({ ...prev, stoneBinValve: false }));
         } else if (material === 'air') {
           controlRelay('tuang_air', false);
+          setComponentStates(prev => ({ ...prev, waterValve: false }));
         }
         
         weighingStatus[material] = true;
         setProductionState(prev => ({
           ...prev,
-          weighingComplete: { ...prev.weighingComplete, [material]: true }
+          weighingComplete: { ...prev.weighingComplete, [material]: true },
+          currentStep: 'weighing' // Reset to general weighing status
         }));
       }
     }, 200); // Check every 200ms
