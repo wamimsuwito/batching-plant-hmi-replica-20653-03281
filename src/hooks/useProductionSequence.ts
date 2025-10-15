@@ -181,8 +181,8 @@ export const useProductionSequence = (
   };
 
   const startWeighing = (config: ProductionConfig) => {
-    const weighingDuration = 5000; // 5 seconds for weighing
-    const steps = 50;
+    const weighingDuration = 20000; // 20 seconds for weighing (slowed down for analysis)
+    const steps = 100; // More steps for smoother animation
     const interval = weighingDuration / steps;
 
     // Simulate gradual weighing for all materials
