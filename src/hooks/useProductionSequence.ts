@@ -57,6 +57,7 @@ export interface ComponentStates {
 interface RelayConfig {
   name: string;
   relayNumber: string;
+  gpioPin: string;
   timer1: string;
   timer2: string;
   timer3: string;
@@ -89,12 +90,21 @@ const initialComponentStates: ComponentStates = {
 
 export const useProductionSequence = (
   onCementDeduction: (siloId: number, amount: number) => void,
-  relaySettings: RelayConfig[]
+  relaySettings: RelayConfig[],
+  raspberryPi?: { isConnected: boolean; actualWeights: any; sendRelayCommand: any }
 ) => {
   const [productionState, setProductionState] = useState<ProductionState>(initialProductionState);
   const [componentStates, setComponentStates] = useState<ComponentStates>(initialComponentStates);
   const { toast } = useToast();
   const timersRef = useRef<NodeJS.Timeout[]>([]);
+
+  const controlRelay = (relayName: string, state: boolean) => {
+    if (raspberryPi?.isConnected) {
+      const relay = relaySettings.find(r => r.name.toLowerCase().replace(/ /g, '_') === relayName.toLowerCase());
+      const gpioPin = relay ? parseInt(relay.gpioPin) : undefined;
+      raspberryPi.sendRelayCommand(relayName, state, gpioPin);
+    }
+  };
 
   // Get relay timing settings
   const getTimerValue = (relayName: string, timerNum: 1 | 2 | 3 | 4): number => {
@@ -145,6 +155,7 @@ export const useProductionSequence = (
 
     // t=0s: Mixer ON
     setComponentStates(prev => ({ ...prev, mixer: true }));
+    controlRelay('mixer', true);
 
     // t=1s: Belt Atas ON, Selected Silos ON
     const beltAtasTimer = setTimeout(() => {
@@ -155,6 +166,8 @@ export const useProductionSequence = (
           config.selectedSilos.includes(idx + 1)
         ),
       }));
+      controlRelay('konveyor_atas', true);
+      config.selectedSilos.forEach(id => controlRelay(`silo_${id}`, true));
 
       // Start weighing simulation (parallel weighing)
       startWeighing(config);
@@ -175,7 +188,13 @@ export const useProductionSequence = (
 
       setProductionState(prev => ({
         ...prev,
-        currentWeights: {
+        currentWeights: raspberryPi?.isConnected ? {
+          pasir: raspberryPi.actualWeights.pasir,
+          batu: raspberryPi.actualWeights.batu,
+          semen: raspberryPi.actualWeights.semen,
+          air: raspberryPi.actualWeights.air,
+          additive: 0,
+        } : {
           pasir: Math.min(progress * config.targetWeights.pasir, config.targetWeights.pasir),
           batu: Math.min(progress * config.targetWeights.batu, config.targetWeights.batu),
           semen: Math.min(progress * config.targetWeights.semen, config.targetWeights.semen),

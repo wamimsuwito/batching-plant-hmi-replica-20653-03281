@@ -13,9 +13,10 @@ import { LoginDialog } from "@/components/auth/LoginDialog";
 import { BatchStartDialog } from "@/components/BatchPlant/BatchStartDialog";
 import { SiloFillDialog, SiloData } from "@/components/BatchPlant/SiloFillDialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogIn, Settings, Package } from "lucide-react";
+import { LogIn, Settings, Package, Wifi, WifiOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useProductionSequence } from "@/hooks/useProductionSequence";
+import { useRaspberryPi } from "@/hooks/useRaspberryPi";
 
 const Index = () => {
   const [isRunning, setIsRunning] = useState(false);
@@ -112,10 +113,14 @@ const Index = () => {
     }
   }, []);
 
-  // Production sequence hook
+  // Raspberry Pi connection
+  const raspberryPi = useRaspberryPi();
+
+  // Production sequence hook with Raspberry Pi integration
   const { productionState, componentStates, startProduction, stopProduction } = useProductionSequence(
     handleCementDeduction,
-    relaySettings
+    relaySettings,
+    raspberryPi
   );
 
   const handleStart = () => {
@@ -131,7 +136,22 @@ const Index = () => {
     <div className="min-h-screen bg-hmi-background flex flex-col">
       {/* Header */}
       <header className="bg-hmi-header text-white py-3 px-6 border-b-2 border-hmi-border flex items-center justify-between">
-        <div className="flex-1" />
+        <div className="flex-1 flex items-center gap-3">
+          {/* Raspberry Pi Connection Status */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-black/20 border border-white/20">
+            {raspberryPi.isConnected ? (
+              <>
+                <Wifi className="w-4 h-4 text-green-400 animate-pulse" />
+                <span className="text-xs font-semibold text-green-400">RPi Connected</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="w-4 h-4 text-red-400" />
+                <span className="text-xs font-semibold text-red-400">Offline Mode</span>
+              </>
+            )}
+          </div>
+        </div>
         <h1 className="text-2xl font-bold text-center tracking-wide flex-1">
           BATCH PLANT CONTROL SYSTEM
         </h1>
@@ -388,33 +408,41 @@ const Index = () => {
           {/* Material Weight Indicators */}
           <div className="absolute bottom-4 left-4 flex gap-2">
             {/* Pasir */}
-            <div className="bg-hmi-header/90 backdrop-blur-sm border-2 border-hmi-border rounded px-3 py-1.5 min-w-[90px]">
+            <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] ${
+              raspberryPi.isConnected ? 'bg-green-900/40 border-green-500/50' : 'bg-hmi-header/90 border-hmi-border'
+            }`}>
               <div className="text-[10px] text-muted-foreground font-semibold">PASIR</div>
-              <div className="text-sm font-bold text-white">
+              <div className={`text-sm font-bold ${raspberryPi.isConnected ? 'text-green-300' : 'text-white'}`}>
                 {productionState.currentWeights.pasir.toFixed(0)} / {productionState.targetWeights.pasir.toFixed(0)} kg
               </div>
             </div>
             
             {/* Batu */}
-            <div className="bg-hmi-header/90 backdrop-blur-sm border-2 border-hmi-border rounded px-3 py-1.5 min-w-[90px]">
+            <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] ${
+              raspberryPi.isConnected ? 'bg-green-900/40 border-green-500/50' : 'bg-hmi-header/90 border-hmi-border'
+            }`}>
               <div className="text-[10px] text-muted-foreground font-semibold">BATU</div>
-              <div className="text-sm font-bold text-white">
+              <div className={`text-sm font-bold ${raspberryPi.isConnected ? 'text-green-300' : 'text-white'}`}>
                 {productionState.currentWeights.batu.toFixed(0)} / {productionState.targetWeights.batu.toFixed(0)} kg
               </div>
             </div>
             
             {/* Semen */}
-            <div className="bg-hmi-header/90 backdrop-blur-sm border-2 border-hmi-border rounded px-3 py-1.5 min-w-[90px]">
+            <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] ${
+              raspberryPi.isConnected ? 'bg-green-900/40 border-green-500/50' : 'bg-hmi-header/90 border-hmi-border'
+            }`}>
               <div className="text-[10px] text-muted-foreground font-semibold">SEMEN</div>
-              <div className="text-sm font-bold text-white">
+              <div className={`text-sm font-bold ${raspberryPi.isConnected ? 'text-green-300' : 'text-white'}`}>
                 {productionState.currentWeights.semen.toFixed(0)} / {productionState.targetWeights.semen.toFixed(0)} kg
               </div>
             </div>
             
             {/* Air */}
-            <div className="bg-hmi-header/90 backdrop-blur-sm border-2 border-hmi-border rounded px-3 py-1.5 min-w-[90px]">
+            <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] ${
+              raspberryPi.isConnected ? 'bg-green-900/40 border-green-500/50' : 'bg-hmi-header/90 border-hmi-border'
+            }`}>
               <div className="text-[10px] text-muted-foreground font-semibold">AIR</div>
-              <div className="text-sm font-bold text-white">
+              <div className={`text-sm font-bold ${raspberryPi.isConnected ? 'text-green-300' : 'text-white'}`}>
                 {productionState.currentWeights.air.toFixed(0)} / {productionState.targetWeights.air.toFixed(0)} kg
               </div>
             </div>
