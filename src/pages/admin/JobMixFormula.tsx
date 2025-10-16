@@ -20,6 +20,7 @@ interface MixFormula {
 }
 
 const STORAGE_KEY = 'job_mix_formulas';
+const OLD_STORAGE_KEYS = ['mixFormulas', 'formulas', 'job_mix', 'mix_formulas'];
 
 export default function JobMixFormula() {
   const [formulas, setFormulas] = useState<MixFormula[]>([]);
@@ -37,11 +38,75 @@ export default function JobMixFormula() {
   });
   const { toast } = useToast();
 
+  // Load data from localStorage with error handling and migration
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      setFormulas(JSON.parse(saved));
+    console.log('[JobMixFormula] Loading formulas from localStorage...');
+    console.log('[JobMixFormula] Using storage key:', STORAGE_KEY);
+    
+    try {
+      let loadedData: MixFormula[] | null = null;
+      
+      // Try to load from current key
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        console.log('[JobMixFormula] Found data in current key:', STORAGE_KEY);
+        loadedData = JSON.parse(saved);
+      } else {
+        console.log('[JobMixFormula] No data found in current key, checking old keys...');
+        
+        // Try to migrate from old storage keys
+        for (const oldKey of OLD_STORAGE_KEYS) {
+          const oldData = localStorage.getItem(oldKey);
+          if (oldData) {
+            console.log('[JobMixFormula] Found data in old key:', oldKey);
+            try {
+              loadedData = JSON.parse(oldData);
+              // Migrate to new key
+              localStorage.setItem(STORAGE_KEY, oldData);
+              // Remove old key
+              localStorage.removeItem(oldKey);
+              console.log('[JobMixFormula] Successfully migrated data from', oldKey, 'to', STORAGE_KEY);
+              break;
+            } catch (migrationError) {
+              console.error('[JobMixFormula] Failed to migrate from', oldKey, ':', migrationError);
+            }
+          }
+        }
+      }
+      
+      if (loadedData && Array.isArray(loadedData)) {
+        console.log('[JobMixFormula] Loaded', loadedData.length, 'formulas');
+        setFormulas(loadedData);
+      } else {
+        console.log('[JobMixFormula] No valid data found, starting with empty list');
+      }
+    } catch (error) {
+      console.error('[JobMixFormula] Error loading data from localStorage:', error);
+      toast({
+        title: 'Peringatan',
+        description: 'Gagal memuat data formula. Data mungkin rusak.',
+        variant: 'destructive',
+      });
     }
+  }, [toast]);
+
+  // Listen for storage changes from other tabs
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY && e.newValue) {
+        console.log('[JobMixFormula] Storage changed from another tab, reloading...');
+        try {
+          const newData = JSON.parse(e.newValue);
+          setFormulas(newData);
+          console.log('[JobMixFormula] Successfully synced', newData.length, 'formulas from other tab');
+        } catch (error) {
+          console.error('[JobMixFormula] Error parsing storage change:', error);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   // Auto-calculate total volume whenever material values change
@@ -58,7 +123,37 @@ export default function JobMixFormula() {
   }, [formData.semen, formData.pasir, formData.batu1, formData.batu2, formData.air, formData.additive]);
 
   const saveToStorage = (data: MixFormula[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    console.log('[JobMixFormula] Saving', data.length, 'formulas to localStorage');
+    try {
+      const jsonString = JSON.stringify(data);
+      localStorage.setItem(STORAGE_KEY, jsonString);
+      console.log('[JobMixFormula] Successfully saved to localStorage');
+      
+      // Verify the save
+      const verification = localStorage.getItem(STORAGE_KEY);
+      if (verification === jsonString) {
+        console.log('[JobMixFormula] Save verification successful');
+      } else {
+        console.error('[JobMixFormula] Save verification FAILED - data mismatch!');
+      }
+    } catch (error) {
+      console.error('[JobMixFormula] Error saving to localStorage:', error);
+      
+      // Check if quota exceeded
+      if (error instanceof Error && error.name === 'QuotaExceededError') {
+        toast({
+          title: 'Error',
+          description: 'Penyimpanan penuh! Hapus beberapa formula lama.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Gagal menyimpan data ke penyimpanan lokal.',
+          variant: 'destructive',
+        });
+      }
+    }
   };
 
   const handleAdd = () => {
