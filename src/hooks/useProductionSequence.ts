@@ -39,6 +39,10 @@ export interface ProductionState {
   };
   mixingTimeRemaining: number;
   mixerDoorCycle: number;
+  hopperFillLevels: {
+    pasir: number;
+    batu: number;
+  };
 }
 
 export interface ComponentStates {
@@ -90,6 +94,7 @@ const initialProductionState: ProductionState = {
   weighingComplete: { pasir: false, batu: false, semen: false, air: false },
   mixingTimeRemaining: 0,
   mixerDoorCycle: 0,
+  hopperFillLevels: { pasir: 0, batu: 0 },
 };
 
 const initialComponentStates: ComponentStates = {
@@ -248,10 +253,10 @@ export const useProductionSequence = (
     });
 
     // t=0s: Mixer ON, Belt Atas ON (cement conveyor)
-    setComponentStates(prev => ({ ...prev, mixer: true, beltAtas: true, beltBawah: true }));
+    // Belt Bawah (BELT-1) will start only when aggregate discharge begins
+    setComponentStates(prev => ({ ...prev, mixer: true, beltAtas: true }));
     controlRelay('mixer', true);
     controlRelay('konveyor_atas', true);
-    controlRelay('konveyor_bawah', true); // Belt-1 (horizontal conveyor)
 
     // t=1s: Start weighing all materials
     const weighingTimer = setTimeout(() => {
@@ -386,10 +391,16 @@ export const useProductionSequence = (
         }
       }
 
-      // Update weight display
+      // Update weight display and hopper fill level
       setProductionState(prev => ({
         ...prev,
-        currentWeights: { ...prev.currentWeights, [material]: currentWeight }
+        currentWeights: { ...prev.currentWeights, [material]: currentWeight },
+        hopperFillLevels: {
+          ...prev.hopperFillLevels,
+          ...(material === 'pasir' || material === 'batu' 
+            ? { [material]: Math.min(100, (currentWeight / targetWeight) * 100) }
+            : {})
+        }
       }));
 
       // Phase 1: Normal weighing
@@ -525,7 +536,7 @@ export const useProductionSequence = (
     // After all discharge complete, start mixing
     const mixingStartDelay = groupDelay + 2000;
     const mixingTimer = setTimeout(() => {
-      // Turn off all discharge valves
+      // Turn off all discharge valves and BELT-1
       setComponentStates(prev => ({
         ...prev,
         cementValve: false,
@@ -533,8 +544,10 @@ export const useProductionSequence = (
         hopperValvePasir: false,
         hopperValveBatu: false,
         vibrator: false,
+        beltBawah: false, // Turn off BELT-1 after aggregate discharge complete
       }));
       controlRelay('vibrator', false);
+      controlRelay('konveyor_bawah', false);
       
       startMixing(config);
     }, mixingStartDelay);
@@ -542,16 +555,53 @@ export const useProductionSequence = (
   };
 
   const dischargeMaterial = (material: string, targetWeight: number) => {
-    // Turn on vibrator for aggregate discharge
+    // Turn on vibrator and BELT-1 for aggregate discharge
     if (material === 'pasir' || material === 'batu') {
       setComponentStates(prev => ({ 
         ...prev, 
         vibrator: true,
+        beltBawah: true, // ← BELT-1 turns ON when aggregate starts dumping
         hopperValvePasir: material === 'pasir' ? true : prev.hopperValvePasir,
         hopperValveBatu: material === 'batu' ? true : prev.hopperValveBatu,
       }));
       controlRelay('vibrator', true);
+      controlRelay('konveyor_bawah', true); // ← Turn on BELT-1
       controlRelay('dump_material', true); // Valve hopper
+      
+      // Animate hopper depletion from 100% to 0%
+      const dischargeDuration = Math.max(10000, targetWeight * 30); // 10-15 seconds
+      const animationSteps = 20;
+      const stepDuration = dischargeDuration / animationSteps;
+      
+      const animationInterval = setInterval(() => {
+        setProductionState(prev => {
+          const currentFill = prev.hopperFillLevels[material as 'pasir' | 'batu'];
+          const newFill = Math.max(0, currentFill - (100 / animationSteps)); // Decrease by 5% per step
+          
+          return {
+            ...prev,
+            hopperFillLevels: {
+              ...prev.hopperFillLevels,
+              [material]: newFill
+            }
+          };
+        });
+      }, stepDuration);
+      
+      addInterval(animationInterval);
+      
+      // Clear hopper to 0% at end of discharge
+      const clearTimer = setTimeout(() => {
+        clearInterval(animationInterval);
+        setProductionState(prev => ({
+          ...prev,
+          hopperFillLevels: {
+            ...prev.hopperFillLevels,
+            [material]: 0
+          }
+        }));
+      }, dischargeDuration);
+      addTimer(clearTimer);
     } else if (material === 'semen') {
       setComponentStates(prev => ({ ...prev, cementValve: true }));
       // Cement valve discharge (from weigh hopper)

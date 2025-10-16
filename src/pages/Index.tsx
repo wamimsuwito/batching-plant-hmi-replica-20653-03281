@@ -249,21 +249,13 @@ const Index = () => {
               <AggregateHopper 
                 x={40} 
                 y={270} 
-                fillLevel={
-                  productionState.targetWeights.pasir > 0
-                    ? Math.min(100, (productionState.currentWeights.pasir / productionState.targetWeights.pasir * 100))
-                    : 0
-                } 
+                fillLevel={productionState.hopperFillLevels?.pasir || 0} 
                 isActive={componentStates.hopperValvePasir} 
               />
               <AggregateHopper 
                 x={120} 
                 y={270} 
-                fillLevel={
-                  productionState.targetWeights.batu > 0
-                    ? Math.min(100, (productionState.currentWeights.batu / productionState.targetWeights.batu * 100))
-                    : 0
-                } 
+                fillLevel={productionState.hopperFillLevels?.batu || 0} 
                 isActive={componentStates.hopperValveBatu} 
               />
               <AggregateHopper x={200} y={270} fillLevel={0} isActive={false} />
