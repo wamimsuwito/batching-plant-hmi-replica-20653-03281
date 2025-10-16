@@ -580,21 +580,6 @@ const Index = () => {
                 <div className="text-lg font-bold text-gray-400">0</div>
               )}
             </div>
-
-            {/* Production Status */}
-            {productionState.isProducing && (
-              <div className="bg-blue-600/90 backdrop-blur-sm border-2 border-blue-800 rounded px-4 py-2 min-w-[180px]">
-                <div className="text-[10px] text-white font-semibold">STATUS PRODUKSI</div>
-                <div className="text-sm font-bold text-white uppercase">
-                  {productionState.currentStep === 'weighing' && 'PENIMBANGAN'}
-                  {productionState.currentStep.startsWith('jogging-') && `JOGGING ${productionState.currentStep.split('-')[1].toUpperCase()}`}
-                  {productionState.currentStep === 'discharging' && 'DISCHARGE MATERIAL'}
-                  {productionState.currentStep === 'mixing' && `MIXING ${productionState.mixingTimeRemaining}s`}
-                  {productionState.currentStep === 'door_cycle' && `BUKA PINTU ${productionState.mixerDoorCycle}/2`}
-                  {productionState.currentStep === 'complete' && 'SELESAI'}
-                </div>
-              </div>
-            )}
           </div>
           
           {/* Legend Panel - Bottom Right */}
