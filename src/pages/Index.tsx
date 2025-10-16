@@ -516,68 +516,68 @@ const Index = () => {
           </div>
           
           {/* Material Weight Indicators */}
-          <div className="absolute bottom-4 left-4 flex gap-2">
+          <div className="absolute bottom-4 left-4 flex gap-3">
             {/* Pasir */}
-            <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] ${
+            <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
               productionState.targetWeights.pasir > 0 
-                ? 'bg-green-900/40 border-green-500/50 animate-pulse' 
+                ? 'bg-green-900/40 border-green-500/50' 
                 : 'bg-gray-800/40 border-gray-600'
             }`}>
-              <div className="text-[10px] text-muted-foreground font-semibold">PASIR</div>
+              <div className="text-xs text-muted-foreground font-semibold">PASIR</div>
               {productionState.targetWeights.pasir > 0 ? (
-                <div className="text-sm font-bold text-green-300">
+                <div className="text-lg font-bold text-green-300 tabular-nums">
                   {productionState.currentWeights.pasir.toFixed(0)} / {productionState.targetWeights.pasir.toFixed(0)} kg
                 </div>
               ) : (
-                <div className="text-sm font-bold text-gray-400">0</div>
+                <div className="text-lg font-bold text-gray-400">0</div>
               )}
             </div>
             
             {/* Batu */}
-            <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] ${
+            <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
               productionState.targetWeights.batu > 0 
-                ? 'bg-green-900/40 border-green-500/50 animate-pulse' 
+                ? 'bg-green-900/40 border-green-500/50' 
                 : 'bg-gray-800/40 border-gray-600'
             }`}>
-              <div className="text-[10px] text-muted-foreground font-semibold">BATU</div>
+              <div className="text-xs text-muted-foreground font-semibold">BATU</div>
               {productionState.targetWeights.batu > 0 ? (
-                <div className="text-sm font-bold text-green-300">
+                <div className="text-lg font-bold text-green-300 tabular-nums">
                   {productionState.currentWeights.batu.toFixed(0)} / {productionState.targetWeights.batu.toFixed(0)} kg
                 </div>
               ) : (
-                <div className="text-sm font-bold text-gray-400">0</div>
+                <div className="text-lg font-bold text-gray-400">0</div>
               )}
             </div>
             
             {/* Semen */}
-            <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] ${
+            <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
               productionState.targetWeights.semen > 0 
-                ? 'bg-green-900/40 border-green-500/50 animate-pulse' 
+                ? 'bg-green-900/40 border-green-500/50' 
                 : 'bg-gray-800/40 border-gray-600'
             }`}>
-              <div className="text-[10px] text-muted-foreground font-semibold">SEMEN</div>
+              <div className="text-xs text-muted-foreground font-semibold">SEMEN</div>
               {productionState.targetWeights.semen > 0 ? (
-                <div className="text-sm font-bold text-green-300">
+                <div className="text-lg font-bold text-green-300 tabular-nums">
                   {productionState.currentWeights.semen.toFixed(0)} / {productionState.targetWeights.semen.toFixed(0)} kg
                 </div>
               ) : (
-                <div className="text-sm font-bold text-gray-400">0</div>
+                <div className="text-lg font-bold text-gray-400">0</div>
               )}
             </div>
             
             {/* Air */}
-            <div className={`backdrop-blur-sm border-2 rounded px-3 py-1.5 min-w-[90px] ${
+            <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
               productionState.targetWeights.air > 0 
-                ? 'bg-green-900/40 border-green-500/50 animate-pulse' 
+                ? 'bg-green-900/40 border-green-500/50' 
                 : 'bg-gray-800/40 border-gray-600'
             }`}>
-              <div className="text-[10px] text-muted-foreground font-semibold">AIR</div>
+              <div className="text-xs text-muted-foreground font-semibold">AIR</div>
               {productionState.targetWeights.air > 0 ? (
-                <div className="text-sm font-bold text-green-300">
+                <div className="text-lg font-bold text-green-300 tabular-nums">
                   {productionState.currentWeights.air.toFixed(0)} / {productionState.targetWeights.air.toFixed(0)} kg
                 </div>
               ) : (
-                <div className="text-sm font-bold text-gray-400">0</div>
+                <div className="text-lg font-bold text-gray-400">0</div>
               )}
             </div>
 
