@@ -513,14 +513,25 @@ export const useProductionSequence = (
 
     console.log('🔄 Discharge groups:', sortedGroups, groups);
 
-    // Discharge groups sequentially
+    // Track when aggregate discharge completes
+    let aggregateDischargeEnd = 0;
     let groupDelay = 0;
-    sortedGroups.forEach((groupNum, groupIndex) => {
+    
+    sortedGroups.forEach((groupNum) => {
       const groupMaterials = groups[groupNum];
       
       // Within each group, apply individual timer delays
       groupMaterials.forEach(({ material, timer, targetWeight }) => {
         const totalDelay = groupDelay + (timer * 1000);
+        const dischargeDuration = Math.max(10000, targetWeight * 30);
+        
+        // Track when aggregate finishes
+        if (material === 'pasir' || material === 'batu') {
+          const endTime = totalDelay + dischargeDuration;
+          if (endTime > aggregateDischargeEnd) {
+            aggregateDischargeEnd = endTime;
+          }
+        }
         
         const dischargeTimer = setTimeout(() => {
           console.log(`💧 Discharging ${material} from group ${groupNum}`);
@@ -533,21 +544,44 @@ export const useProductionSequence = (
       groupDelay += (groupMaterials.length * 5000);
     });
 
-    // After all discharge complete, start mixing
-    const mixingStartDelay = groupDelay + 2000;
+    // Turn off BELT-1 after aggregate discharge + 5 second delay
+    if (aggregateDischargeEnd > 0) {
+      const beltOffTimer = setTimeout(() => {
+        console.log('⏸️ Aggregate discharge complete, waiting 5 seconds...');
+        
+        // Turn off vibrator and hopper valves
+        setComponentStates(prev => ({
+          ...prev,
+          vibrator: false,
+          hopperValvePasir: false,
+          hopperValveBatu: false,
+        }));
+        controlRelay('vibrator', false);
+        
+        // Wait 5 seconds, then turn off BELT-1
+        const beltDelayTimer = setTimeout(() => {
+          console.log('🛑 Turning off BELT-1');
+          setComponentStates(prev => ({ ...prev, beltBawah: false }));
+          controlRelay('konveyor_bawah', false);
+        }, 5000);
+        addTimer(beltDelayTimer);
+        
+      }, aggregateDischargeEnd);
+      addTimer(beltOffTimer);
+    }
+
+    // Start mixing AFTER aggregate discharge + 5 second delay
+    const mixingStartDelay = aggregateDischargeEnd > 0 
+      ? aggregateDischargeEnd + 5000  // Wait for aggregate + 5s delay
+      : groupDelay + 2000;              // Or just normal delay if no aggregate
+
     const mixingTimer = setTimeout(() => {
-      // Turn off all discharge valves and BELT-1
+      // Turn off cement/water valves
       setComponentStates(prev => ({
         ...prev,
         cementValve: false,
         waterValve: false,
-        hopperValvePasir: false,
-        hopperValveBatu: false,
-        vibrator: false,
-        beltBawah: false, // Turn off BELT-1 after aggregate discharge complete
       }));
-      controlRelay('vibrator', false);
-      controlRelay('konveyor_bawah', false);
       
       startMixing(config);
     }, mixingStartDelay);
@@ -576,13 +610,19 @@ export const useProductionSequence = (
       const animationInterval = setInterval(() => {
         setProductionState(prev => {
           const currentFill = prev.hopperFillLevels[material as 'pasir' | 'batu'];
-          const newFill = Math.max(0, currentFill - (100 / animationSteps)); // Decrease by 5% per step
+          const currentWeight = prev.currentWeights[material as 'pasir' | 'batu'];
+          const newFill = Math.max(0, currentFill - (100 / animationSteps));
+          const newWeight = Math.max(0, currentWeight - (targetWeight / animationSteps));
           
           return {
             ...prev,
             hopperFillLevels: {
               ...prev.hopperFillLevels,
               [material]: newFill
+            },
+            currentWeights: {
+              ...prev.currentWeights,
+              [material]: newWeight
             }
           };
         });
@@ -590,13 +630,17 @@ export const useProductionSequence = (
       
       addInterval(animationInterval);
       
-      // Clear hopper to 0% at end of discharge
+      // Clear hopper and weight to 0 at end of discharge
       const clearTimer = setTimeout(() => {
         clearInterval(animationInterval);
         setProductionState(prev => ({
           ...prev,
           hopperFillLevels: {
             ...prev.hopperFillLevels,
+            [material]: 0
+          },
+          currentWeights: {
+            ...prev.currentWeights,
             [material]: 0
           }
         }));
