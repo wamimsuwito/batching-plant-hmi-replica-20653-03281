@@ -522,7 +522,7 @@ const Index = () => {
           </div>
           
           {/* Legend Panel - Bottom Right */}
-          <div className="absolute bottom-4 left-[460px] bg-card/90 backdrop-blur-sm border-2 border-hmi-border rounded p-3 shadow-lg">
+          <div className="absolute bottom-4 left-[560px] bg-card/90 backdrop-blur-sm border-2 border-hmi-border rounded p-3 shadow-lg">
             <h3 className="text-xs font-bold mb-2 text-foreground">Component Status Legend</h3>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
