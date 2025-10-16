@@ -477,7 +477,7 @@ const Index = () => {
           </svg>
           
           {/* Control Buttons - Right Side */}
-          <div className="absolute bottom-4 right-[220px] flex flex-col gap-4 items-center">
+          <div className="absolute bottom-4 right-[200px] flex flex-col gap-4 items-center">
             {/* Start and Stop Buttons */}
             <div className="flex gap-4">
               {/* Start Button */}
