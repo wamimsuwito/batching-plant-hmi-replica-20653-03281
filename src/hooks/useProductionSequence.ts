@@ -520,6 +520,9 @@ export const useProductionSequence = (
     sortedGroups.forEach((groupNum) => {
       const groupMaterials = groups[groupNum];
       
+      // Calculate max discharge time for THIS group
+      let maxGroupDuration = 0;
+      
       // Within each group, apply individual timer delays
       groupMaterials.forEach(({ material, timer, targetWeight }) => {
         const totalDelay = groupDelay + (timer * 1000);
@@ -533,6 +536,12 @@ export const useProductionSequence = (
           }
         }
         
+        // Track max duration in this group
+        const materialEndTime = (timer * 1000) + dischargeDuration;
+        if (materialEndTime > maxGroupDuration) {
+          maxGroupDuration = materialEndTime;
+        }
+        
         const dischargeTimer = setTimeout(() => {
           console.log(`💧 Discharging ${material} from group ${groupNum}`);
           dischargeMaterial(material, targetWeight);
@@ -540,8 +549,8 @@ export const useProductionSequence = (
         addTimer(dischargeTimer);
       });
 
-      // Group delay: estimate 5 seconds per material in group
-      groupDelay += (groupMaterials.length * 5000);
+      // NEXT group starts AFTER this group finishes
+      groupDelay += maxGroupDuration;
     });
 
     // Turn off BELT-1 after aggregate discharge + 5 second delay
@@ -648,10 +657,79 @@ export const useProductionSequence = (
       addTimer(clearTimer);
     } else if (material === 'semen') {
       setComponentStates(prev => ({ ...prev, cementValve: true }));
-      // Cement valve discharge (from weigh hopper)
+      
+      // Animate semen weight reduction (150kg → 0kg)
+      const dischargeDuration = Math.max(5000, targetWeight * 30);
+      const animationSteps = 20;
+      const stepDuration = dischargeDuration / animationSteps;
+      
+      const animationInterval = setInterval(() => {
+        setProductionState(prev => {
+          const currentWeight = prev.currentWeights.semen;
+          const newWeight = Math.max(0, currentWeight - (targetWeight / animationSteps));
+          
+          return {
+            ...prev,
+            currentWeights: {
+              ...prev.currentWeights,
+              semen: newWeight
+            }
+          };
+        });
+      }, stepDuration);
+      
+      addInterval(animationInterval);
+      
+      // Reset weight to 0 at end
+      const clearTimer = setTimeout(() => {
+        clearInterval(animationInterval);
+        setProductionState(prev => ({
+          ...prev,
+          currentWeights: {
+            ...prev.currentWeights,
+            semen: 0
+          }
+        }));
+      }, dischargeDuration);
+      addTimer(clearTimer);
+      
     } else if (material === 'air') {
       setComponentStates(prev => ({ ...prev, waterValve: true }));
-      // Water valve discharge
+      
+      // Animate air weight reduction (75kg → 0kg)
+      const dischargeDuration = Math.max(3000, targetWeight * 30);
+      const animationSteps = 20;
+      const stepDuration = dischargeDuration / animationSteps;
+      
+      const animationInterval = setInterval(() => {
+        setProductionState(prev => {
+          const currentWeight = prev.currentWeights.air;
+          const newWeight = Math.max(0, currentWeight - (targetWeight / animationSteps));
+          
+          return {
+            ...prev,
+            currentWeights: {
+              ...prev.currentWeights,
+              air: newWeight
+            }
+          };
+        });
+      }, stepDuration);
+      
+      addInterval(animationInterval);
+      
+      // Reset weight to 0 at end
+      const clearTimer = setTimeout(() => {
+        clearInterval(animationInterval);
+        setProductionState(prev => ({
+          ...prev,
+          currentWeights: {
+            ...prev.currentWeights,
+            air: 0
+          }
+        }));
+      }, dischargeDuration);
+      addTimer(clearTimer);
     }
 
     // Keep valve open for discharge duration (estimate based on weight)
@@ -700,11 +778,20 @@ export const useProductionSequence = (
     }, 1000);
     addInterval(countdownInterval);
 
-    // Start door cycle after mixing completes
-    const doorCycleTimer = setTimeout(() => {
-      startDoorCycle();
+    // After mixing completes, turn off mixer then start door cycle
+    const mixingCompleteTimer = setTimeout(() => {
+      console.log('✅ Mixing complete! Turning off mixer');
+      
+      // Turn OFF Mixer (Konveyor 2) AFTER mixing complete
+      setComponentStates(prev => ({ ...prev, mixer: false }));
+      controlRelay('mixer', false);
+      
+      // Then start door cycle
+      setTimeout(() => {
+        startDoorCycle();
+      }, 1000);
     }, config.mixingTime * 1000);
-    addTimer(doorCycleTimer);
+    addTimer(mixingCompleteTimer);
   };
 
   const startDoorCycle = () => {
@@ -764,10 +851,6 @@ export const useProductionSequence = (
     });
 
     setProductionState(prev => ({ ...prev, currentStep: 'complete' }));
-    
-    // Turn off mixer
-    setComponentStates(prev => ({ ...prev, mixer: false }));
-    controlRelay('mixer', false);
     
     // Reset after 2 seconds
     const resetTimer = setTimeout(() => {
