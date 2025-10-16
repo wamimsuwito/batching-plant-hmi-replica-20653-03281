@@ -115,6 +115,7 @@ const initialComponentStates: ComponentStates = {
 
 export const useProductionSequence = (
   onCementDeduction: (siloId: number, amount: number) => void,
+  onAggregateDeduction: (type: 'pasir' | 'batu', amount: number) => void,
   relaySettings: RelayConfig[],
   raspberryPi?: { isConnected: boolean; actualWeights: any; sendRelayCommand: any },
   isAutoMode: boolean = false
@@ -373,6 +374,11 @@ export const useProductionSequence = (
           const increment = (flowRate / 5); // Divided by 5 because we check every 200ms
           simulatedWeight = Math.min(simulatedWeight + increment + (Math.random() * 2 - 1), triggerWeight);
           currentWeight = simulatedWeight;
+          
+          // Animate bin deduction in real-time for aggregates
+          if (material === 'pasir' || material === 'batu') {
+            onAggregateDeduction(material, increment);
+          }
         } else if (phase === 2) {
           // Phase 2: Jogging - slower, controlled increments
           const now = Date.now();
@@ -386,6 +392,11 @@ export const useProductionSequence = (
             // Slower flow during jogging: ~5-10kg per ON cycle
             const joggingIncrement = (10 / (jogging.jogingOn * 5)); // Spread over jogging ON duration
             simulatedWeight = Math.min(simulatedWeight + joggingIncrement + (Math.random() * 0.5), finalWeight);
+            
+            // Animate bin deduction during jogging for aggregates
+            if (material === 'pasir' || material === 'batu') {
+              onAggregateDeduction(material, joggingIncrement);
+            }
           }
           currentWeight = simulatedWeight;
         }
@@ -845,6 +856,18 @@ export const useProductionSequence = (
   };
 
   const completeProduction = () => {
+    // Refill aggregate bins to 10000 kg after 2 seconds
+    setTimeout(() => {
+      console.log('🔄 Refilling aggregate bins to 10000 kg...');
+      onAggregateDeduction('pasir', -10000); // Negative = ADD
+      onAggregateDeduction('batu', -10000);  // Negative = ADD
+      
+      toast({
+        title: 'Bin Refilled',
+        description: 'Aggregate bins telah diisi ulang ke 10000 kg',
+      });
+    }, 2000);
+
     toast({
       title: 'Produksi Selesai',
       description: 'Batch berhasil diproduksi',

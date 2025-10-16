@@ -39,6 +39,14 @@ const Index = () => {
     { id: 6, currentVolume: 0, capacity: 120000 },
   ]);
 
+  // Initialize aggregate bins with 10,000 kg capacity each
+  const [aggregateBins, setAggregateBins] = useState([
+    { id: 1, label: 'PASIR', currentVolume: 10000, capacity: 10000, type: 'pasir' as const },
+    { id: 2, label: 'BATU 1', currentVolume: 10000, capacity: 10000, type: 'batu' as const },
+    { id: 3, label: 'BATU 2', currentVolume: 10000, capacity: 10000, type: 'batu' as const },
+    { id: 4, label: 'BIN 4', currentVolume: 10000, capacity: 10000, type: 'other' as const },
+  ]);
+
   // Load silo data from localStorage on mount
   useEffect(() => {
     const savedSilos = localStorage.getItem('cement_silos');
@@ -56,6 +64,24 @@ const Index = () => {
   useEffect(() => {
     localStorage.setItem('cement_silos', JSON.stringify(silos));
   }, [silos]);
+
+  // Load aggregate bin data from localStorage on mount
+  useEffect(() => {
+    const savedBins = localStorage.getItem('aggregate_bins');
+    if (savedBins) {
+      try {
+        const parsedBins = JSON.parse(savedBins);
+        setAggregateBins(parsedBins);
+      } catch (error) {
+        console.error('Error loading aggregate bin data:', error);
+      }
+    }
+  }, []);
+
+  // Save aggregate bin data to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('aggregate_bins', JSON.stringify(aggregateBins));
+  }, [aggregateBins]);
 
   // Handle silo filling
   const handleSiloFill = (siloId: number, volume: number) => {
@@ -100,6 +126,31 @@ const Index = () => {
     }));
   };
 
+  // Handle aggregate deduction from bin (called during weighing and refill)
+  const handleAggregateDeduction = (type: 'pasir' | 'batu', amount: number) => {
+    setAggregateBins(prev => prev.map(bin => {
+      if (bin.type === type) {
+        let newVolume;
+        
+        if (amount < 0) {
+          // Negative amount = REFILL (add to bin)
+          newVolume = Math.min(bin.capacity, bin.currentVolume + Math.abs(amount));
+          console.log(`📈 Refilling ${bin.label}: ${bin.currentVolume}kg → ${newVolume}kg`);
+        } else {
+          // Positive amount = DEDUCT (remove from bin)
+          newVolume = Math.max(0, bin.currentVolume - amount);
+          console.log(`📉 Deducting ${amount.toFixed(1)}kg from ${bin.label}: ${bin.currentVolume.toFixed(1)}kg → ${newVolume.toFixed(1)}kg`);
+        }
+        
+        return {
+          ...bin,
+          currentVolume: newVolume,
+        };
+      }
+      return bin;
+    }));
+  };
+
   // Load relay settings
   const [relaySettings, setRelaySettings] = useState<any[]>([]);
   useEffect(() => {
@@ -119,6 +170,7 @@ const Index = () => {
   // Production sequence hook with Raspberry Pi integration and auto mode
   const { productionState, componentStates, startProduction, stopProduction } = useProductionSequence(
     handleCementDeduction,
+    handleAggregateDeduction,
     relaySettings,
     raspberryPi,
     isAutoMode
@@ -232,11 +284,35 @@ const Index = () => {
           >
             {/* Aggregate Section - Left Side */}
             <g id="aggregate-section">
-              {/* 4 Storage Bins - Above hoppers - Always FULL initially */}
-              <StorageBin x={25} y={130} fillLevel={100} gateOpen={componentStates.sandBinValve} label="PASIR" />
-              <StorageBin x={105} y={130} fillLevel={100} gateOpen={componentStates.stoneBinValve} label="BATU 1" />
-              <StorageBin x={185} y={130} fillLevel={100} gateOpen={false} label="BATU 2" />
-              <StorageBin x={265} y={130} fillLevel={100} gateOpen={false} label="BIN 4" />
+              {/* 4 Storage Bins - Dynamic fill level based on bin state */}
+              <StorageBin 
+                x={25} 
+                y={130} 
+                fillLevel={(aggregateBins[0].currentVolume / aggregateBins[0].capacity) * 100} 
+                gateOpen={componentStates.sandBinValve} 
+                label="PASIR" 
+              />
+              <StorageBin 
+                x={105} 
+                y={130} 
+                fillLevel={(aggregateBins[1].currentVolume / aggregateBins[1].capacity) * 100} 
+                gateOpen={componentStates.stoneBinValve} 
+                label="BATU 1" 
+              />
+              <StorageBin 
+                x={185} 
+                y={130} 
+                fillLevel={(aggregateBins[2].currentVolume / aggregateBins[2].capacity) * 100} 
+                gateOpen={false} 
+                label="BATU 2" 
+              />
+              <StorageBin 
+                x={265} 
+                y={130} 
+                fillLevel={(aggregateBins[3].currentVolume / aggregateBins[3].capacity) * 100} 
+                gateOpen={false} 
+                label="BIN 4" 
+              />
               
               {/* Support structure connecting bins to hoppers */}
               <line x1="60" y1="252" x2="65" y2="270" className="stroke-hmi-border" strokeWidth="2" />
