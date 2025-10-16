@@ -36,31 +36,6 @@ export const WeighHopper = ({
         />
       )}
       
-      {/* Weight display - only during weighing */}
-      {targetWeight > 0 && (
-        <text
-          x="50"
-          y="30"
-          className="fill-white text-xs font-bold"
-          textAnchor="middle"
-          style={{ textShadow: '0 0 3px rgba(0,0,0,0.8)' }}
-        >
-          {currentWeight.toFixed(0)}/{targetWeight.toFixed(0)} kg
-        </text>
-      )}
-      
-      {/* Standby label when idle */}
-      {targetWeight === 0 && (
-        <text
-          x="50"
-          y="30"
-          className="fill-gray-400 text-[10px] font-semibold"
-          textAnchor="middle"
-        >
-          STANDBY
-        </text>
-      )}
-      
       {/* Bottom outlet (LONGER) */}
       <path
         d="M 30 50 L 50 70 L 70 50"

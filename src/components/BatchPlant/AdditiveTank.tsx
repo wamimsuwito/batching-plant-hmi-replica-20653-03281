@@ -17,9 +17,9 @@ export const AdditiveTank = ({
   currentVolume = 0,
   targetVolume = 0
 }: AdditiveTankProps) => {
-  // Dynamic fill level calculation
+  // Dynamic fill level calculation - fill increases as water is added
   const displayFillLevel = targetVolume > 0
-    ? Math.max(0, 100 - (currentVolume / targetVolume * 100))
+    ? Math.max(0, (currentVolume / targetVolume * 100))
     : fillLevel;
   return (
     <g transform={`translate(${x}, ${y})`}>
