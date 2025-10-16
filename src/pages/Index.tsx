@@ -173,7 +173,12 @@ const Index = () => {
     handleAggregateDeduction,
     relaySettings,
     raspberryPi,
-    isAutoMode
+    isAutoMode,
+    () => {
+      // Auto-stop when production completes
+      setIsRunning(false);
+      console.log('✅ Production complete - Start button ready for next batch');
+    }
   );
 
   const handleStart = () => {

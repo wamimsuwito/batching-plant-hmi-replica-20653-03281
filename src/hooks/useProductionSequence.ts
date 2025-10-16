@@ -118,7 +118,8 @@ export const useProductionSequence = (
   onAggregateDeduction: (type: 'pasir' | 'batu', amount: number) => void,
   relaySettings: RelayConfig[],
   raspberryPi?: { isConnected: boolean; actualWeights: any; sendRelayCommand: any },
-  isAutoMode: boolean = false
+  isAutoMode: boolean = false,
+  onComplete?: () => void
 ) => {
   const [productionState, setProductionState] = useState<ProductionState>(initialProductionState);
   const [componentStates, setComponentStates] = useState<ComponentStates>(initialComponentStates);
@@ -875,10 +876,15 @@ export const useProductionSequence = (
 
     setProductionState(prev => ({ ...prev, currentStep: 'complete' }));
     
-    // Reset after 2 seconds
+    // Reset after 2 seconds and call onComplete callback
     const resetTimer = setTimeout(() => {
       setProductionState(initialProductionState);
       setComponentStates(initialComponentStates);
+      
+      // Call completion callback to reset UI state (stop button, enable start button)
+      if (onComplete) {
+        onComplete();
+      }
     }, 2000);
     addTimer(resetTimer);
   };
