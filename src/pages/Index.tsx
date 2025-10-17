@@ -47,6 +47,12 @@ const Index = () => {
     { id: 4, label: 'BIN 4', currentVolume: 10000, capacity: 10000, type: 'other' as const },
   ]);
 
+  // Initialize water tank with 2000 kg capacity
+  const [waterTank, setWaterTank] = useState({
+    currentVolume: 2000, // Start full
+    capacity: 2000
+  });
+
   // Load silo data from localStorage on mount
   useEffect(() => {
     const savedSilos = localStorage.getItem('cement_silos');
@@ -82,6 +88,24 @@ const Index = () => {
   useEffect(() => {
     localStorage.setItem('aggregate_bins', JSON.stringify(aggregateBins));
   }, [aggregateBins]);
+
+  // Load water tank data from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('water_tank');
+    if (saved) {
+      try {
+        const parsedTank = JSON.parse(saved);
+        setWaterTank(parsedTank);
+      } catch (error) {
+        console.error('Error loading water tank data:', error);
+      }
+    }
+  }, []);
+
+  // Save water tank data to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('water_tank', JSON.stringify(waterTank));
+  }, [waterTank]);
 
   // Handle silo filling
   const handleSiloFill = (siloId: number, volume: number) => {
@@ -151,6 +175,19 @@ const Index = () => {
     }));
   };
 
+  // Handle water deduction from tank (called after discharge complete)
+  const handleWaterDeduction = (amount: number) => {
+    setWaterTank(prev => {
+      const newVolume = Math.max(0, prev.currentVolume - amount);
+      console.log(`💧 Deducting ${amount.toFixed(1)}kg water from tank: ${prev.currentVolume.toFixed(1)}kg → ${newVolume.toFixed(1)}kg`);
+      
+      return {
+        ...prev,
+        currentVolume: newVolume
+      };
+    });
+  };
+
   // Load relay settings
   const [relaySettings, setRelaySettings] = useState<any[]>([]);
   useEffect(() => {
@@ -171,6 +208,7 @@ const Index = () => {
   const { productionState, componentStates, startProduction, stopProduction } = useProductionSequence(
     handleCementDeduction,
     handleAggregateDeduction,
+    handleWaterDeduction,
     relaySettings,
     raspberryPi,
     isAutoMode,
@@ -422,14 +460,27 @@ const Index = () => {
 
             {/* Additive Tanks Section - Right Side */}
             <g id="additive-section">
-              {/* 2 Additive Tanks with valve indicators and dynamic fill levels */}
+              {/* Water Tank - Storage (2000 kg capacity) */}
               <AdditiveTank 
                 x={780} 
                 y={80}
-                label="AIR" 
-                isValveActive={componentStates.waterValve}
-                currentVolume={productionState.currentWeights.air}
+                label="TANK AIR" 
+                isValveActive={componentStates.waterTankValve}
+                currentVolume={waterTank.currentVolume}
                 targetVolume={productionState.targetWeights.air}
+              />
+              
+              {/* Weigh Hopper for Water */}
+              <WeighHopper
+                x={760}
+                y={220}
+                fillLevel={productionState.hopperFillLevels?.air || 0}
+                currentWeight={productionState.currentWeights.air}
+                targetWeight={productionState.targetWeights.air}
+                isWeighing={componentStates.waterTankValve}
+                isDischargingActive={componentStates.waterHopperValve}
+                materialType="water"
+                label="AIR"
               />
               <AdditiveTank 
                 x={840} 
@@ -455,8 +506,21 @@ const Index = () => {
                 <circle cx="17.5" cy="55" r="4" className="fill-valve-active stroke-hmi-border" strokeWidth="1" />
               </g>
 
-              {/* Pipes from additive tanks */}
-              <Pipe points="797,205 797,230" type="water" />
+              {/* Pipes: Tank Air → Weigh Hopper */}
+              <Pipe 
+                points="797,195 797,220" 
+                type="water" 
+                isActive={componentStates.waterTankValve}
+              />
+              
+              {/* Pipes: Weigh Hopper Air → Mixer */}
+              <Pipe 
+                points="810,296 810,330 600,330" 
+                type="water" 
+                isActive={componentStates.waterHopperValve}
+              />
+              
+              {/* Pipes from additive tank */}
               <Pipe points="857,205 857,220 797,220" type="water" />
             </g>
 

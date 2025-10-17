@@ -46,6 +46,7 @@ export interface ProductionState {
   hopperFillLevels: {
     pasir: number;
     batu: number;
+    air: number;
   };
 }
 
@@ -58,7 +59,8 @@ export interface ComponentStates {
   stoneBinValve: boolean; // BIN gate for BATU (fills hopper during weighing)
   hopperValvePasir: boolean; // HOPPER discharge valve (A1) - only during discharge
   hopperValveBatu: boolean; // HOPPER discharge valve (A2) - only during discharge
-  waterValve: boolean; // Discharge valve for AIR to mixer (OFF during weighing)
+  waterTankValve: boolean; // Tank AIR valve to weigh hopper (RED blinking during weighing)
+  waterHopperValve: boolean; // Weigh hopper AIR discharge valve to mixer (GREEN during discharge)
   cementValve: boolean; // Discharge valve for SEMEN from weigh hopper
   additiveValve: boolean;
   mixerDoor: boolean;
@@ -98,7 +100,7 @@ const initialProductionState: ProductionState = {
   weighingComplete: { pasir: false, batu: false, semen: false, air: false },
   mixingTimeRemaining: 0,
   mixerDoorCycle: 0,
-  hopperFillLevels: { pasir: 0, batu: 0 },
+  hopperFillLevels: { pasir: 0, batu: 0, air: 0 },
 };
 
 const initialComponentStates: ComponentStates = {
@@ -110,7 +112,8 @@ const initialComponentStates: ComponentStates = {
   stoneBinValve: false,
   hopperValvePasir: false,
   hopperValveBatu: false,
-  waterValve: false,
+  waterTankValve: false,
+  waterHopperValve: false,
   cementValve: false,
   additiveValve: false,
   mixerDoor: false,
@@ -120,6 +123,7 @@ const initialComponentStates: ComponentStates = {
 export const useProductionSequence = (
   onCementDeduction: (siloId: number, amount: number) => void,
   onAggregateDeduction: (binId: number, amount: number) => void,
+  onWaterDeduction: (amount: number) => void,
   relaySettings: RelayConfig[],
   raspberryPi?: { isConnected: boolean; actualWeights: any; sendRelayCommand: any },
   isAutoMode: boolean = false,
@@ -315,6 +319,7 @@ export const useProductionSequence = (
           siloValves: [false, false, false, false, false, false],
           sandBinValve: false,
           stoneBinValve: false,
+          waterTankValve: false,
         }));
         
         // Deduct cement from silos
@@ -358,8 +363,9 @@ export const useProductionSequence = (
     } else if (material === 'semen') {
       // Semen uses selected silo valve (already opened)
     } else if (material === 'air') {
-      // Water filling valve ON (hidden from HMI; discharge valve remains OFF)
-      controlRelay('tuang_air', true);
+      // Water tank valve ON (RED blinking) - filling weigh hopper
+      setComponentStates(prev => ({ ...prev, waterTankValve: true }));
+      controlRelay('water_tank_valve', true);
     }
 
     const weighingInterval = setInterval(() => {
@@ -415,7 +421,7 @@ export const useProductionSequence = (
         currentWeights: { ...prev.currentWeights, [material]: currentWeight },
         hopperFillLevels: {
           ...prev.hopperFillLevels,
-          ...(material === 'pasir' || material === 'batu' 
+          ...(material === 'pasir' || material === 'batu' || material === 'air'
             ? { [material]: Math.min(100, (currentWeight / targetWeight) * 100) }
             : {})
         }
@@ -435,7 +441,8 @@ export const useProductionSequence = (
           controlRelay('pintu_batu_1', false);
           setComponentStates(prev => ({ ...prev, stoneBinValve: false }));
         } else if (material === 'air') {
-          controlRelay('tuang_air', false);
+          controlRelay('water_tank_valve', false);
+          setComponentStates(prev => ({ ...prev, waterTankValve: false }));
         }
         
         // Update status to show jogging
@@ -465,8 +472,9 @@ export const useProductionSequence = (
             setComponentStates(prev => ({ ...prev, stoneBinValve: shouldBeOn }));
             controlRelay('pintu_batu_1', shouldBeOn);
           } else if (material === 'air') {
-            // Water filling valve toggled (hidden from HMI)
-            controlRelay('tuang_air', shouldBeOn);
+            // Water tank valve toggled (RED blinking during jogging)
+            setComponentStates(prev => ({ ...prev, waterTankValve: shouldBeOn }));
+            controlRelay('water_tank_valve', shouldBeOn);
           }
         }
       }
@@ -484,7 +492,8 @@ export const useProductionSequence = (
           controlRelay('pintu_batu_1', false);
           setComponentStates(prev => ({ ...prev, stoneBinValve: false }));
         } else if (material === 'air') {
-          controlRelay('tuang_air', false);
+          controlRelay('water_tank_valve', false);
+          setComponentStates(prev => ({ ...prev, waterTankValve: false }));
         }
         
         weighingStatus[material] = true;
@@ -607,7 +616,7 @@ export const useProductionSequence = (
       setComponentStates(prev => ({
         ...prev,
         cementValve: false,
-        waterValve: false,
+        waterHopperValve: false,
       }));
       
       startMixing(config);
@@ -720,20 +729,28 @@ export const useProductionSequence = (
       addTimer(clearTimer);
       
     } else if (material === 'air') {
-      setComponentStates(prev => ({ ...prev, waterValve: true }));
+      // Open weigh hopper discharge valve (GREEN blinking)
+      setComponentStates(prev => ({ ...prev, waterHopperValve: true }));
+      controlRelay('water_hopper_discharge', true);
       
-      // Animate air weight reduction (75kg → 0kg)
+      // Animate weigh hopper depletion (fill level 100% → 0%)
       const dischargeDuration = Math.max(3000, targetWeight * 30);
       const animationSteps = 20;
       const stepDuration = dischargeDuration / animationSteps;
       
       const animationInterval = setInterval(() => {
         setProductionState(prev => {
+          const currentFill = prev.hopperFillLevels.air;
           const currentWeight = prev.currentWeights.air;
+          const newFill = Math.max(0, currentFill - (100 / animationSteps));
           const newWeight = Math.max(0, currentWeight - (targetWeight / animationSteps));
           
           return {
             ...prev,
+            hopperFillLevels: {
+              ...prev.hopperFillLevels,
+              air: newFill
+            },
             currentWeights: {
               ...prev.currentWeights,
               air: newWeight
@@ -744,16 +761,23 @@ export const useProductionSequence = (
       
       addInterval(animationInterval);
       
-      // Reset weight to 0 at end
+      // Clear hopper and close valve at end
       const clearTimer = setTimeout(() => {
         clearInterval(animationInterval);
+        
+        // Hopper empty
         setProductionState(prev => ({
           ...prev,
-          currentWeights: {
-            ...prev.currentWeights,
-            air: 0
-          }
+          hopperFillLevels: { ...prev.hopperFillLevels, air: 0 },
+          currentWeights: { ...prev.currentWeights, air: 0 }
         }));
+        
+        // Close discharge valve
+        controlRelay('water_hopper_discharge', false);
+        setComponentStates(prev => ({ ...prev, waterHopperValve: false }));
+        
+        // Deduct water from tank AFTER discharge complete
+        onWaterDeduction(targetWeight);
       }, dischargeDuration);
       addTimer(clearTimer);
     }
@@ -764,7 +788,7 @@ export const useProductionSequence = (
       if (material === 'semen') {
         setComponentStates(prev => ({ ...prev, cementValve: false }));
       } else if (material === 'air') {
-        setComponentStates(prev => ({ ...prev, waterValve: false }));
+        // Water hopper valve already closed in clearTimer above
       }
       // Note: hopperValvePasir and hopperValveBatu are now closed in clearTimer above
     }, dischargeDuration);

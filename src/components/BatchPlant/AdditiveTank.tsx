@@ -21,11 +21,9 @@ export const AdditiveTank = ({
   const TANK_CAPACITY = 2000;
   
   // Dynamic fill level calculation
-  // Standby: show full tank (2000 kg)
-  // Weighing: show decreasing level as water is dispensed
-  const displayFillLevel = targetVolume > 0
-    ? Math.max(0, ((TANK_CAPACITY - currentVolume) / TANK_CAPACITY * 100))
-    : 100; // Full tank in standby
+  // currentVolume represents actual tank level (starts at 2000kg)
+  // Fill level only decreases when water is actually consumed from tank
+  const displayFillLevel = (currentVolume / TANK_CAPACITY) * 100;
   return (
     <g transform={`translate(${x}, ${y})`}>
       {/* Tank body */}
@@ -143,7 +141,7 @@ export const AdditiveTank = ({
             textAnchor="middle"
             className={`text-[8px] font-semibold ${isValveActive ? 'fill-red-400' : 'fill-gray-400'}`}
           >
-            {isValveActive ? 'WEIGHING' : 'STANDBY'}
+            {isValveActive ? 'FILLING HOPPER' : 'STANDBY'}
           </text>
         </>
       )}

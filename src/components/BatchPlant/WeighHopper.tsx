@@ -6,6 +6,8 @@ interface WeighHopperProps {
   targetWeight?: number;
   isWeighing?: boolean;
   isDischargingActive?: boolean;
+  materialType?: 'aggregate' | 'water';
+  label?: string;
 }
 
 export const WeighHopper = ({ 
@@ -15,7 +17,9 @@ export const WeighHopper = ({
   currentWeight = 0,
   targetWeight = 0,
   isWeighing = false,
-  isDischargingActive = false
+  isDischargingActive = false,
+  materialType = 'aggregate',
+  label
 }: WeighHopperProps) => {
   const displayFillLevel = targetWeight > 0 ? (currentWeight / targetWeight) * 50 : 0;
   return (
@@ -31,7 +35,7 @@ export const WeighHopper = ({
       {displayFillLevel > 0 && (
         <path
           d={`M ${10 + (50 - displayFillLevel) * 0.4} ${50 - displayFillLevel} L ${90 - (50 - displayFillLevel) * 0.4} ${50 - displayFillLevel} L ${70} 50 L 30 50 Z`}
-          className={`fill-equipment-aggregate ${isWeighing ? 'animate-pulse' : ''}`}
+          className={`${materialType === 'water' ? 'fill-blue-400' : 'fill-equipment-aggregate'} ${isWeighing ? 'animate-pulse' : ''}`}
           opacity="0.9"
         />
       )}
@@ -66,6 +70,18 @@ export const WeighHopper = ({
             DISCHARGING
           </text>
         </>
+      )}
+      
+      {/* Label */}
+      {label && (
+        <text
+          x="50"
+          y="100"
+          textAnchor="middle"
+          className="fill-hmi-text text-[10px] font-semibold"
+        >
+          {label}
+        </text>
       )}
     </g>
   );
