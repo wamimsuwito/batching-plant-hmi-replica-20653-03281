@@ -665,6 +665,14 @@ export const useProductionSequence = (
             [material]: 0
           }
         }));
+        
+        // Close hopper valve after material is fully discharged
+        controlRelay('dump_material', false);
+        setComponentStates(prev => ({ 
+          ...prev,
+          hopperValvePasir: material === 'pasir' ? false : prev.hopperValvePasir,
+          hopperValveBatu: material === 'batu' ? false : prev.hopperValveBatu,
+        }));
       }, dischargeDuration);
       addTimer(clearTimer);
     } else if (material === 'semen') {
@@ -747,18 +755,12 @@ export const useProductionSequence = (
     // Keep valve open for discharge duration (estimate based on weight)
     const dischargeDuration = Math.max(3000, targetWeight * 3); // ~3ms per kg
     const closeTimer = setTimeout(() => {
-      if (material === 'pasir' || material === 'batu') {
-        controlRelay('dump_material', false);
-        setComponentStates(prev => ({ 
-          ...prev,
-          hopperValvePasir: material === 'pasir' ? false : prev.hopperValvePasir,
-          hopperValveBatu: material === 'batu' ? false : prev.hopperValveBatu,
-        }));
-      } else if (material === 'semen') {
+      if (material === 'semen') {
         setComponentStates(prev => ({ ...prev, cementValve: false }));
       } else if (material === 'air') {
         setComponentStates(prev => ({ ...prev, waterValve: false }));
       }
+      // Note: hopperValvePasir and hopperValveBatu are now closed in clearTimer above
     }, dischargeDuration);
     addTimer(closeTimer);
   };
