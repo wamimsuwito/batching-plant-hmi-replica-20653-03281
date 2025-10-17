@@ -17,10 +17,15 @@ export const AdditiveTank = ({
   currentVolume = 0,
   targetVolume = 0
 }: AdditiveTankProps) => {
-  // Dynamic fill level calculation - fill increases as water is added
+  // Tank capacity for standby mode (2000 kg for water)
+  const TANK_CAPACITY = 2000;
+  
+  // Dynamic fill level calculation
+  // Standby: show full tank (2000 kg)
+  // Weighing: show decreasing level as water is dispensed
   const displayFillLevel = targetVolume > 0
-    ? Math.max(0, (currentVolume / targetVolume * 100))
-    : fillLevel;
+    ? Math.max(0, ((TANK_CAPACITY - currentVolume) / TANK_CAPACITY * 100))
+    : 100; // Full tank in standby
   return (
     <g transform={`translate(${x}, ${y})`}>
       {/* Tank body */}
@@ -72,14 +77,25 @@ export const AdditiveTank = ({
         className="fill-equipment-tank stroke-hmi-border"
         strokeWidth="1"
       />
+      {/* Valve indicator - RED blinking when weighing */}
       <circle 
         cx="17.5" 
         cy="100" 
         r="3" 
-        className={isValveActive ? "fill-green-500 animate-pulse" : "fill-red-500"} 
+        className={isValveActive ? "fill-red-500" : "fill-gray-500"} 
         stroke="white" 
-        strokeWidth="1" 
-      />
+        strokeWidth="1"
+      >
+        {/* Very fast blinking animation when active (weighing) */}
+        {isValveActive && (
+          <animate
+            attributeName="opacity"
+            values="1;0.2;1"
+            dur="0.3s"
+            repeatCount="indefinite"
+          />
+        )}
+      </circle>
       
       {/* Flow indicator when active */}
       {isValveActive && (
@@ -89,11 +105,25 @@ export const AdditiveTank = ({
             y1="105" 
             x2="17.5" 
             y2="115" 
-            className="stroke-blue-400 animate-pulse" 
+            className="stroke-blue-400" 
             strokeWidth="3" 
             strokeDasharray="5,5"
-          />
-          <circle cx="25" cy="100" r="2" className="fill-green-400 animate-pulse" />
+          >
+            <animate
+              attributeName="opacity"
+              values="1;0.3;1"
+              dur="0.4s"
+              repeatCount="indefinite"
+            />
+          </line>
+          <circle cx="25" cy="100" r="2" className="fill-red-400">
+            <animate
+              attributeName="opacity"
+              values="1;0.2;1"
+              dur="0.3s"
+              repeatCount="indefinite"
+            />
+          </circle>
         </>
       )}
       {/* Label and Status */}
@@ -111,9 +141,9 @@ export const AdditiveTank = ({
             x="17.5"
             y="135"
             textAnchor="middle"
-            className={`text-[8px] font-semibold ${isValveActive ? 'fill-green-400' : 'fill-red-400'}`}
+            className={`text-[8px] font-semibold ${isValveActive ? 'fill-red-400' : 'fill-gray-400'}`}
           >
-            {isValveActive ? 'ACTIVE' : 'IDLE'}
+            {isValveActive ? 'WEIGHING' : 'STANDBY'}
           </text>
         </>
       )}

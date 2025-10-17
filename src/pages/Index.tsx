@@ -425,8 +425,7 @@ const Index = () => {
               {/* 2 Additive Tanks with valve indicators and dynamic fill levels */}
               <AdditiveTank 
                 x={780} 
-                y={80} 
-                fillLevel={85} 
+                y={80}
                 label="AIR" 
                 isValveActive={componentStates.waterValve}
                 currentVolume={productionState.currentWeights.air}
