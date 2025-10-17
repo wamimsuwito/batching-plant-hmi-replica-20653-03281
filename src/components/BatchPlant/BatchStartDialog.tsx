@@ -31,6 +31,10 @@ interface BatchStartDialogProps {
   onOpenChange: (open: boolean) => void;
   onStart: (config: {
     selectedSilos: number[];
+    selectedBins: {
+      pasir: number;
+      batu: number;
+    };
     targetWeights: {
       pasir: number;
       batu: number;
@@ -135,6 +139,10 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
     // Start production
     onStart({
       selectedSilos,
+      selectedBins: {
+        pasir: 1, // Bin 1 untuk PASIR
+        batu: 2,  // Bin 2 untuk BATU 1
+      },
       targetWeights,
       mixingTime: parseInt(mixingTime),
     });

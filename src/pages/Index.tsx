@@ -127,9 +127,9 @@ const Index = () => {
   };
 
   // Handle aggregate deduction from bin (called during weighing and refill)
-  const handleAggregateDeduction = (type: 'pasir' | 'batu', amount: number) => {
+  const handleAggregateDeduction = (binId: number, amount: number) => {
     setAggregateBins(prev => prev.map(bin => {
-      if (bin.type === type) {
+      if (bin.id === binId) {
         let newVolume;
         
         if (amount < 0) {

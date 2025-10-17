@@ -3,6 +3,10 @@ import { useToast } from '@/hooks/use-toast';
 
 export interface ProductionConfig {
   selectedSilos: number[];
+  selectedBins: {
+    pasir: number; // bin ID (1-4)
+    batu: number;  // bin ID (1-4)
+  };
   targetWeights: {
     pasir: number;
     batu: number;
@@ -115,7 +119,7 @@ const initialComponentStates: ComponentStates = {
 
 export const useProductionSequence = (
   onCementDeduction: (siloId: number, amount: number) => void,
-  onAggregateDeduction: (type: 'pasir' | 'batu', amount: number) => void,
+  onAggregateDeduction: (binId: number, amount: number) => void,
   relaySettings: RelayConfig[],
   raspberryPi?: { isConnected: boolean; actualWeights: any; sendRelayCommand: any },
   isAutoMode: boolean = false,
@@ -378,7 +382,8 @@ export const useProductionSequence = (
           
           // Animate bin deduction in real-time for aggregates
           if (material === 'pasir' || material === 'batu') {
-            onAggregateDeduction(material, increment);
+            const binId = material === 'pasir' ? config.selectedBins.pasir : config.selectedBins.batu;
+            onAggregateDeduction(binId, increment);
           }
         } else if (phase === 2) {
           // Phase 2: Jogging - slower, controlled increments
@@ -396,7 +401,8 @@ export const useProductionSequence = (
             
             // Animate bin deduction during jogging for aggregates
             if (material === 'pasir' || material === 'batu') {
-              onAggregateDeduction(material, joggingIncrement);
+              const binId = material === 'pasir' ? config.selectedBins.pasir : config.selectedBins.batu;
+              onAggregateDeduction(binId, joggingIncrement);
             }
           }
           currentWeight = simulatedWeight;
@@ -862,8 +868,11 @@ export const useProductionSequence = (
     // Refill aggregate bins to 10000 kg after 2 seconds
     setTimeout(() => {
       console.log('🔄 Refilling aggregate bins to 10000 kg...');
-      onAggregateDeduction('pasir', -10000); // Negative = ADD
-      onAggregateDeduction('batu', -10000);  // Negative = ADD
+      // Refill all 4 bins
+      onAggregateDeduction(1, -10000); // Bin 1 (PASIR)
+      onAggregateDeduction(2, -10000); // Bin 2 (BATU 1)
+      onAggregateDeduction(3, -10000); // Bin 3 (BATU 2)
+      onAggregateDeduction(4, -10000); // Bin 4
       
       toast({
         title: 'Bin Refilled',
