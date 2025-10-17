@@ -10,6 +10,10 @@ export const ConveyorBelt = ({ x, y, width = 250, angle = 35, isRunning = true }
   const radians = (angle * Math.PI) / 180;
   const endX = width * Math.cos(radians);
   const endY = -width * Math.sin(radians);
+  
+  // Calculate slide direction based on angle
+  const slideX = Math.cos(radians) * 20;
+  const slideY = -Math.sin(radians) * 20;
 
   return (
     <g transform={`translate(${x}, ${y})`}>
@@ -82,9 +86,26 @@ export const ConveyorBelt = ({ x, y, width = 250, angle = 35, isRunning = true }
       
       {/* Material on belt with sliding animation */}
       {isRunning && (
-        <g className="animate-slide">
-          <ellipse cx={endX * 0.3} cy={endY * 0.3} rx="20" ry="8" className="fill-equipment-aggregate" opacity="0.8" />
-          <ellipse cx={endX * 0.6} cy={endY * 0.6} rx="18" ry="7" className="fill-equipment-aggregate" opacity="0.8" />
+        <g>
+          <ellipse cx={endX * 0.3} cy={endY * 0.3} rx="20" ry="8" className="fill-equipment-aggregate" opacity="0.8">
+            <animateTransform
+              attributeName="transform"
+              type="translate"
+              values={`0,0; ${slideX},${slideY}; 0,0`}
+              dur="2s"
+              repeatCount="indefinite"
+            />
+          </ellipse>
+          <ellipse cx={endX * 0.6} cy={endY * 0.6} rx="18" ry="7" className="fill-equipment-aggregate" opacity="0.8">
+            <animateTransform
+              attributeName="transform"
+              type="translate"
+              values={`0,0; ${slideX},${slideY}; 0,0`}
+              dur="2s"
+              repeatCount="indefinite"
+              begin="0.5s"
+            />
+          </ellipse>
         </g>
       )}
     </g>
