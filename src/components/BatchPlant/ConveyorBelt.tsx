@@ -72,7 +72,14 @@ export const ConveyorBelt = ({ x, y, width = 250, angle = 35, isRunning = true }
       {/* Motor LED Indicator */}
       {isRunning && (
         <>
-          <circle cx={endX + 20} cy={endY} r="4" className="fill-green-400 animate-pulse" />
+          <circle cx={endX + 20} cy={endY} r="4" className="fill-red-500">
+            <animate
+              attributeName="opacity"
+              values="1;0.3;1"
+              dur="0.6s"
+              repeatCount="indefinite"
+            />
+          </circle>
           <text 
             x={endX + 20} 
             y={endY + 15} 
