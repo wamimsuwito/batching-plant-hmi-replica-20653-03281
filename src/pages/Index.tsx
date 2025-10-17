@@ -488,7 +488,7 @@ const Index = () => {
                   y="0"
                   width="35"
                   height="50"
-                  className="fill-equipment-tank stroke-hmi-border"
+                  className={`${(componentStates.waterTankValve || productionState.currentWeights.air > 0) ? 'fill-equipment-tank' : 'fill-transparent'} stroke-hmi-border`}
                   strokeWidth="2"
                 />
                 
