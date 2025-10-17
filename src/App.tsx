@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, HashRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AdminLayout } from "@/components/layout/AdminLayout";
@@ -19,13 +19,16 @@ import PrintTicket from "./pages/admin/PrintTicket";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = () => {
+  const isElectron = typeof window !== "undefined" && (window as any).env?.isElectron;
+  const Router = isElectron ? HashRouter : BrowserRouter;
+  return (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <Router>
           <Routes>
             <Route path="/" element={<Index />} />
             
@@ -48,10 +51,11 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
+        </Router>
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
+};
 
 export default App;
