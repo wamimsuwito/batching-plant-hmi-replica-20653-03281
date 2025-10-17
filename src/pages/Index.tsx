@@ -560,8 +560,6 @@ const Index = () => {
                 isActive={componentStates.waterHopperValve}
               />
 
-              {/* Pipes from additive tank */}
-              <Pipe points="857,205 857,220 815,220" type="water" />
             </g>
 
             {/* Mixer Section - Center Bottom */}
