@@ -480,19 +480,32 @@ const Index = () => {
                 targetVolume={productionState.targetWeights.additive}
               />
 
-              {/* Intermediate tank */}
-              <g transform="translate(780, 230)">
-                <rect
-                  x="0"
-                  y="0"
-                  width="35"
-                  height="50"
-                  className="fill-equipment-tank stroke-hmi-border"
-                  strokeWidth="2"
-                />
-                <rect x="2" y="15" width="31" height="33" className="fill-equipment-siloFill" />
-                <circle cx="17.5" cy="55" r="4" className="fill-valve-active stroke-hmi-border" strokeWidth="1" />
-              </g>
+              {/* Water Weigh Hopper (Intermediate Tank) */}
+              <WeighHopper
+                x={760}
+                y={230}
+                fillLevel={productionState.hopperFillLevels?.air || 0}
+                currentWeight={productionState.currentWeights.air}
+                targetWeight={productionState.targetWeights.air}
+                isWeighing={componentStates.waterTankValve}
+                isDischargingActive={componentStates.waterHopperValve}
+                materialType="water"
+                label="AIR"
+              />
+
+              {/* Pipe from water tank to weigh hopper */}
+              <Pipe 
+                points="797,195 797,230" 
+                type="water" 
+                isActive={componentStates.waterTankValve}
+              />
+
+              {/* Pipe from water weigh hopper to mixer */}
+              <Pipe 
+                points="810,306 810,330 605,330 605,360" 
+                type="water" 
+                isActive={componentStates.waterHopperValve}
+              />
 
               {/* Pipes from additive tank */}
               <Pipe points="857,205 857,220 815,220" type="water" />
