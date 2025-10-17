@@ -30,14 +30,30 @@ export const AggregateHopper = ({ x, y, fillLevel = 70, isActive = false }: Aggr
         cx="25" 
         cy="80" 
         r="5" 
-        className={isActive ? "fill-green-500 animate-pulse" : "fill-red-500"} 
+        className={isActive ? "fill-green-500" : "fill-red-500"} 
         stroke="white" 
-        strokeWidth="1" 
-      />
+        strokeWidth="1"
+      >
+        {isActive && (
+          <animate
+            attributeName="opacity"
+            values="1;0.4;1"
+            dur="0.8s"
+            repeatCount="indefinite"
+          />
+        )}
+      </circle>
       
       {/* LED Indicator */}
       {isActive && (
-        <circle cx="33" cy="80" r="2" className="fill-green-400 animate-pulse" />
+        <circle cx="33" cy="80" r="2" className="fill-green-400">
+          <animate
+            attributeName="opacity"
+            values="1;0.3;1"
+            dur="0.6s"
+            repeatCount="indefinite"
+          />
+        </circle>
       )}
       
       {/* Status Text */}
