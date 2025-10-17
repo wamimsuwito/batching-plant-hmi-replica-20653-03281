@@ -6,7 +6,7 @@ interface WeighHopperProps {
   targetWeight?: number;
   isWeighing?: boolean;
   isDischargingActive?: boolean;
-  materialType?: 'aggregate' | 'water';
+  materialType?: 'aggregate' | 'water' | 'cement';
   label?: string;
 }
 
@@ -22,6 +22,14 @@ export const WeighHopper = ({
   label
 }: WeighHopperProps) => {
   const displayFillLevel = targetWeight > 0 ? (currentWeight / targetWeight) * 50 : 0;
+  
+  // Determine fill color based on material type
+  const getFillColor = () => {
+    if (materialType === 'water') return 'fill-blue-400';
+    if (materialType === 'cement') return 'fill-equipment-cement';
+    return 'fill-equipment-aggregate';
+  };
+  
   return (
     <g transform={`translate(${x}, ${y})`}>
       {/* Hopper body - trapezoid shape (BIGGER) */}
@@ -35,7 +43,7 @@ export const WeighHopper = ({
       {displayFillLevel > 0 && (
         <path
           d={`M ${10 + (50 - displayFillLevel) * 0.4} ${50 - displayFillLevel} L ${90 - (50 - displayFillLevel) * 0.4} ${50 - displayFillLevel} L ${70} 50 L 30 50 Z`}
-          className={`${materialType === 'water' ? 'fill-blue-400' : 'fill-equipment-aggregate'} ${isWeighing ? 'animate-pulse' : ''}`}
+          className={`${getFillColor()} ${isWeighing ? 'animate-pulse' : ''}`}
           opacity="0.9"
         />
       )}

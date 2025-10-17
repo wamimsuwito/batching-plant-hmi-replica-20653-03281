@@ -373,13 +373,15 @@ const Index = () => {
                 x={40} 
                 y={270} 
                 fillLevel={productionState.hopperFillLevels?.pasir || 0} 
-                isActive={componentStates.hopperValvePasir} 
+                isActive={componentStates.hopperValvePasir}
+                materialType="pasir"
               />
               <AggregateHopper 
                 x={120} 
                 y={270} 
                 fillLevel={productionState.hopperFillLevels?.batu || 0} 
-                isActive={componentStates.hopperValveBatu} 
+                isActive={componentStates.hopperValveBatu}
+                materialType="batu"
               />
               <AggregateHopper x={200} y={270} fillLevel={0} isActive={false} />
               <AggregateHopper x={280} y={270} fillLevel={0} isActive={false} />
@@ -451,6 +453,7 @@ const Index = () => {
                 targetWeight={productionState.targetWeights.semen}
                 isWeighing={productionState.currentStep === 'weighing'}
                 isDischargingActive={componentStates.cementValve}
+                materialType="cement"
               />
 
               {/* Pipes from silos to single weigh hopper with elbows */}

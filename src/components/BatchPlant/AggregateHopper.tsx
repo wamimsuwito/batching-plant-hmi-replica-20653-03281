@@ -3,9 +3,14 @@ interface AggregateHopperProps {
   y: number;
   fillLevel?: number;
   isActive?: boolean;
+  materialType?: 'pasir' | 'batu';
 }
 
-export const AggregateHopper = ({ x, y, fillLevel = 70, isActive = false }: AggregateHopperProps) => {
+export const AggregateHopper = ({ x, y, fillLevel = 70, isActive = false, materialType = 'pasir' }: AggregateHopperProps) => {
+  // Determine material color based on type
+  const materialColor = materialType === 'batu' 
+    ? 'fill-equipment-stone' 
+    : 'fill-equipment-aggregate';
   return (
     <g transform={`translate(${x}, ${y})`}>
       {/* Hopper body */}
@@ -17,7 +22,7 @@ export const AggregateHopper = ({ x, y, fillLevel = 70, isActive = false }: Aggr
       {/* Aggregate fill */}
       <path
         d={`M 2 ${60 - fillLevel * 0.6} L 48 ${60 - fillLevel * 0.6} L 48 40 L 38 58 L 12 58 L 2 40 Z`}
-        className="fill-equipment-aggregate"
+        className={materialColor}
       />
       {/* Bottom cone funnel */}
       <path
