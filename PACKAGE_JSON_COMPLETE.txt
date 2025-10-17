@@ -118,7 +118,7 @@
           ]
         }
       ],
-      "icon": "build/icon.ico",
+      "icon": "build/icon.png",
       "artifactName": "${productName}-Setup-${version}.${ext}"
     },
     "nsis": {
@@ -133,7 +133,7 @@
         "dmg",
         "zip"
       ],
-      "icon": "build/icon.icns",
+      "icon": "build/icon.png",
       "category": "public.app-category.productivity",
       "artifactName": "${productName}-${version}.${ext}"
     },
