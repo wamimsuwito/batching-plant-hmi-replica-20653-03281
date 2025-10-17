@@ -4,7 +4,7 @@
   "description": "Batch Plant Control System - Industrial HMI",
   "author": "Industrial Automation",
   "license": "MIT",
-  "main": "electron/main.cjs",
+  "main": "electron/main.js",
   "private": true,
   "type": "module",
   "scripts": {
@@ -108,7 +108,7 @@
     ],
     "asar": false,
     "extraMetadata": {
-      "main": "electron/main.cjs"
+      "main": "electron/main.js"
     },
     "win": {
       "target": [
