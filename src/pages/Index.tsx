@@ -493,15 +493,33 @@ const Index = () => {
                 />
                 
                 {/* Fill level - dinamis berdasarkan weighing */}
-                {productionState.currentWeights.air > 0 && (
+                {componentStates.waterTankValve || productionState.currentWeights.air > 0 ? (
                   <rect 
                     x="2" 
-                    y={50 - (productionState.currentWeights.air / (productionState.targetWeights.air || 1)) * 35} 
+                    y={50 - (productionState.currentWeights.air / (productionState.targetWeights.air || 1)) * 46} 
                     width="31" 
-                    height={(productionState.currentWeights.air / (productionState.targetWeights.air || 1)) * 35}
+                    height={Math.max(2, (productionState.currentWeights.air / (productionState.targetWeights.air || 1)) * 46)}
                     className={`fill-blue-400 ${componentStates.waterTankValve ? 'animate-pulse' : ''}`}
                     opacity="0.9"
                   />
+                ) : (
+                  /* Empty state - animasi kosong */
+                  <g>
+                    {/* Garis horizontal untuk menunjukkan tank kosong */}
+                    <line x1="5" y1="15" x2="30" y2="15" className="stroke-hmi-border opacity-30" strokeWidth="1" strokeDasharray="2,2" />
+                    <line x1="5" y1="25" x2="30" y2="25" className="stroke-hmi-border opacity-30" strokeWidth="1" strokeDasharray="2,2" />
+                    <line x1="5" y1="35" x2="30" y2="35" className="stroke-hmi-border opacity-30" strokeWidth="1" strokeDasharray="2,2" />
+                    
+                    {/* Text "EMPTY" */}
+                    <text
+                      x="17.5"
+                      y="30"
+                      textAnchor="middle"
+                      className="fill-hmi-border text-[8px] font-semibold opacity-40 animate-pulse"
+                    >
+                      EMPTY
+                    </text>
+                  </g>
                 )}
                 
                 {/* Valve indicator di bawah */}
