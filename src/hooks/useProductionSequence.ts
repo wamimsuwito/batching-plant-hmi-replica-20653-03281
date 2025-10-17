@@ -134,6 +134,7 @@ export const useProductionSequence = (
   const { toast } = useToast();
   const timersRef = useRef<NodeJS.Timeout[]>([]);
   const intervalsRef = useRef<NodeJS.Timeout[]>([]);
+  const mixerIdleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load jogging settings
   const getJoggingSettings = (materialName: string): JoggingSettings => {
@@ -220,6 +221,13 @@ export const useProductionSequence = (
 
   const stopProduction = () => {
     clearAllTimers();
+    
+    // Clear mixer idle timer if exists
+    if (mixerIdleTimerRef.current) {
+      clearTimeout(mixerIdleTimerRef.current);
+      mixerIdleTimerRef.current = null;
+    }
+    
     // Turn off all relays
     controlRelay('mixer', false);
     controlRelay('konveyor_atas', false);
@@ -247,6 +255,13 @@ export const useProductionSequence = (
     }
 
     clearAllTimers();
+    
+    // Clear mixer idle timer - production started again
+    if (mixerIdleTimerRef.current) {
+      console.log('🔄 New batch started - cancelling mixer idle timer');
+      clearTimeout(mixerIdleTimerRef.current);
+      mixerIdleTimerRef.current = null;
+    }
     
     setProductionState({
       ...initialProductionState,
@@ -831,15 +846,13 @@ export const useProductionSequence = (
     }, 1000);
     addInterval(countdownInterval);
 
-    // After mixing completes, turn off mixer then start door cycle
+    // After mixing completes, start door cycle (KEEP MIXER RUNNING)
     const mixingCompleteTimer = setTimeout(() => {
-      console.log('✅ Mixing complete! Turning off mixer');
+      console.log('✅ Mixing complete! Starting door cycle (mixer stays ON)');
       
-      // Turn OFF Mixer (Konveyor 2) AFTER mixing complete
-      setComponentStates(prev => ({ ...prev, mixer: false }));
-      controlRelay('mixer', false);
+      // DON'T turn off mixer yet - will turn off after 5 min idle
       
-      // Then start door cycle
+      // Start door cycle
       setTimeout(() => {
         startDoorCycle();
       }, 1000);
@@ -923,7 +936,26 @@ export const useProductionSequence = (
     // Reset after 2 seconds and call onComplete callback
     const resetTimer = setTimeout(() => {
       setProductionState(initialProductionState);
-      setComponentStates(initialComponentStates);
+      // DON'T reset componentStates - keep mixer running
+      
+      // Start 5-minute idle timer for mixer
+      console.log('⏰ Starting 5-minute idle timer for mixer...');
+      mixerIdleTimerRef.current = setTimeout(() => {
+        console.log('⏰ 5 minutes idle - turning off mixer');
+        setComponentStates(prev => ({ ...prev, mixer: false }));
+        controlRelay('mixer', false);
+        mixerIdleTimerRef.current = null;
+        
+        toast({
+          title: 'Mixer Dimatikan',
+          description: 'Mixer dimatikan setelah 5 menit idle',
+        });
+      }, 5 * 60 * 1000); // 5 minutes
+      
+      toast({
+        title: 'Sistem Siap',
+        description: 'Mixer akan tetap hidup selama 5 menit. Mulai batch baru atau mixer akan mati otomatis.',
+      });
       
       // Call completion callback to reset UI state (stop button, enable start button)
       if (onComplete) {
@@ -935,7 +967,12 @@ export const useProductionSequence = (
 
   // Cleanup on unmount
   useEffect(() => {
-    return () => clearAllTimers();
+    return () => {
+      clearAllTimers();
+      if (mixerIdleTimerRef.current) {
+        clearTimeout(mixerIdleTimerRef.current);
+      }
+    };
   }, []);
 
   return {
