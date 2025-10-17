@@ -87,23 +87,33 @@ export const ConveyorBelt = ({ x, y, width = 250, angle = 35, isRunning = true }
       {/* Material on belt with sliding animation */}
       {isRunning && (
         <g>
-          <ellipse cx={endX * 0.3} cy={endY * 0.3} rx="20" ry="8" className="fill-equipment-aggregate" opacity="0.8">
+          <ellipse cx="0" cy="0" rx="20" ry="8" className="fill-equipment-aggregate" opacity="0.8">
             <animateTransform
               attributeName="transform"
               type="translate"
-              values={`0,0; ${slideX},${slideY}; 0,0`}
-              dur="2s"
+              values={`0,0; ${endX},${endY}`}
+              dur="3s"
               repeatCount="indefinite"
             />
           </ellipse>
-          <ellipse cx={endX * 0.6} cy={endY * 0.6} rx="18" ry="7" className="fill-equipment-aggregate" opacity="0.8">
+          <ellipse cx="0" cy="0" rx="18" ry="7" className="fill-equipment-aggregate" opacity="0.8">
             <animateTransform
               attributeName="transform"
               type="translate"
-              values={`0,0; ${slideX},${slideY}; 0,0`}
-              dur="2s"
+              values={`0,0; ${endX},${endY}`}
+              dur="3s"
               repeatCount="indefinite"
-              begin="0.5s"
+              begin="1s"
+            />
+          </ellipse>
+          <ellipse cx="0" cy="0" rx="19" ry="7.5" className="fill-equipment-aggregate" opacity="0.8">
+            <animateTransform
+              attributeName="transform"
+              type="translate"
+              values={`0,0; ${endX},${endY}`}
+              dur="3s"
+              repeatCount="indefinite"
+              begin="2s"
             />
           </ellipse>
         </g>
