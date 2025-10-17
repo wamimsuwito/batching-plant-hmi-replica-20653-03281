@@ -480,29 +480,82 @@ const Index = () => {
                 targetVolume={productionState.targetWeights.additive}
               />
 
-              {/* Water Weigh Hopper (Intermediate Tank) */}
-              <WeighHopper
-                x={760}
-                y={230}
-                fillLevel={productionState.hopperFillLevels?.air || 0}
-                currentWeight={productionState.currentWeights.air}
-                targetWeight={productionState.targetWeights.air}
-                isWeighing={componentStates.waterTankValve}
-                isDischargingActive={componentStates.waterHopperValve}
-                materialType="water"
-                label="AIR"
-              />
+              {/* Intermediate Tank dengan fungsi Weighing */}
+              <g transform="translate(780, 230)">
+                {/* Tank body */}
+                <rect
+                  x="0"
+                  y="0"
+                  width="35"
+                  height="50"
+                  className="fill-equipment-tank stroke-hmi-border"
+                  strokeWidth="2"
+                />
+                
+                {/* Fill level - dinamis berdasarkan weighing */}
+                {productionState.currentWeights.air > 0 && (
+                  <rect 
+                    x="2" 
+                    y={50 - (productionState.currentWeights.air / (productionState.targetWeights.air || 1)) * 35} 
+                    width="31" 
+                    height={(productionState.currentWeights.air / (productionState.targetWeights.air || 1)) * 35}
+                    className={`fill-blue-400 ${componentStates.waterTankValve ? 'animate-pulse' : ''}`}
+                    opacity="0.9"
+                  />
+                )}
+                
+                {/* Valve indicator di bawah */}
+                <circle 
+                  cx="17.5" 
+                  cy="55" 
+                  r="4" 
+                  className={componentStates.waterHopperValve ? "fill-red-500" : "fill-green-500"} 
+                  stroke="white" 
+                  strokeWidth="1"
+                >
+                  {componentStates.waterHopperValve && (
+                    <animate
+                      attributeName="opacity"
+                      values="1;0.4;1"
+                      dur="0.3s"
+                      repeatCount="indefinite"
+                    />
+                  )}
+                </circle>
+                
+                {/* Label */}
+                <text
+                  x="17.5"
+                  y="70"
+                  textAnchor="middle"
+                  className="fill-hmi-text text-[10px] font-semibold"
+                >
+                  AIR
+                </text>
+                
+                {/* Discharging indicator */}
+                {componentStates.waterHopperValve && (
+                  <text
+                    x="17.5"
+                    y="80"
+                    textAnchor="middle"
+                    className="fill-red-400 text-[7px] font-semibold"
+                  >
+                    DISCHARGE
+                  </text>
+                )}
+              </g>
 
-              {/* Pipe from water tank to weigh hopper */}
+              {/* Pipe from water tank to intermediate tank */}
               <Pipe 
                 points="797,195 797,230" 
                 type="water" 
                 isActive={componentStates.waterTankValve}
               />
 
-              {/* Pipe from water weigh hopper to mixer */}
+              {/* Pipe from intermediate tank to mixer */}
               <Pipe 
-                points="810,306 810,330 605,330 605,360" 
+                points="797,285 797,330 605,330 605,360" 
                 type="water" 
                 isActive={componentStates.waterHopperValve}
               />
