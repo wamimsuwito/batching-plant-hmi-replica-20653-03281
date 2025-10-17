@@ -491,21 +491,6 @@ const Index = () => {
                 currentVolume={productionState.currentWeights.additive}
                 targetVolume={productionState.targetWeights.additive}
               />
-
-              {/* Intermediate tank */}
-              <g transform="translate(780, 230)">
-                <rect
-                  x="0"
-                  y="0"
-                  width="35"
-                  height="50"
-                  className="fill-equipment-tank stroke-hmi-border"
-                  strokeWidth="2"
-                />
-                <rect x="2" y="15" width="31" height="33" className="fill-equipment-siloFill" />
-                <circle cx="17.5" cy="55" r="4" className="fill-valve-active stroke-hmi-border" strokeWidth="1" />
-              </g>
-
               {/* Pipes: Tank Air → Weigh Hopper */}
               <Pipe 
                 points="797,195 797,220" 
