@@ -644,14 +644,12 @@ const Index = () => {
             {/* Pasir */}
             <div className="flex flex-col gap-1">
               {/* Target box */}
-              {productionState.targetWeights.pasir > 0 && (
-                <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
-                  <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
-                  <div className="text-xs font-bold text-blue-200 tabular-nums">
-                    {productionState.targetWeights.pasir.toFixed(0)} kg
-                  </div>
+              <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
+                <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
+                <div className="text-xs font-bold text-blue-200 tabular-nums">
+                  {productionState.targetWeights.pasir.toFixed(0)} kg
                 </div>
-              )}
+              </div>
               {/* Current weight indicator */}
               <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
                 productionState.targetWeights.pasir > 0 
@@ -668,14 +666,12 @@ const Index = () => {
             {/* Batu */}
             <div className="flex flex-col gap-1">
               {/* Target box */}
-              {productionState.targetWeights.batu > 0 && (
-                <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
-                  <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
-                  <div className="text-xs font-bold text-blue-200 tabular-nums">
-                    {productionState.targetWeights.batu.toFixed(0)} kg
-                  </div>
+              <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
+                <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
+                <div className="text-xs font-bold text-blue-200 tabular-nums">
+                  {productionState.targetWeights.batu.toFixed(0)} kg
                 </div>
-              )}
+              </div>
               {/* Current weight indicator */}
               <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
                 productionState.targetWeights.batu > 0 
@@ -692,14 +688,12 @@ const Index = () => {
             {/* Semen */}
             <div className="flex flex-col gap-1">
               {/* Target box */}
-              {productionState.targetWeights.semen > 0 && (
-                <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
-                  <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
-                  <div className="text-xs font-bold text-blue-200 tabular-nums">
-                    {productionState.targetWeights.semen.toFixed(0)} kg
-                  </div>
+              <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
+                <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
+                <div className="text-xs font-bold text-blue-200 tabular-nums">
+                  {productionState.targetWeights.semen.toFixed(0)} kg
                 </div>
-              )}
+              </div>
               {/* Current weight indicator */}
               <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
                 productionState.targetWeights.semen > 0 
@@ -716,14 +710,12 @@ const Index = () => {
             {/* Air */}
             <div className="flex flex-col gap-1">
               {/* Target box */}
-              {productionState.targetWeights.air > 0 && (
-                <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
-                  <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
-                  <div className="text-xs font-bold text-blue-200 tabular-nums">
-                    {productionState.targetWeights.air.toFixed(0)} kg
-                  </div>
+              <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
+                <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
+                <div className="text-xs font-bold text-blue-200 tabular-nums">
+                  {productionState.targetWeights.air.toFixed(0)} kg
                 </div>
-              )}
+              </div>
               {/* Current weight indicator */}
               <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
                 productionState.targetWeights.air > 0 
