@@ -691,17 +691,24 @@ export const useProductionSequence = (
       }, dischargeDuration);
       addTimer(clearTimer);
     } else if (material === 'semen') {
+      console.log('🔴 CEMENT DISCHARGE START - cementValve = TRUE');
       setComponentStates(prev => ({ ...prev, cementValve: true }));
       
       // Animate semen weight reduction (150kg → 0kg)
-      const dischargeDuration = Math.max(5000, targetWeight * 30);
+      const dischargeDuration = Math.max(8000, targetWeight * 40);
       const animationSteps = 20;
       const stepDuration = dischargeDuration / animationSteps;
+      
+      console.log(`⏱️  Cement discharge duration: ${dischargeDuration}ms (${(dischargeDuration/1000).toFixed(1)}s)`);
       
       const animationInterval = setInterval(() => {
         setProductionState(prev => {
           const currentWeight = prev.currentWeights.semen;
           const newWeight = Math.max(0, currentWeight - (targetWeight / animationSteps));
+          
+          if (Math.round(newWeight) % 20 === 0) {
+            console.log(`📉 Cement weight: ${newWeight.toFixed(1)}kg`);
+          }
           
           return {
             ...prev,
@@ -725,6 +732,7 @@ export const useProductionSequence = (
             semen: 0
           }
         }));
+        console.log('✅ Cement discharge animation complete');
       }, dischargeDuration);
       addTimer(clearTimer);
       
@@ -786,6 +794,7 @@ export const useProductionSequence = (
     const dischargeDuration = Math.max(3000, targetWeight * 3); // ~3ms per kg
     const closeTimer = setTimeout(() => {
       if (material === 'semen') {
+        console.log('🔴 CEMENT DISCHARGE END - cementValve = FALSE');
         setComponentStates(prev => ({ ...prev, cementValve: false }));
       } else if (material === 'air') {
         // Water hopper valve already closed in clearTimer above

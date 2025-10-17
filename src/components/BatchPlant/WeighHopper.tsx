@@ -59,39 +59,58 @@ export const WeighHopper = ({
       <circle 
         cx="50" 
         cy="76" 
-        r="6" 
+        r="8" 
         className={isDischargingActive ? "fill-red-500" : "fill-green-500"} 
         stroke="white" 
-        strokeWidth="1"
+        strokeWidth="2"
       >
         {isDischargingActive && (
           <animate
             attributeName="opacity"
-            values="1;0.4;1"
-            dur="0.3s"
+            values="1;0.2;1"
+            dur="0.4s"
             repeatCount="indefinite"
           />
         )}
       </circle>
       
-      {/* LED Indicator */}
+      {/* LED Indicator - Enhanced visibility */}
       {isDischargingActive && (
         <>
-          <circle cx="60" cy="76" r="2" className="fill-red-400">
+          {/* Main blinking LED */}
+          <circle cx="50" cy="76" r="3" className="fill-red-400">
             <animate
               attributeName="opacity"
-              values="1;0.3;1"
-              dur="0.3s"
+              values="1;0.2;1"
+              dur="0.4s"
               repeatCount="indefinite"
             />
           </circle>
+          
+          {/* Secondary LED ring */}
+          <circle cx="50" cy="76" r="6" className="stroke-red-400" fill="none" strokeWidth="1">
+            <animate
+              attributeName="opacity"
+              values="0.3;1;0.3"
+              dur="0.4s"
+              repeatCount="indefinite"
+            />
+          </circle>
+          
+          {/* Discharge text with blinking */}
           <text
             x="50"
-            y="90"
+            y="95"
             textAnchor="middle"
-            className="fill-red-400 text-[8px] font-semibold"
+            className="fill-red-400 text-[9px] font-bold"
           >
-            DISCHARGING
+            <tspan>DISCHARGING</tspan>
+            <animate
+              attributeName="opacity"
+              values="1;0.5;1"
+              dur="0.6s"
+              repeatCount="indefinite"
+            />
           </text>
         </>
       )}
@@ -100,7 +119,7 @@ export const WeighHopper = ({
       {label && (
         <text
           x="50"
-          y="100"
+          y="105"
           textAnchor="middle"
           className="fill-hmi-text text-[10px] font-semibold"
         >
