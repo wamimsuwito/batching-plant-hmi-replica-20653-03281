@@ -70,10 +70,19 @@ export const CementSilo = ({
         cx="20" 
         cy="155" 
         r="5" 
-        className={isActive ? "fill-green-500 animate-pulse" : "fill-valve-active"} 
+        className={isActive ? "fill-red-500" : "fill-valve-active"} 
         stroke="white" 
         strokeWidth="1" 
-      />
+      >
+        {isActive && (
+          <animate
+            attributeName="opacity"
+            values="1;0.3;1"
+            dur="0.6s"
+            repeatCount="indefinite"
+          />
+        )}
+      </circle>
       {/* Top platform */}
       <rect
         x="-5"

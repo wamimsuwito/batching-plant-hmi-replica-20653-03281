@@ -57,11 +57,20 @@ export const StorageBin = ({
         y={binHeight + 12}
         width="30"
         height="8"
-        className={gateOpen ? "fill-green-500" : "fill-red-500"}
+        className={gateOpen ? "fill-red-500" : "fill-green-500"}
         stroke="white"
         strokeWidth="1"
         rx="1"
-      />
+      >
+        {gateOpen && (
+          <animate
+            attributeName="opacity"
+            values="1;0.3;1"
+            dur="0.6s"
+            repeatCount="indefinite"
+          />
+        )}
+      </rect>
       
       {/* Gate indicator line */}
       {gateOpen && (
