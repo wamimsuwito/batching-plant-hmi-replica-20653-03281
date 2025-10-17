@@ -450,12 +450,12 @@ const Index = () => {
               />
 
               {/* Pipes from silos to single weigh hopper with elbows */}
-              <Pipe points="480,220 480,235 570,235 570,250" type="material" />
-              <Pipe points="530,220 530,240 580,240 580,250" type="material" />
-              <Pipe points="580,220 580,250" type="material" />
-              <Pipe points="630,220 630,240 610,240 610,250" type="material" />
-              <Pipe points="680,220 680,235 620,235 620,250" type="material" />
-              <Pipe points="730,220 730,230 620,230 620,250" type="material" />
+              <Pipe points="480,220 480,235 570,235 570,250" type="material" isActive={componentStates.siloValves[0]} />
+              <Pipe points="530,220 530,240 580,240 580,250" type="material" isActive={componentStates.siloValves[1]} />
+              <Pipe points="580,220 580,250" type="material" isActive={componentStates.siloValves[2]} />
+              <Pipe points="630,220 630,240 610,240 610,250" type="material" isActive={componentStates.siloValves[3]} />
+              <Pipe points="680,220 680,235 620,235 620,250" type="material" isActive={componentStates.siloValves[4]} />
+              <Pipe points="730,220 730,230 620,230 620,250" type="material" isActive={componentStates.siloValves[5]} />
             </g>
 
             {/* Additive Tanks Section - Right Side */}

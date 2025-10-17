@@ -14,6 +14,15 @@ export const Pipe = ({ points, type = "material", isActive = true }: PipeProps) 
       className={strokeClass}
       strokeWidth="4"
       opacity={isActive ? 1 : 0.4}
-    />
+    >
+      {isActive && (
+        <animate
+          attributeName="opacity"
+          values="1;0.3;1"
+          dur="0.6s"
+          repeatCount="indefinite"
+        />
+      )}
+    </polyline>
   );
 };
