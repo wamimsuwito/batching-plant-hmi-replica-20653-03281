@@ -333,28 +333,28 @@ const Index = () => {
                 y={130} 
                 fillLevel={(aggregateBins[0].currentVolume / aggregateBins[0].capacity) * 100} 
                 gateOpen={componentStates.sandBinValve} 
-                label="PASIR" 
+                label={aggregateBins[0].label}
               />
               <StorageBin 
                 x={105} 
                 y={130} 
                 fillLevel={(aggregateBins[1].currentVolume / aggregateBins[1].capacity) * 100} 
                 gateOpen={componentStates.stoneBinValve} 
-                label="BATU 1" 
+                label={aggregateBins[1].label}
               />
               <StorageBin 
                 x={185} 
                 y={130} 
                 fillLevel={(aggregateBins[2].currentVolume / aggregateBins[2].capacity) * 100} 
                 gateOpen={false} 
-                label="BATU 2" 
+                label={aggregateBins[2].label}
               />
               <StorageBin 
                 x={265} 
                 y={130} 
                 fillLevel={(aggregateBins[3].currentVolume / aggregateBins[3].capacity) * 100} 
                 gateOpen={false} 
-                label="BIN 4" 
+                label={aggregateBins[3].label}
               />
               
               {/* Support structure connecting bins to hoppers */}
