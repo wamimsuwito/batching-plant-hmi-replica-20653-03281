@@ -106,9 +106,6 @@
       "electron/**/*",
       "package.json"
     ],
-    "asarUnpack": [
-      "electron/**/*"
-    ],
     "extraMetadata": {
       "main": "electron/main.cjs"
     },
