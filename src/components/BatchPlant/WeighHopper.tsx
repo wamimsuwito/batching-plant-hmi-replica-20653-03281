@@ -52,20 +52,36 @@ export const WeighHopper = ({
         cx="50" 
         cy="76" 
         r="6" 
-        className={isDischargingActive ? "fill-green-500 animate-pulse" : "fill-red-500"} 
+        className={isDischargingActive ? "fill-red-500" : "fill-green-500"} 
         stroke="white" 
-        strokeWidth="1" 
-      />
+        strokeWidth="1"
+      >
+        {isDischargingActive && (
+          <animate
+            attributeName="opacity"
+            values="1;0.4;1"
+            dur="0.3s"
+            repeatCount="indefinite"
+          />
+        )}
+      </circle>
       
       {/* LED Indicator */}
       {isDischargingActive && (
         <>
-          <circle cx="60" cy="76" r="2" className="fill-green-400 animate-pulse" />
+          <circle cx="60" cy="76" r="2" className="fill-red-400">
+            <animate
+              attributeName="opacity"
+              values="1;0.3;1"
+              dur="0.3s"
+              repeatCount="indefinite"
+            />
+          </circle>
           <text
             x="50"
             y="90"
             textAnchor="middle"
-            className="fill-green-400 text-[8px] font-semibold animate-pulse"
+            className="fill-red-400 text-[8px] font-semibold"
           >
             DISCHARGING
           </text>

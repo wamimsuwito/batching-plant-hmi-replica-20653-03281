@@ -80,7 +80,7 @@ export const AdditiveTank = ({
         cx="17.5" 
         cy="100" 
         r="3" 
-        className={isValveActive ? "fill-red-500" : "fill-gray-500"} 
+        className={isValveActive ? "fill-red-500" : "fill-green-500"} 
         stroke="white" 
         strokeWidth="1"
       >
@@ -139,7 +139,7 @@ export const AdditiveTank = ({
             x="17.5"
             y="135"
             textAnchor="middle"
-            className={`text-[8px] font-semibold ${isValveActive ? 'fill-red-400' : 'fill-gray-400'}`}
+            className={`text-[8px] font-semibold ${isValveActive ? 'fill-red-400' : 'fill-green-400'}`}
           >
             {isValveActive ? 'FILLING HOPPER' : 'STANDBY'}
           </text>

@@ -30,7 +30,7 @@ export const AggregateHopper = ({ x, y, fillLevel = 70, isActive = false }: Aggr
         cx="25" 
         cy="80" 
         r="5" 
-        className={isActive ? "fill-green-500" : "fill-red-500"} 
+        className={isActive ? "fill-red-500" : "fill-green-500"} 
         stroke="white" 
         strokeWidth="1"
       >
@@ -38,7 +38,7 @@ export const AggregateHopper = ({ x, y, fillLevel = 70, isActive = false }: Aggr
           <animate
             attributeName="opacity"
             values="1;0.4;1"
-            dur="0.8s"
+            dur="0.3s"
             repeatCount="indefinite"
           />
         )}
@@ -46,11 +46,11 @@ export const AggregateHopper = ({ x, y, fillLevel = 70, isActive = false }: Aggr
       
       {/* LED Indicator */}
       {isActive && (
-        <circle cx="33" cy="80" r="2" className="fill-green-400">
+        <circle cx="33" cy="80" r="2" className="fill-red-400">
           <animate
             attributeName="opacity"
             values="1;0.3;1"
-            dur="0.6s"
+            dur="0.3s"
             repeatCount="indefinite"
           />
         </circle>
@@ -61,7 +61,7 @@ export const AggregateHopper = ({ x, y, fillLevel = 70, isActive = false }: Aggr
         x="25"
         y="92"
         textAnchor="middle"
-        className={`text-[8px] font-semibold ${isActive ? 'fill-green-400' : 'fill-red-400'}`}
+        className={`text-[8px] font-semibold ${isActive ? 'fill-red-400' : 'fill-green-400'}`}
       >
         {isActive ? 'OPEN' : 'CLOSED'}
       </text>
