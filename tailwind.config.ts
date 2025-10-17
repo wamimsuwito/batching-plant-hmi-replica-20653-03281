@@ -56,6 +56,8 @@ export default {
           mixer: "hsl(var(--equipment-mixer))",
           conveyor: "hsl(var(--equipment-conveyor))",
           aggregate: "hsl(var(--equipment-aggregate))",
+          stone: "hsl(var(--equipment-stone))",
+          cement: "hsl(var(--equipment-cement))",
         },
         pipe: {
           material: "hsl(var(--pipe-material))",

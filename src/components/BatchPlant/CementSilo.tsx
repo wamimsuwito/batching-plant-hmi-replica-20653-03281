@@ -20,16 +20,6 @@ export const CementSilo = ({
   // Calculate percentage for fill level (0-100)
   const percentage = capacity > 0 ? (currentVolume / capacity) * 100 : 0;
   const calculatedFillLevel = (percentage / 100) * 108; // 108 is the height of silo body
-  
-  // Determine fill color based on percentage
-  const getFillColor = () => {
-    if (percentage === 0) return "fill-gray-400";
-    if (percentage < 20) return "fill-red-500";
-    if (percentage < 50) return "fill-yellow-500";
-    return "fill-green-500";
-  };
-
-  const fillColor = getFillColor();
 
   return (
     <g transform={`translate(${x}, ${y})`}>
@@ -48,7 +38,7 @@ export const CementSilo = ({
         y={128 - calculatedFillLevel}
         width="36"
         height={calculatedFillLevel}
-        className={`${fillColor} transition-all duration-1000 ease-in-out`}
+        className="fill-equipment-cement transition-all duration-1000 ease-in-out"
       />
       {/* Top flat (not cone) */}
       <rect

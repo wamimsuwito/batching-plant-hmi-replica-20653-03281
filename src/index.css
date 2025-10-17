@@ -52,6 +52,8 @@ All colors MUST be HSL.
     --equipment-mixer: 30 85% 60%;
     --equipment-conveyor: 220 15% 30%;
     --equipment-aggregate: 30 35% 50%;
+    --equipment-stone: 210 15% 35%;
+    --equipment-cement: 0 0% 60%;
     
     /* Pipe & Valve Colors - Neon accents */
     --pipe-material: 120 80% 55%;

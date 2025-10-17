@@ -4,6 +4,7 @@ interface StorageBinProps {
   fillLevel?: number;
   gateOpen?: boolean;
   label?: string;
+  materialType?: 'pasir' | 'batu';
 }
 
 export const StorageBin = ({ 
@@ -11,11 +12,17 @@ export const StorageBin = ({
   y, 
   fillLevel = 80, 
   gateOpen = false, 
-  label = "BIN" 
+  label = "BIN",
+  materialType = 'pasir'
 }: StorageBinProps) => {
   const binWidth = 70;
   const binHeight = 90;
   const fillHeight = (fillLevel / 100) * (binHeight - 20);
+  
+  // Determine material color based on type
+  const materialColor = materialType === 'batu' 
+    ? 'fill-equipment-stone' 
+    : 'fill-equipment-aggregate';
 
   return (
     <g transform={`translate(${x}, ${y})`}>
@@ -40,7 +47,7 @@ export const StorageBin = ({
         y={binHeight - fillHeight - 10}
         width={binWidth - 4}
         height={fillHeight}
-        className="fill-equipment-aggregate"
+        className={materialColor}
         opacity="0.9"
       />
       
@@ -92,7 +99,7 @@ export const StorageBin = ({
             cy={binHeight + 25} 
             rx="8" 
             ry="12" 
-            className="fill-equipment-aggregate" 
+            className={materialColor} 
             opacity="0.7" 
           />
           <ellipse 
@@ -100,7 +107,7 @@ export const StorageBin = ({
             cy={binHeight + 35} 
             rx="6" 
             ry="10" 
-            className="fill-equipment-aggregate" 
+            className={materialColor} 
             opacity="0.6" 
           />
         </>

@@ -334,6 +334,7 @@ const Index = () => {
                 fillLevel={(aggregateBins[0].currentVolume / aggregateBins[0].capacity) * 100} 
                 gateOpen={componentStates.sandBinValve} 
                 label={aggregateBins[0].label}
+                materialType={aggregateBins[0].type}
               />
               <StorageBin 
                 x={105} 
@@ -341,6 +342,7 @@ const Index = () => {
                 fillLevel={(aggregateBins[1].currentVolume / aggregateBins[1].capacity) * 100} 
                 gateOpen={componentStates.stoneBinValve} 
                 label={aggregateBins[1].label}
+                materialType={aggregateBins[1].type}
               />
               <StorageBin 
                 x={185} 
@@ -348,6 +350,7 @@ const Index = () => {
                 fillLevel={(aggregateBins[2].currentVolume / aggregateBins[2].capacity) * 100} 
                 gateOpen={false} 
                 label={aggregateBins[2].label}
+                materialType={aggregateBins[2].type}
               />
               <StorageBin 
                 x={265} 
@@ -355,6 +358,7 @@ const Index = () => {
                 fillLevel={(aggregateBins[3].currentVolume / aggregateBins[3].capacity) * 100} 
                 gateOpen={false} 
                 label={aggregateBins[3].label}
+                materialType={aggregateBins[3].type}
               />
               
               {/* Support structure connecting bins to hoppers */}
