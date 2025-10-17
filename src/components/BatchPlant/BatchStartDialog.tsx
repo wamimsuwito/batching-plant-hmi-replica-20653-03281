@@ -56,7 +56,7 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
   const [noKendaraan, setNoKendaraan] = useState("");
   const [sopir, setSopir] = useState("");
   const [selectedSilos, setSelectedSilos] = useState<number[]>([]);
-  const [mixingTime, setMixingTime] = useState<string>("120");
+  const [mixingTime, setMixingTime] = useState<string>("10");
   const [jmfOptions, setJmfOptions] = useState<any[]>([]);
   const { toast } = useToast();
 

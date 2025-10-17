@@ -568,7 +568,7 @@ const Index = () => {
               <Pipe 
                 points="797,195 797,230" 
                 type="water" 
-                isActive={componentStates.waterTankValve}
+                isActive={false}
               />
 
               {/* Pipe from intermediate tank to mixer */}
@@ -592,10 +592,10 @@ const Index = () => {
               />
 
               {/* Pipe to mixer from single weigh hopper */}
-              <Pipe points="600,326 600,340 530,340 530,360" type="material" />
+              <Pipe points="600,326 600,340 530,340 530,360" type="material" isActive={componentStates.cementValve} />
               
               {/* Pipe from additive intermediate tank */}
-              <Pipe points="797,285 720,285 720,360 605,360" type="water" />
+              <Pipe points="797,285 720,285 720,360 605,360" type="water" isActive={false} />
             </g>
 
           </svg>
