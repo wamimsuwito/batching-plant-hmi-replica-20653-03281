@@ -15,7 +15,6 @@ function createWindow() {
     minWidth: 1280,
     minHeight: 720,
     title: 'Batch Plant Control System - HMI',
-    icon: path.join(__dirname, '../public/favicon.ico'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -57,8 +56,9 @@ function createWindow() {
           label: 'Toggle Fullscreen',
           accelerator: 'F11',
           click: () => {
-            if (!mainWindow) return;
-            mainWindow.setFullScreen(!mainWindow.isFullScreen());
+            if (mainWindow) {
+              mainWindow.setFullScreen(!mainWindow.isFullScreen());
+            }
           },
         },
         { type: 'separator' },
@@ -86,18 +86,20 @@ function createWindow() {
           label: 'Zoom In',
           accelerator: 'CmdOrCtrl+Plus',
           click: () => {
-            if (!mainWindow) return;
-            const level = mainWindow.webContents.getZoomLevel();
-            mainWindow.webContents.setZoomLevel(level + 0.5);
+            if (mainWindow) {
+              const level = mainWindow.webContents.getZoomLevel();
+              mainWindow.webContents.setZoomLevel(level + 0.5);
+            }
           },
         },
         {
           label: 'Zoom Out',
           accelerator: 'CmdOrCtrl+-',
           click: () => {
-            if (!mainWindow) return;
-            const level = mainWindow.webContents.getZoomLevel();
-            mainWindow.webContents.setZoomLevel(level - 0.5);
+            if (mainWindow) {
+              const level = mainWindow.webContents.getZoomLevel();
+              mainWindow.webContents.setZoomLevel(level - 0.5);
+            }
           },
         },
       ],
@@ -108,13 +110,15 @@ function createWindow() {
         {
           label: 'About',
           click: () => {
-            dialog.showMessageBox(mainWindow!, {
-              type: 'info',
-              title: 'About Batch Plant HMI',
-              message: 'Batch Plant Control System',
-              detail: 'Version 1.0.0\nIndustrial HMI for Concrete Batching Plant',
-              buttons: ['OK'],
-            });
+            if (mainWindow) {
+              dialog.showMessageBox(mainWindow, {
+                type: 'info',
+                title: 'About Batch Plant HMI',
+                message: 'Batch Plant Control System',
+                detail: 'Version 1.0.0\nIndustrial HMI for Concrete Batching Plant',
+                buttons: ['OK'],
+              });
+            }
           },
         },
       ],
