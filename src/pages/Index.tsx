@@ -399,7 +399,7 @@ const Index = () => {
               />
 
               {/* Conveyor Belt 1 - Below hoppers (horizontal) */}
-              <ConveyorBelt x={50} y={373} width={260} angle={0} isRunning={componentStates.beltBawah} />
+              <ConveyorBelt x={50} y={376} width={260} angle={0} isRunning={componentStates.beltBawah} />
 
               {/* Conveyor Belt 2 - From bottom left, angled upward to mixer */}
               <ConveyorBelt x={320} y={420} width={180} angle={32} isRunning={isRunning} />
