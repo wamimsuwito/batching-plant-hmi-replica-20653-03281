@@ -531,25 +531,8 @@ export const useProductionSequence = (
         } else if (material === 'air') {
           controlRelay('water_tank_valve', false);
           setComponentStates(prev => ({ ...prev, waterTankValve: false }));
-        } else if (material === 'semen') {
-          // Turn OFF silo valves dan belt atas saat weighing complete
-          console.log('🔴 Cement weighing complete - turning off silo valves and belt');
-          
-          const config = lastConfigRef.current;
-          if (config) {
-            config.selectedSilos.forEach(id => {
-              controlRelay(`silo_${id}`, false);
-            });
-          }
-          
-          setComponentStates(prev => ({
-            ...prev,
-            siloValves: prev.siloValves.map(() => false),
-            beltAtas: false,
-          }));
-          
-          controlRelay('konveyor_atas', false);
         }
+        // Semen valve will be turned off after discharge completes
         
         weighingStatus[material] = true;
         setProductionState(prev => ({
@@ -813,6 +796,23 @@ export const useProductionSequence = (
         // Matikan LED valve semen saat hopper kosong
         console.log('🔴 CEMENT DISCHARGE END (hopper empty) - cementValve = FALSE');
         setComponentStates(prev => ({ ...prev, cementValve: false }));
+        
+        // Turn OFF silo valves and belt after discharge completes
+        console.log('🔴 Turning off silo valves and belt after discharge complete');
+        const config = lastConfigRef.current;
+        if (config) {
+          config.selectedSilos.forEach(id => {
+            controlRelay(`silo_${id}`, false);
+          });
+        }
+        
+        setComponentStates(prev => ({
+          ...prev,
+          siloValves: prev.siloValves.map(() => false),
+          beltAtas: false,
+        }));
+        
+        controlRelay('konveyor_atas', false);
         
         // 🆕 INCREMENT COUNTER
         setProductionState(prev => {
