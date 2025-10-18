@@ -379,14 +379,14 @@ const Index = () => {
               <AggregateHopper 
                 x={40} 
                 y={270} 
-                fillLevel={productionState.hopperFillLevels?.pasir || 0} 
+                fillLevel={componentStates.sandBinValve ? (productionState.hopperFillLevels?.pasir || 0) : 0} 
                 isActive={componentStates.hopperValvePasir}
                 materialType="pasir"
               />
               <AggregateHopper 
                 x={120} 
                 y={270} 
-                fillLevel={productionState.hopperFillLevels?.batu || 0} 
+                fillLevel={componentStates.stoneBinValve ? (productionState.hopperFillLevels?.batu || 0) : 0} 
                 isActive={componentStates.hopperValveBatu}
                 materialType="batu"
               />
