@@ -43,8 +43,8 @@ const Index = () => {
   const [aggregateBins, setAggregateBins] = useState([
     { id: 1, label: 'pasir 1', currentVolume: 10000, capacity: 10000, type: 'pasir' as const },
     { id: 2, label: 'pasir 2', currentVolume: 10000, capacity: 10000, type: 'pasir' as const },
-    { id: 3, label: 'Batu 1', currentVolume: 10000, capacity: 10000, type: 'batu' as const },
-    { id: 4, label: 'Batu 2', currentVolume: 10000, capacity: 10000, type: 'batu' as const },
+    { id: 3, label: 'Batu 1', currentVolume: 10000, capacity: 10000, type: 'pasir' as const },
+    { id: 4, label: 'Batu 2', currentVolume: 10000, capacity: 10000, type: 'pasir' as const },
   ]);
 
   // Initialize water tank with 2000 kg capacity
