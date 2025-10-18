@@ -348,12 +348,9 @@ export const useProductionSequence = (
         clearInterval(checkInterval);
         console.log('✅ All weighing complete, starting discharge');
         
-        // Turn off weighing relays
-        controlRelay('konveyor_atas', false);
+        // Turn off weighing relays (except cement - it stays on until discharge completes)
         setComponentStates(prev => ({
           ...prev,
-          beltAtas: false,
-          siloValves: [false, false, false, false, false, false],
           sandBinValve: false,
           stoneBinValve: false,
           waterTankValve: false,
@@ -901,17 +898,9 @@ export const useProductionSequence = (
     }
 
     // Keep valve open for discharge duration (estimate based on weight)
-    const dischargeDuration = Math.max(3000, targetWeight * 3); // ~3ms per kg
-    const closeTimer = setTimeout(() => {
-      if (material === 'semen') {
-        console.log('🔴 CEMENT DISCHARGE END - cementValve = FALSE');
-        setComponentStates(prev => ({ ...prev, cementValve: false }));
-      } else if (material === 'air') {
-        // Water hopper valve already closed in clearTimer above
-      }
-      // Note: hopperValvePasir and hopperValveBatu are now closed in clearTimer above
-    }, dischargeDuration);
-    addTimer(closeTimer);
+    // NOTE: Cement valve is now closed in its own clearTimer (line 798) after animation completes
+    // Water valve is already closed in its clearTimer (line 880)
+    // Aggregate hopper valves are closed in their clearTimer (line 744)
   };
 
   const startMixing = (config: ProductionConfig) => {

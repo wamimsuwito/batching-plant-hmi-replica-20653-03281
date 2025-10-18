@@ -458,7 +458,7 @@ const Index = () => {
                 y={250} 
                 currentWeight={productionState.currentWeights.semen}
                 targetWeight={productionState.targetWeights.semen}
-                isWeighing={productionState.currentStep === 'weighing'}
+                isWeighing={productionState.targetWeights.semen > 0 && !productionState.weighingComplete.semen}
                 isDischargingActive={componentStates.cementValve}
                 materialType="cement"
               />
