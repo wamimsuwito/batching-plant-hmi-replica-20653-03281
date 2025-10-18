@@ -52,7 +52,6 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
             <img src={farikaLogo} alt="PT Farika Logo" className="w-16 h-16 print:w-14 print:h-14" />
             <div className="flex-1">
               <h1 className="text-lg print:text-base font-bold">PT. FARIKA RIAU PERKASA</h1>
-              <p className="text-xs print:text-[10px] italic">one stop concrete solution</p>
               <p className="text-xs print:text-[10px] font-semibold">READYMIX & PRECAST CONCRETE</p>
               <p className="text-[10px] print:text-[9px] mt-0.5">
                 Jl. Soekarno Hatta Komp. SKA No. 62 E Pekanbaru Telp. (0761) 7090228 - 571662
