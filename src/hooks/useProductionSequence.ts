@@ -181,6 +181,7 @@ export const useProductionSequence = (
   const intervalsRef = useRef<NodeJS.Timeout[]>([]);
   const mixerIdleTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastConfigRef = useRef<ProductionConfig | null>(null);
+  const finalSnapshotRef = useRef({ pasir: 0, batu: 0, semen: 0, air: 0 });
 
   // Helper function to add activity log
   const addActivityLog = (message: string) => {
@@ -629,7 +630,12 @@ export const useProductionSequence = (
         // Get current weight
         let currentWeight;
         if (raspberryPi?.isConnected) {
-          currentWeight = raspberryPi.actualWeights[material] || startingWeight;
+          // Map material names to actualWeights channels
+          const channel = material.startsWith('pasir') ? 'pasir' : 
+                         material.startsWith('batu') ? 'batu' : 
+                         material === 'semen' ? 'semen' : 
+                         material === 'air' ? 'air' : material;
+          currentWeight = raspberryPi.actualWeights[channel] || startingWeight;
         } else {
           // SIMULATION MODE - Realistic weighing simulation
           if (phase === 1) {
@@ -880,13 +886,23 @@ export const useProductionSequence = (
   };
 
   const startDischargeSequence = (config: ProductionConfig) => {
-    // Reset discharge counter
-    setProductionState(prev => ({
-      ...prev,
-      currentStep: 'discharging',
-      dischargedMaterialsCount: 0,
-      totalMaterialsToDischarge: 4, // pasir, batu, semen, air
-    }));
+    // Capture final weights BEFORE discharge starts
+    setProductionState(prev => {
+      finalSnapshotRef.current = {
+        pasir: Math.round(prev.currentWeights.pasir),
+        batu: Math.round(prev.currentWeights.batu),
+        semen: Math.round(prev.currentWeights.semen),
+        air: Math.round(prev.currentWeights.air),
+      };
+      console.log('📸 Final weights snapshot:', finalSnapshotRef.current);
+      
+      return {
+        ...prev,
+        currentStep: 'discharging',
+        dischargedMaterialsCount: 0,
+        totalMaterialsToDischarge: 4, // pasir, batu, semen, air
+      };
+    });
     
     toast({
       title: 'Penimbangan Selesai',
@@ -1556,13 +1572,8 @@ export const useProductionSequence = (
           
           // Call completion callback with final weights snapshot
           if (onComplete) {
-            const finalWeights = {
-              pasir: prev.currentWeights.pasir,
-              batu: prev.currentWeights.batu,
-              semen: prev.currentWeights.semen,
-              air: prev.currentWeights.air,
-            };
-            onComplete(finalWeights);
+            console.log('✅ Calling onComplete with snapshot:', finalSnapshotRef.current);
+            onComplete(finalSnapshotRef.current);
           }
         }, 2000);
         addTimer(resetTimer);

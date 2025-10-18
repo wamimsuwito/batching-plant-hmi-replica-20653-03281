@@ -247,6 +247,17 @@ const Index = () => {
       const realisasiSemen = Math.round(finalWeights?.semen || 0);
       const realisasiAir = Math.round(finalWeights?.air || 0);
       
+      console.log('🎫 Ticket data:', {
+        targets: { targetPasir, targetBatu, targetSemen, targetAir },
+        realisasi: { realisasiPasir, realisasiBatu, realisasiSemen, realisasiAir },
+        deviasi: {
+          pasir: realisasiPasir - targetPasir,
+          batu: realisasiBatu - targetBatu,
+          semen: realisasiSemen - targetSemen,
+          air: realisasiAir - targetAir
+        }
+      });
+      
       // Calculate total volume (use volume per mixing if available, otherwise calculate)
       const volumePerMixing = currentBatchConfig?.volume 
         ? (currentBatchConfig.volume / productionState.jumlahMixing).toFixed(2)
