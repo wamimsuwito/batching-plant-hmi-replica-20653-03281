@@ -116,28 +116,8 @@ All colors MUST be HSL.
     margin: 1cm;
   }
   
-  body * {
-    visibility: hidden;
-  }
-  
-  .print\:max-w-full,
-  .print\:max-w-full * {
-    visibility: visible;
-  }
-  
-  .print\:max-w-full {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-  }
-  
   .print\:hidden {
     display: none !important;
-  }
-  
-  .print\:p-8 {
-    padding: 2rem;
   }
   
   /* Override dark theme for printing */
@@ -151,5 +131,7 @@ All colors MUST be HSL.
   /* Ensure all text is visible when printing */
   * {
     color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }

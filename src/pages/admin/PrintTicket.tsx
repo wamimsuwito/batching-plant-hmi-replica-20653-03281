@@ -44,8 +44,8 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto print:max-w-full print:max-h-full">
-        <div className="print:p-8">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto print:max-w-none print:max-h-none print:overflow-visible print:p-0">
+        <div className="p-6 print:p-8 print:w-full">
           {/* Header */}
           <div className="flex items-start gap-4 border-b-2 border-black pb-4 mb-4">
             <img src={farikaLogo} alt="PT Farika Logo" className="w-20 h-20" />
