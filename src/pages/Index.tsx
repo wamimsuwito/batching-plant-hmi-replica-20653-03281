@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { CementSilo } from "@/components/BatchPlant/CementSilo";
 import { AggregateHopper } from "@/components/BatchPlant/AggregateHopper";
@@ -32,6 +32,7 @@ const Index = () => {
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
   const [productionStartTime, setProductionStartTime] = useState<Date | null>(null);
   const [currentBatchConfig, setCurrentBatchConfig] = useState<any>(null);
+  const currentBatchConfigRef = useRef<any>(null); // Use ref to persist config in callback
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -235,9 +236,19 @@ const Index = () => {
       const endTime = new Date();
       const startTime = productionStartTime || endTime;
       
+      // Use ref to access latest batch config (avoid closure issue)
+      const batchConfig = currentBatchConfigRef.current;
+      
+      console.log('🔍 DEBUG - Checking available data:', {
+        hasBatchConfig: !!batchConfig,
+        batchConfigTargets: batchConfig?.targetWeights,
+        productionStateTargets: productionState.targetWeights,
+        finalWeights
+      });
+      
       // Get target weights from production state (already per mixing)
       // Use targetWeights from currentBatchConfig (already saved when batch started)
-      const targetWeights = currentBatchConfig?.targetWeights || productionState.targetWeights;
+      const targetWeights = batchConfig?.targetWeights || productionState.targetWeights;
       const targetPasir = Math.round((targetWeights.pasir1 || 0) + (targetWeights.pasir2 || 0));
       const targetBatu = Math.round((targetWeights.batu1 || 0) + (targetWeights.batu2 || 0));
       const targetSemen = Math.round(targetWeights.semen || 0);
@@ -263,8 +274,8 @@ const Index = () => {
       });
       
       // Calculate total volume (use volume per mixing if available, otherwise calculate)
-      const volumePerMixing = currentBatchConfig?.volume 
-        ? (currentBatchConfig.volume / productionState.jumlahMixing).toFixed(2)
+      const volumePerMixing = batchConfig?.volume 
+        ? (batchConfig.volume / productionState.jumlahMixing).toFixed(2)
         : ((targetPasir + targetBatu + targetSemen + targetAir) / 2400).toFixed(2);
 
       const ticket: TicketData = {
@@ -274,16 +285,16 @@ const Index = () => {
         tanggal: endTime.toLocaleDateString('id-ID'),
         jamMulai: startTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
         jamSelesai: endTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-        namaPelanggan: currentBatchConfig?.pelanggan || "PT SIDOMUNCUL",
-        lokasiProyek: currentBatchConfig?.lokasi || "Pabrik Baru Pekanbaru",
-        mutuBeton: currentBatchConfig?.mutuBeton || "K300",
-        slump: `${currentBatchConfig?.slump || "12"} cm`,
+        namaPelanggan: batchConfig?.pelanggan || "PT SIDOMUNCUL",
+        lokasiProyek: batchConfig?.lokasi || "Pabrik Baru Pekanbaru",
+        mutuBeton: batchConfig?.mutuBeton || "K300",
+        slump: `${batchConfig?.slump || "12"} cm`,
         volume: `${volumePerMixing} M³`,
-        namaSopir: currentBatchConfig?.sopir || "UMAR",
-        nomorMobil: currentBatchConfig?.noKendaraan || "BM 0978 VOX",
+        namaSopir: batchConfig?.sopir || "UMAR",
+        nomorMobil: batchConfig?.noKendaraan || "BM 0978 VOX",
         nomorLambung: "FC98",
         nomorRitasi: `${productionState.currentMixing}`,
-        totalVolume: `${currentBatchConfig?.volume || volumePerMixing} M³`,
+        totalVolume: `${batchConfig?.volume || volumePerMixing} M³`,
         materials: {
           pasir: {
             target: targetPasir,
@@ -400,7 +411,13 @@ const Index = () => {
         open={batchStartOpen} 
         onOpenChange={setBatchStartOpen}
         onStart={(config) => {
+          console.log('📝 Batch Config Saved:', {
+            targetWeights: config.targetWeights,
+            mutuBeton: config.mutuBeton,
+            volume: config.volume
+          });
           setCurrentBatchConfig(config); // Store batch config for ticket generation
+          currentBatchConfigRef.current = config; // Store in ref for callback access
           startProduction(config);
           handleStart();
         }}
