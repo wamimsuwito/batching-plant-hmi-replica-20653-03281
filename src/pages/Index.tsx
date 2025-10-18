@@ -240,11 +240,15 @@ const Index = () => {
       const totalWeight = totalPasir + totalBatu + productionState.targetWeights.semen + productionState.targetWeights.air;
       const totalVolumeM3 = (totalWeight / 2400).toFixed(2); // Convert kg to m³ (density ~2400 kg/m³ for concrete)
 
-      // Calculate actual realisasi from current weights
-      const realisasiPasir = Math.round(productionState.currentWeights.pasir);
-      const realisasiBatu = Math.round(productionState.currentWeights.batu);
-      const realisasiSemen = Math.round(productionState.currentWeights.semen);
-      const realisasiAir = Math.round(productionState.currentWeights.air);
+      // Use actual weights from Raspberry Pi if connected, otherwise use data from production sequence
+      const actualWeights = raspberryPi.isConnected && raspberryPi.actualWeights
+        ? raspberryPi.actualWeights
+        : productionState.currentWeights;
+      
+      const realisasiPasir = Math.round(actualWeights.pasir);
+      const realisasiBatu = Math.round(actualWeights.batu);
+      const realisasiSemen = Math.round(actualWeights.semen);
+      const realisasiAir = Math.round(actualWeights.air);
 
       const ticket: TicketData = {
         id: `TICKET-${Date.now()}`,

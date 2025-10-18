@@ -116,6 +116,11 @@ All colors MUST be HSL.
     margin: 0.75cm;
   }
 
+  /* Hide everything except dialog content */
+  body > *:not([role="dialog"]) {
+    display: none !important;
+  }
+
   body,
   body::before,
   body::after {
@@ -123,11 +128,33 @@ All colors MUST be HSL.
     color: black !important;
   }
 
-  /* Ensure all text is visible when printing */
+  /* Ensure all content is visible when printing */
   * {
-    color: black !important;
+    background: white !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  /* Text colors - most text black, red for negative deviation */
+  * {
+    color: black !important;
+  }
+
+  .text-red-600 {
+    color: #dc2626 !important;
+  }
+
+  .text-gray-600 {
+    color: #4b5563 !important;
+  }
+
+  /* Table styling */
+  table, th, td {
+    border-color: black !important;
+  }
+
+  thead tr, .bg-gray-100 {
+    background: #f3f4f6 !important;
   }
 
   .print\:hidden {
@@ -140,7 +167,7 @@ All colors MUST be HSL.
     break-inside: avoid;
   }
 
-  /* Keep related elements together */
+  /* Keep table rows together */
   tr {
     page-break-inside: avoid;
     break-inside: avoid;

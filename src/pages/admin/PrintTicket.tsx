@@ -44,163 +44,127 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto print:max-w-none print:max-h-none print:overflow-visible print:p-0">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto print:max-w-full print:h-auto">
         <DialogTitle className="sr-only">Tiket Produksi</DialogTitle>
-        <div className="p-6 print:p-4 print:w-full">
+        <div className="bg-white text-black p-4 print:p-4">
           {/* Header */}
-          <div className="flex items-start gap-4 border-b-2 border-black pb-2 mb-2 print:pb-2 print:mb-2">
-            <img src={farikaLogo} alt="PT Farika Logo" className="w-16 h-16 print:w-12 print:h-12" />
+          <div className="flex items-center gap-3 border-b-2 border-black pb-2 mb-3 print:pb-2 print:mb-2">
+            <img src={farikaLogo} alt="PT Farika Logo" className="w-16 h-16 print:w-14 print:h-14" />
             <div className="flex-1">
-              <h1 className="text-xl print:text-lg font-bold">PT. FARIKA RIAU PERKASA</h1>
-              <p className="text-sm print:text-xs italic">one stop concrete solution</p>
-              <p className="text-sm print:text-xs font-semibold">READYMIX & PRECAST CONCRETE</p>
-              <p className="text-xs print:text-[10px] mt-1">
+              <h1 className="text-lg print:text-base font-bold">PT. FARIKA RIAU PERKASA</h1>
+              <p className="text-xs print:text-[10px] italic">one stop concrete solution</p>
+              <p className="text-xs print:text-[10px] font-semibold">READYMIX & PRECAST CONCRETE</p>
+              <p className="text-[10px] print:text-[9px] mt-0.5">
                 Jl. Soekarno Hatta Komp. SKA No. 62 E Pekanbaru Telp. (0761) 7090228 - 571662
               </p>
             </div>
           </div>
 
           {/* Title */}
-          <h2 className="text-center text-lg print:text-base font-bold mb-2 print:mb-2">BUKTI TIMBANG (BP-1)</h2>
+          <h2 className="text-center text-base print:text-sm font-bold mb-3 print:mb-2 bg-gray-100 py-1.5 print:py-1">BUKTI TIMBANG (BP-1)</h2>
 
-          {/* Info Grid */}
-          <div className="grid grid-cols-2 gap-2 print:gap-2 mb-2 print:mb-2 text-sm print:text-xs">
-            {/* Left Column */}
-            <div>
-              <div className="flex gap-2 mb-1">
-                <span className="font-semibold min-w-[120px]">Job Order</span>
-                <span>: {ticketData.jobOrder}</span>
-              </div>
-              <div className="flex gap-2 mb-1">
-                <span className="font-semibold min-w-[120px]">Nomor PO</span>
-                <span>: {ticketData.nomorPO}</span>
-              </div>
-              <div className="flex gap-2 mb-2">
-                <span className="font-semibold min-w-[120px]">Tanggal</span>
-                <span>: {ticketData.tanggal}</span>
-              </div>
-              
-              <div className="flex gap-2 mb-1">
-                <span className="font-semibold min-w-[120px]">Nama Pelanggan</span>
-                <span>: {ticketData.namaPelanggan}</span>
-              </div>
-              <div className="flex gap-2 mb-1">
-                <span className="font-semibold min-w-[120px]">Lokasi Proyek</span>
-                <span>: {ticketData.lokasiProyek}</span>
-              </div>
-              <div className="flex gap-2 mb-1">
-                <span className="font-semibold min-w-[120px]">Mutu Beton</span>
-                <span>: {ticketData.mutuBeton}</span>
-              </div>
-              <div className="flex gap-2 mb-1">
-                <span className="font-semibold min-w-[120px]">Slump</span>
-                <span>: {ticketData.slump}</span>
-              </div>
-              <div className="flex gap-2">
-                <span className="font-semibold min-w-[120px]">Volume</span>
-                <span>: {ticketData.volume}</span>
-              </div>
+          {/* Info Grid - 2 Columns */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1 mb-3 print:mb-2 text-xs print:text-[10px]">
+            <div className="space-y-0.5">
+              <div className="flex"><span className="font-semibold w-28">Job Order</span><span>: {ticketData.jobOrder}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Nomor PO</span><span>: {ticketData.nomorPO}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Tanggal</span><span>: {ticketData.tanggal}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Nama Pelanggan</span><span>: {ticketData.namaPelanggan}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Lokasi Proyek</span><span>: {ticketData.lokasiProyek}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Mutu Beton</span><span>: {ticketData.mutuBeton}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Slump</span><span>: {ticketData.slump}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Volume</span><span>: {ticketData.volume}</span></div>
             </div>
-
-            {/* Right Column */}
-            <div>
-              <div className="flex gap-2 mb-1 justify-end">
-                <span className="font-semibold min-w-[120px]">Jam Mulai:</span>
-                <span className="min-w-[100px]">{ticketData.jamMulai}</span>
-              </div>
-              <div className="flex gap-2 mb-2 justify-end">
-                <span className="font-semibold min-w-[120px]">Jam Selesai:</span>
-                <span className="min-w-[100px]">{ticketData.jamSelesai}</span>
-              </div>
-              
-              <div className="flex gap-2 mb-1 justify-end">
-                <span className="font-semibold min-w-[120px]">Nama Sopir</span>
-                <span className="min-w-[100px]">: {ticketData.namaSopir}</span>
-              </div>
-              <div className="flex gap-2 mb-1 justify-end">
-                <span className="font-semibold min-w-[120px]">Nomor Mobil</span>
-                <span className="min-w-[100px]">: {ticketData.nomorMobil}</span>
-              </div>
-              <div className="flex gap-2 mb-1 justify-end">
-                <span className="font-semibold min-w-[120px]">Nomor Lambung</span>
-                <span className="min-w-[100px]">: {ticketData.nomorLambung}</span>
-              </div>
-              <div className="flex gap-2 mb-1 justify-end">
-                <span className="font-semibold min-w-[120px]">Nomor Ritasi</span>
-                <span className="min-w-[100px]">: {ticketData.nomorRitasi}</span>
-              </div>
-              <div className="flex gap-2 justify-end">
-                <span className="font-semibold min-w-[120px]">Total Volume</span>
-                <span className="min-w-[100px]">: {ticketData.totalVolume}</span>
-              </div>
+            <div className="space-y-0.5">
+              <div className="flex"><span className="font-semibold w-28">Jam Mulai</span><span>: {ticketData.jamMulai}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Jam Selesai</span><span>: {ticketData.jamSelesai}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Nama Sopir</span><span>: {ticketData.namaSopir}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Nomor Mobil</span><span>: {ticketData.nomorMobil}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Nomor Lambung</span><span>: {ticketData.nomorLambung}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Nomor Ritasi</span><span>: {ticketData.nomorRitasi}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Total Volume</span><span>: {ticketData.totalVolume}</span></div>
             </div>
           </div>
 
           {/* Material Table */}
           <div className="mb-3 print:mb-2">
-            <h3 className="text-center text-sm print:text-xs font-semibold mb-2">Aktual penimbangan (Kg)</h3>
-            <table className="w-full border border-black text-sm print:text-xs">
+            <h3 className="text-center text-xs print:text-[10px] font-semibold mb-1.5 print:mb-1">Aktual penimbangan (Kg)</h3>
+            <table className="w-full border-2 border-black text-xs print:text-[10px]">
               <thead>
-                <tr className="border-b border-black">
-                  <th className="border-r border-black p-1.5 print:p-1 text-left">Material</th>
-                  <th className="border-r border-black p-1.5 print:p-1 text-right">Target</th>
-                  <th className="border-r border-black p-1.5 print:p-1 text-right">Realisasi</th>
-                  <th className="p-1.5 print:p-1 text-right">Deviasi</th>
+                <tr className="bg-gray-100">
+                  <th className="border-2 border-black p-1.5 print:p-1 text-left font-bold">Material</th>
+                  <th className="border-2 border-black p-1.5 print:p-1 text-center font-bold">Target</th>
+                  <th className="border-2 border-black p-1.5 print:p-1 text-center font-bold">Realisasi</th>
+                  <th className="border-2 border-black p-1.5 print:p-1 text-center font-bold">Deviasi</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-black">
-                  <td className="border-r border-black p-1.5 print:p-1">Pasir</td>
-                  <td className="border-r border-black p-1.5 print:p-1 text-right">{ticketData.materials.pasir.target}</td>
-                  <td className="border-r border-black p-1.5 print:p-1 text-right">{ticketData.materials.pasir.realisasi}</td>
-                  <td className="p-1.5 print:p-1 text-right">{ticketData.materials.pasir.deviasi}</td>
+                <tr>
+                  <td className="border-2 border-black p-1.5 print:p-1 font-semibold">Pasir</td>
+                  <td className="border-2 border-black p-1.5 print:p-1 text-center">{ticketData.materials.pasir.target}</td>
+                  <td className="border-2 border-black p-1.5 print:p-1 text-center">{ticketData.materials.pasir.realisasi}</td>
+                  <td className={`border-2 border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.pasir.deviasi < 0 ? 'text-red-600' : ''}`}>
+                    {ticketData.materials.pasir.deviasi > 0 ? '+' : ''}{ticketData.materials.pasir.deviasi}
+                  </td>
                 </tr>
-                <tr className="border-b border-black">
-                  <td className="border-r border-black p-1.5 print:p-1">Batu</td>
-                  <td className="border-r border-black p-1.5 print:p-1 text-right">{ticketData.materials.batu.target}</td>
-                  <td className="border-r border-black p-1.5 print:p-1 text-right">{ticketData.materials.batu.realisasi}</td>
-                  <td className="p-1.5 print:p-1 text-right">{ticketData.materials.batu.deviasi}</td>
+                <tr>
+                  <td className="border-2 border-black p-1.5 print:p-1 font-semibold">Batu</td>
+                  <td className="border-2 border-black p-1.5 print:p-1 text-center">{ticketData.materials.batu.target}</td>
+                  <td className="border-2 border-black p-1.5 print:p-1 text-center">{ticketData.materials.batu.realisasi}</td>
+                  <td className={`border-2 border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.batu.deviasi < 0 ? 'text-red-600' : ''}`}>
+                    {ticketData.materials.batu.deviasi > 0 ? '+' : ''}{ticketData.materials.batu.deviasi}
+                  </td>
                 </tr>
-                <tr className="border-b border-black">
-                  <td className="border-r border-black p-1.5 print:p-1">Semen</td>
-                  <td className="border-r border-black p-1.5 print:p-1 text-right">{ticketData.materials.semen.target}</td>
-                  <td className="border-r border-black p-1.5 print:p-1 text-right">{ticketData.materials.semen.realisasi}</td>
-                  <td className="p-1.5 print:p-1 text-right">{ticketData.materials.semen.deviasi}</td>
+                <tr>
+                  <td className="border-2 border-black p-1.5 print:p-1 font-semibold">Semen</td>
+                  <td className="border-2 border-black p-1.5 print:p-1 text-center">{ticketData.materials.semen.target}</td>
+                  <td className="border-2 border-black p-1.5 print:p-1 text-center">{ticketData.materials.semen.realisasi}</td>
+                  <td className={`border-2 border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.semen.deviasi < 0 ? 'text-red-600' : ''}`}>
+                    {ticketData.materials.semen.deviasi > 0 ? '+' : ''}{ticketData.materials.semen.deviasi}
+                  </td>
                 </tr>
-                <tr className="border-b border-black">
-                  <td className="border-r border-black p-1.5 print:p-1">Air</td>
-                  <td className="border-r border-black p-1.5 print:p-1 text-right">{ticketData.materials.air.target}</td>
-                  <td className="border-r border-black p-1.5 print:p-1 text-right">{ticketData.materials.air.realisasi}</td>
-                  <td className="p-1.5 print:p-1 text-right">{ticketData.materials.air.deviasi}</td>
+                <tr>
+                  <td className="border-2 border-black p-1.5 print:p-1 font-semibold">Air</td>
+                  <td className="border-2 border-black p-1.5 print:p-1 text-center">{ticketData.materials.air.target}</td>
+                  <td className="border-2 border-black p-1.5 print:p-1 text-center">{ticketData.materials.air.realisasi}</td>
+                  <td className={`border-2 border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.air.deviasi < 0 ? 'text-red-600' : ''}`}>
+                    {ticketData.materials.air.deviasi > 0 ? '+' : ''}{ticketData.materials.air.deviasi}
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          {/* Signatures */}
-          <div className="grid grid-cols-3 gap-4 print:gap-3 mb-3 print:mb-2 text-sm signature-section">
+          {/* Signatures - 3 Columns */}
+          <div className="grid grid-cols-3 gap-4 print:gap-3 mb-2 print:mb-1.5 signature-section">
             <div className="text-center">
-              <p className="print:text-xs mb-8 print:mb-6">Penerima,</p>
-              <p className="border-t border-black pt-1 print:text-xs">(_____________________)</p>
+              <p className="text-xs print:text-[10px] mb-12 print:mb-10 font-semibold">Penerima,</p>
+              <div className="border-t-2 border-black pt-1">
+                <p className="text-xs print:text-[10px]">(_________________)</p>
+              </div>
             </div>
             <div className="text-center">
-              <p className="print:text-xs mb-8 print:mb-6">Operator,</p>
-              <p className="border-t border-black pt-1 print:text-xs">(_____________________)</p>
+              <p className="text-xs print:text-[10px] mb-12 print:mb-10 font-semibold">Operator,</p>
+              <div className="border-t-2 border-black pt-1">
+                <p className="text-xs print:text-[10px]">(_________________)</p>
+              </div>
             </div>
             <div className="text-center">
-              <p className="print:text-xs mb-8 print:mb-6">Quality Control,</p>
-              <p className="border-t border-black pt-1 print:text-xs">(_____________________)</p>
+              <p className="text-xs print:text-[10px] mb-12 print:mb-10 font-semibold">Quality Control,</p>
+              <div className="border-t-2 border-black pt-1">
+                <p className="text-xs print:text-[10px]">(_________________)</p>
+              </div>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="text-center text-xs print:text-[10px]">
+          <div className="text-center text-[10px] print:text-[9px] text-gray-600 border-t border-gray-300 pt-1.5 print:pt-1">
             <p>Dokumen ini dibuat secara otomatis oleh sistem.</p>
             <p>Waktu Cetak: {new Date().toLocaleString('id-ID')}</p>
           </div>
 
           {/* Print Button - Hidden when printing */}
-          <div className="mt-6 flex justify-center gap-2 print:hidden">
+          <div className="mt-4 flex justify-center gap-2 print:hidden">
             <Button onClick={handlePrint} className="gap-2">
               <Printer className="w-4 h-4" />
               Print Tiket

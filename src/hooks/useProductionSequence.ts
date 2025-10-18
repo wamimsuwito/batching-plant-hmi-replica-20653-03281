@@ -172,7 +172,7 @@ export const useProductionSequence = (
   relaySettings: RelayConfig[],
   raspberryPi?: { isConnected: boolean; actualWeights: any; sendRelayCommand: any },
   isAutoMode: boolean = false,
-  onComplete?: () => void
+  onComplete?: (finalWeights?: { pasir: number; batu: number; semen: number; air: number }) => void
 ) => {
   const [productionState, setProductionState] = useState<ProductionState>(initialProductionState);
   const [componentStates, setComponentStates] = useState<ComponentStates>(initialComponentStates);
@@ -1554,9 +1554,15 @@ export const useProductionSequence = (
             description: 'Mixer akan tetap hidup selama 5 menit. Mulai batch baru atau mixer akan mati otomatis.',
           });
           
-          // Call completion callback to reset UI state (stop button, enable start button)
+          // Call completion callback with final weights snapshot
           if (onComplete) {
-            onComplete();
+            const finalWeights = {
+              pasir: prev.currentWeights.pasir,
+              batu: prev.currentWeights.batu,
+              semen: prev.currentWeights.semen,
+              air: prev.currentWeights.air,
+            };
+            onComplete(finalWeights);
           }
         }, 2000);
         addTimer(resetTimer);
