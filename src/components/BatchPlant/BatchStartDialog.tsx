@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -73,6 +73,7 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
   const [mixingTime, setMixingTime] = useState<string>("10");
   const [jmfOptions, setJmfOptions] = useState<any[]>([]);
   const { toast } = useToast();
+  const defaultMixingTimeRef = useRef<string>("10"); // Store default mixing time
 
   // Auto-calculate jumlahMixing from volume
   useEffect(() => {
@@ -101,7 +102,9 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
         const relaySettings = JSON.parse(savedRelaySettings);
         const mixingRelay = relaySettings.find((r: any) => r.name === 'Waktu Mixing (detik)');
         if (mixingRelay?.timer1) {
-          setMixingTime(mixingRelay.timer1);
+          const timeValue = mixingRelay.timer1;
+          setMixingTime(timeValue);
+          defaultMixingTimeRef.current = timeValue; // Save as default
         }
       } catch (error) {
         console.error('Error loading relay settings:', error);
@@ -196,7 +199,7 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
     setSopir("");
     setSelectedSilo("");
     setJumlahMixing("2");
-    setMixingTime("120");
+    setMixingTime(defaultMixingTimeRef.current); // Use default from Relay Settings or "10"
   };
 
   return (
