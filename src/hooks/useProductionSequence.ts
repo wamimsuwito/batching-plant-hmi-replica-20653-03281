@@ -52,6 +52,8 @@ export interface ProductionState {
   };
   jumlahMixing: number;
   currentMixing: number;
+  isWaitingForMixer: boolean; // TRUE jika material mixing berikutnya sudah ditimbang, nunggu mixer
+  nextMixingReady: boolean;   // TRUE jika penimbangan mixing berikutnya selesai
 }
 
 export interface ComponentStates {
@@ -108,6 +110,8 @@ const initialProductionState: ProductionState = {
   hopperFillLevels: { pasir: 0, batu: 0, air: 0 },
   jumlahMixing: 1,
   currentMixing: 1,
+  isWaitingForMixer: false,
+  nextMixingReady: false,
 };
 
 const initialComponentStates: ComponentStates = {
@@ -287,8 +291,8 @@ export const useProductionSequence = (
     });
 
     toast({
-      title: 'Produksi Dimulai',
-      description: `Mixing ${config.currentMixing} of ${config.jumlahMixing} - Memulai proses penimbangan material`,
+      title: `Produksi Dimulai - Mixing ${config.currentMixing} of ${config.jumlahMixing}`,
+      description: 'Memulai proses penimbangan material',
     });
 
     // t=0s: Mixer ON, Belt Atas ON (cement conveyor)
@@ -717,6 +721,9 @@ export const useProductionSequence = (
           hopperValvePasir: material === 'pasir' ? false : prev.hopperValvePasir,
           hopperValveBatu: material === 'batu' ? false : prev.hopperValveBatu,
         }));
+        
+        // 🆕 TRIGGER PENIMBANGAN MIXING BERIKUTNYA jika hopper aggregate kosong
+        checkAndStartNextMixingWeighing();
       }, dischargeDuration);
       addTimer(clearTimer);
     } else if (material === 'semen') {
@@ -762,6 +769,9 @@ export const useProductionSequence = (
           }
         }));
         console.log('✅ Cement discharge animation complete');
+        
+        // 🆕 TRIGGER PENIMBANGAN MIXING BERIKUTNYA jika cement hopper kosong
+        checkAndStartNextMixingWeighing();
       }, dischargeDuration);
       addTimer(clearTimer);
       
@@ -815,6 +825,9 @@ export const useProductionSequence = (
         
         // Deduct water from tank AFTER discharge complete
         onWaterDeduction(targetWeight);
+        
+        // 🆕 TRIGGER PENIMBANGAN MIXING BERIKUTNYA jika hopper air kosong
+        checkAndStartNextMixingWeighing();
       }, dischargeDuration);
       addTimer(clearTimer);
     }
@@ -924,64 +937,135 @@ export const useProductionSequence = (
     addTimer(closeTimer1);
   };
 
+  const checkAndStartNextMixingWeighing = () => {
+    const { currentMixing, jumlahMixing, currentStep, hopperFillLevels } = productionState;
+    
+    // Cek apakah masih ada mixing berikutnya
+    if (currentMixing >= jumlahMixing) {
+      console.log('ℹ️ No more mixing cycles, waiting for current mixing to complete');
+      return;
+    }
+    
+    // Cek apakah semua weigh hopper sudah kosong (material sudah masuk mixer)
+    const allHoppersEmpty = (
+      hopperFillLevels.pasir === 0 &&
+      hopperFillLevels.batu === 0 &&
+      hopperFillLevels.air === 0 &&
+      productionState.currentWeights.semen === 0
+    );
+    
+    // Cek apakah penimbangan mixing berikutnya sudah jalan
+    const nextMixingAlreadyStarted = productionState.nextMixingReady;
+    
+    if (allHoppersEmpty && !nextMixingAlreadyStarted && currentStep !== 'complete') {
+      console.log(`🔄 All hoppers empty! Starting weighing for Mixing ${currentMixing + 1}`);
+      
+      // Tandai bahwa penimbangan mixing berikutnya sudah dimulai
+      setProductionState(prev => ({ ...prev, nextMixingReady: true }));
+      
+      toast({
+        title: `Penimbangan Mixing ${currentMixing + 1} of ${jumlahMixing}`,
+        description: 'Material mixing berikutnya sedang ditimbang',
+      });
+      
+      // Refill aggregate bins SEBELUM penimbangan berikutnya
+      console.log('🔄 Refilling aggregate bins for next mixing...');
+      onAggregateDeduction(1, -10000); // Bin 1 (PASIR)
+      onAggregateDeduction(2, -10000); // Bin 2 (BATU 1)
+      onAggregateDeduction(3, -10000); // Bin 3 (BATU 2)
+      onAggregateDeduction(4, -10000); // Bin 4
+      
+      // Mulai penimbangan mixing berikutnya SEKARANG (mixer masih mixing, material nunggu di hopper)
+      setTimeout(() => {
+        if (lastConfigRef.current) {
+          // Mixer tetap ON, Belt Atas ON (cement conveyor)
+          setComponentStates(prev => ({ ...prev, beltAtas: true }));
+          controlRelay('konveyor_atas', true);
+
+          // Open selected silo valves for cement
+          setComponentStates(prev => ({
+            ...prev,
+            siloValves: prev.siloValves.map((_, idx) => 
+              lastConfigRef.current!.selectedSilos.includes(idx + 1)
+            ),
+          }));
+          lastConfigRef.current.selectedSilos.forEach(id => controlRelay(`silo_${id}`, true));
+
+          // Start weighing untuk mixing berikutnya
+          startWeighingWithJogging(lastConfigRef.current);
+        }
+      }, 1000);
+    }
+  };
+
   const completeProduction = () => {
-    const { currentMixing, jumlahMixing } = productionState;
+    const { currentMixing, jumlahMixing, nextMixingReady } = productionState;
     
     // Check if there are more mixings to do
     if (currentMixing < jumlahMixing) {
-      // More mixing cycles remaining
-      console.log(`✅ Mixing ${currentMixing} of ${jumlahMixing} selesai, lanjut ke Mixing ${currentMixing + 1}`);
-      
-      // Refill aggregate bins to 10000 kg before next mixing
-      setTimeout(() => {
-        console.log('🔄 Refilling aggregate bins to 10000 kg...');
-        onAggregateDeduction(1, -10000); // Bin 1 (PASIR)
-        onAggregateDeduction(2, -10000); // Bin 2 (BATU 1)
-        onAggregateDeduction(3, -10000); // Bin 3 (BATU 2)
-        onAggregateDeduction(4, -10000); // Bin 4
-      }, 2000);
-      
-      // Update state for next mixing
-      setProductionState(prev => ({
-        ...initialProductionState,
-        isProducing: true,
-        currentStep: 'weighing',
-        selectedSilos: prev.selectedSilos,
-        targetWeights: prev.targetWeights,
-        mixingTimeRemaining: lastConfigRef.current?.mixingTime || 120,
-        jumlahMixing: prev.jumlahMixing,
-        currentMixing: prev.currentMixing + 1,
-      }));
-      
-      toast({
-        title: `Mixing ${currentMixing + 1} of ${jumlahMixing}`,
-        description: 'Memulai proses penimbangan material',
-      });
-      
-      // Restart weighing with same config
-      setTimeout(() => {
-        if (lastConfigRef.current) {
-          // t=0s: Mixer ON, Belt Atas ON (cement conveyor)
-          setComponentStates(prev => ({ ...prev, mixer: true, beltAtas: true }));
-          controlRelay('mixer', true);
-          controlRelay('konveyor_atas', true);
-
-          // t=1s: Start weighing all materials
-          const weighingTimer = setTimeout(() => {
-            // Open selected silo valves for cement
-            setComponentStates(prev => ({
+      // Cek apakah penimbangan mixing berikutnya sudah selesai
+      if (nextMixingReady) {
+        console.log(`✅ Mixing ${currentMixing} selesai, material Mixing ${currentMixing + 1} sudah siap di hopper`);
+        
+        // Update state untuk mixing berikutnya
+        setProductionState(prev => ({
+          ...prev,
+          currentMixing: prev.currentMixing + 1,
+          currentStep: 'discharging',
+          nextMixingReady: false,
+        }));
+        
+        toast({
+          title: `Mixing ${currentMixing + 1} of ${jumlahMixing}`,
+          description: 'Memulai proses discharge material ke mixer',
+        });
+        
+        // Langsung discharge material yang sudah ditimbang
+        setTimeout(() => {
+          if (lastConfigRef.current) {
+            startDischargeSequence(lastConfigRef.current);
+          }
+        }, 2000);
+        
+      } else {
+        // Material mixing berikutnya belum siap (edge case: mixing terlalu cepat)
+        console.log(`⚠️ Mixing ${currentMixing} selesai, tapi material Mixing ${currentMixing + 1} belum siap. Menunggu...`);
+        
+        // Set flag menunggu mixer
+        setProductionState(prev => ({ 
+          ...prev, 
+          isWaitingForMixer: true,
+          currentStep: 'waiting_for_material',
+        }));
+        
+        toast({
+          title: 'Menunggu Material',
+          description: `Penimbangan Mixing ${currentMixing + 1} masih berlangsung`,
+        });
+        
+        // Poll setiap 2 detik sampai material siap
+        const waitInterval = setInterval(() => {
+          if (productionState.nextMixingReady) {
+            clearInterval(waitInterval);
+            console.log('✅ Material ready! Starting discharge for next mixing');
+            
+            setProductionState(prev => ({
               ...prev,
-              siloValves: prev.siloValves.map((_, idx) => 
-                lastConfigRef.current!.selectedSilos.includes(idx + 1)
-              ),
+              currentMixing: prev.currentMixing + 1,
+              currentStep: 'discharging',
+              isWaitingForMixer: false,
+              nextMixingReady: false,
             }));
-            lastConfigRef.current!.selectedSilos.forEach(id => controlRelay(`silo_${id}`, true));
-
-            startWeighingWithJogging(lastConfigRef.current!);
-          }, 1000);
-          addTimer(weighingTimer);
-        }
-      }, 2000);
+            
+            setTimeout(() => {
+              if (lastConfigRef.current) {
+                startDischargeSequence(lastConfigRef.current);
+              }
+            }, 1000);
+          }
+        }, 2000);
+        addInterval(waitInterval);
+      }
       
     } else {
       // All mixing cycles complete
