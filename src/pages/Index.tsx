@@ -373,15 +373,15 @@ const Index = () => {
               />
               
               {/* Support structure connecting bins to 2 hoppers */}
-              <line x1="60" y1="252" x2="130" y2="270" className="stroke-hmi-border" strokeWidth="2" />
-              <line x1="140" y1="252" x2="130" y2="270" className="stroke-hmi-border" strokeWidth="2" />
+              <line x1="60" y1="252" x2="105" y2="270" className="stroke-hmi-border" strokeWidth="2" />
+              <line x1="140" y1="252" x2="105" y2="270" className="stroke-hmi-border" strokeWidth="2" />
               <line x1="220" y1="252" x2="261" y2="270" className="stroke-hmi-border" strokeWidth="2" />
               <line x1="300" y1="252" x2="261" y2="270" className="stroke-hmi-border" strokeWidth="2" />
               
               {/* 2 Aggregate Hoppers - Cumulative weighing */}
               {/* Hopper 1 - PASIR (Cumulative: Pasir 1 + Pasir 2) */}
               <AggregateHopper 
-                x={105} 
+                x={80} 
                 y={270} 
                 fillLevel={productionState.hopperFillLevels?.pasir || 0} 
                 isActive={componentStates.hopperValvePasir}
@@ -399,7 +399,7 @@ const Index = () => {
               />
 
               {/* Conveyor Belt 1 - Below hoppers (horizontal) */}
-              <ConveyorBelt x={80} y={370} width={230} angle={0} isRunning={componentStates.beltBawah} />
+              <ConveyorBelt x={50} y={370} width={260} angle={0} isRunning={componentStates.beltBawah} />
 
               {/* Conveyor Belt 2 - From bottom left, angled upward to mixer */}
               <ConveyorBelt x={320} y={420} width={180} angle={32} isRunning={isRunning} />
