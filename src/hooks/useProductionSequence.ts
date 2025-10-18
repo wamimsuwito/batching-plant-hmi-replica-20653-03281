@@ -15,6 +15,8 @@ export interface ProductionConfig {
     additive: number;
   };
   mixingTime: number; // in seconds
+  jumlahMixing: number; // Total number of mixings
+  currentMixing: number; // Current mixing number (1, 2, 3, etc.)
 }
 
 export interface ProductionState {
@@ -48,6 +50,8 @@ export interface ProductionState {
     batu: number;
     air: number;
   };
+  jumlahMixing: number;
+  currentMixing: number;
 }
 
 export interface ComponentStates {
@@ -65,6 +69,7 @@ export interface ComponentStates {
   additiveValve: boolean;
   mixerDoor: boolean;
   vibrator: boolean;
+  klakson: boolean; // Klakson relay (Modbus Coil 15)
 }
 
 interface RelayConfig {
@@ -101,6 +106,8 @@ const initialProductionState: ProductionState = {
   mixingTimeRemaining: 0,
   mixerDoorCycle: 0,
   hopperFillLevels: { pasir: 0, batu: 0, air: 0 },
+  jumlahMixing: 1,
+  currentMixing: 1,
 };
 
 const initialComponentStates: ComponentStates = {
@@ -118,6 +125,7 @@ const initialComponentStates: ComponentStates = {
   additiveValve: false,
   mixerDoor: false,
   vibrator: false,
+  klakson: false,
 };
 
 export const useProductionSequence = (
@@ -135,6 +143,7 @@ export const useProductionSequence = (
   const timersRef = useRef<NodeJS.Timeout[]>([]);
   const intervalsRef = useRef<NodeJS.Timeout[]>([]);
   const mixerIdleTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastConfigRef = useRef<ProductionConfig | null>(null);
 
   // Load jogging settings
   const getJoggingSettings = (materialName: string): JoggingSettings => {
@@ -263,6 +272,9 @@ export const useProductionSequence = (
       mixerIdleTimerRef.current = null;
     }
     
+    // Save config for sequential mixing
+    lastConfigRef.current = config;
+    
     setProductionState({
       ...initialProductionState,
       isProducing: true,
@@ -270,11 +282,13 @@ export const useProductionSequence = (
       selectedSilos: config.selectedSilos,
       targetWeights: config.targetWeights,
       mixingTimeRemaining: config.mixingTime,
+      jumlahMixing: config.jumlahMixing,
+      currentMixing: config.currentMixing,
     });
 
     toast({
       title: 'Produksi Dimulai',
-      description: 'Memulai proses penimbangan material',
+      description: `Mixing ${config.currentMixing} of ${config.jumlahMixing} - Memulai proses penimbangan material`,
     });
 
     // t=0s: Mixer ON, Belt Atas ON (cement conveyor)
@@ -911,58 +925,131 @@ export const useProductionSequence = (
   };
 
   const completeProduction = () => {
-    // Refill aggregate bins to 10000 kg after 2 seconds
-    setTimeout(() => {
-      console.log('🔄 Refilling aggregate bins to 10000 kg...');
-      // Refill all 4 bins
-      onAggregateDeduction(1, -10000); // Bin 1 (PASIR)
-      onAggregateDeduction(2, -10000); // Bin 2 (BATU 1)
-      onAggregateDeduction(3, -10000); // Bin 3 (BATU 2)
-      onAggregateDeduction(4, -10000); // Bin 4
+    const { currentMixing, jumlahMixing } = productionState;
+    
+    // Check if there are more mixings to do
+    if (currentMixing < jumlahMixing) {
+      // More mixing cycles remaining
+      console.log(`✅ Mixing ${currentMixing} of ${jumlahMixing} selesai, lanjut ke Mixing ${currentMixing + 1}`);
+      
+      // Refill aggregate bins to 10000 kg before next mixing
+      setTimeout(() => {
+        console.log('🔄 Refilling aggregate bins to 10000 kg...');
+        onAggregateDeduction(1, -10000); // Bin 1 (PASIR)
+        onAggregateDeduction(2, -10000); // Bin 2 (BATU 1)
+        onAggregateDeduction(3, -10000); // Bin 3 (BATU 2)
+        onAggregateDeduction(4, -10000); // Bin 4
+      }, 2000);
+      
+      // Update state for next mixing
+      setProductionState(prev => ({
+        ...initialProductionState,
+        isProducing: true,
+        currentStep: 'weighing',
+        selectedSilos: prev.selectedSilos,
+        targetWeights: prev.targetWeights,
+        mixingTimeRemaining: lastConfigRef.current?.mixingTime || 120,
+        jumlahMixing: prev.jumlahMixing,
+        currentMixing: prev.currentMixing + 1,
+      }));
       
       toast({
-        title: 'Bin Refilled',
-        description: 'Aggregate bins telah diisi ulang ke 10000 kg',
+        title: `Mixing ${currentMixing + 1} of ${jumlahMixing}`,
+        description: 'Memulai proses penimbangan material',
       });
-    }, 2000);
-
-    toast({
-      title: 'Produksi Selesai',
-      description: 'Batch berhasil diproduksi',
-    });
-
-    setProductionState(prev => ({ ...prev, currentStep: 'complete' }));
-    
-    // Reset after 2 seconds and call onComplete callback
-    const resetTimer = setTimeout(() => {
-      setProductionState(initialProductionState);
-      // DON'T reset componentStates - keep mixer running
       
-      // Start 5-minute idle timer for mixer
-      console.log('⏰ Starting 5-minute idle timer for mixer...');
-      mixerIdleTimerRef.current = setTimeout(() => {
-        console.log('⏰ 5 minutes idle - turning off mixer');
-        setComponentStates(prev => ({ ...prev, mixer: false }));
-        controlRelay('mixer', false);
-        mixerIdleTimerRef.current = null;
+      // Restart weighing with same config
+      setTimeout(() => {
+        if (lastConfigRef.current) {
+          // t=0s: Mixer ON, Belt Atas ON (cement conveyor)
+          setComponentStates(prev => ({ ...prev, mixer: true, beltAtas: true }));
+          controlRelay('mixer', true);
+          controlRelay('konveyor_atas', true);
+
+          // t=1s: Start weighing all materials
+          const weighingTimer = setTimeout(() => {
+            // Open selected silo valves for cement
+            setComponentStates(prev => ({
+              ...prev,
+              siloValves: prev.siloValves.map((_, idx) => 
+                lastConfigRef.current!.selectedSilos.includes(idx + 1)
+              ),
+            }));
+            lastConfigRef.current!.selectedSilos.forEach(id => controlRelay(`silo_${id}`, true));
+
+            startWeighingWithJogging(lastConfigRef.current!);
+          }, 1000);
+          addTimer(weighingTimer);
+        }
+      }, 2000);
+      
+    } else {
+      // All mixing cycles complete
+      console.log(`✅ Semua mixing selesai (${jumlahMixing} mixing)`);
+      
+      // AKTIVASI KLAKSON - 1 detik
+      console.log('🔔 Activating klakson for 1 second');
+      controlRelay('klakson', true);
+      setComponentStates(prev => ({ ...prev, klakson: true }));
+      
+      const klaksonTimer = setTimeout(() => {
+        controlRelay('klakson', false);
+        setComponentStates(prev => ({ ...prev, klakson: false }));
+      }, 1000);
+      addTimer(klaksonTimer);
+      
+      // Refill aggregate bins to 10000 kg after 2 seconds
+      setTimeout(() => {
+        console.log('🔄 Refilling aggregate bins to 10000 kg...');
+        onAggregateDeduction(1, -10000); // Bin 1 (PASIR)
+        onAggregateDeduction(2, -10000); // Bin 2 (BATU 1)
+        onAggregateDeduction(3, -10000); // Bin 3 (BATU 2)
+        onAggregateDeduction(4, -10000); // Bin 4
         
         toast({
-          title: 'Mixer Dimatikan',
-          description: 'Mixer dimatikan setelah 5 menit idle',
+          title: 'Bin Refilled',
+          description: 'Aggregate bins telah diisi ulang ke 10000 kg',
         });
-      }, 5 * 60 * 1000); // 5 minutes
-      
+      }, 2000);
+
       toast({
-        title: 'Sistem Siap',
-        description: 'Mixer akan tetap hidup selama 5 menit. Mulai batch baru atau mixer akan mati otomatis.',
+        title: 'Produksi Selesai',
+        description: `${jumlahMixing} mixing berhasil diselesaikan`,
       });
+
+      setProductionState(prev => ({ ...prev, currentStep: 'complete' }));
       
-      // Call completion callback to reset UI state (stop button, enable start button)
-      if (onComplete) {
-        onComplete();
-      }
-    }, 2000);
-    addTimer(resetTimer);
+      // Reset after 2 seconds and call onComplete callback
+      const resetTimer = setTimeout(() => {
+        setProductionState(initialProductionState);
+        // DON'T reset componentStates - keep mixer running
+        
+        // Start 5-minute idle timer for mixer
+        console.log('⏰ Starting 5-minute idle timer for mixer...');
+        mixerIdleTimerRef.current = setTimeout(() => {
+          console.log('⏰ 5 minutes idle - turning off mixer');
+          setComponentStates(prev => ({ ...prev, mixer: false }));
+          controlRelay('mixer', false);
+          mixerIdleTimerRef.current = null;
+          
+          toast({
+            title: 'Mixer Dimatikan',
+            description: 'Mixer dimatikan setelah 5 menit idle',
+          });
+        }, 5 * 60 * 1000); // 5 minutes
+        
+        toast({
+          title: 'Sistem Siap',
+          description: 'Mixer akan tetap hidup selama 5 menit. Mulai batch baru atau mixer akan mati otomatis.',
+        });
+        
+        // Call completion callback to reset UI state (stop button, enable start button)
+        if (onComplete) {
+          onComplete();
+        }
+      }, 2000);
+      addTimer(resetTimer);
+    }
   };
 
   // Cleanup on unmount

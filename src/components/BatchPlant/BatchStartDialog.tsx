@@ -15,7 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 
@@ -43,6 +42,8 @@ interface BatchStartDialogProps {
       additive: number;
     };
     mixingTime: number;
+    jumlahMixing: number;
+    currentMixing: number;
   }) => void;
   silos: SiloData[];
 }
@@ -50,15 +51,24 @@ interface BatchStartDialogProps {
 export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchStartDialogProps) {
   const [mutuBeton, setMutuBeton] = useState("");
   const [volume, setVolume] = useState("");
-  const [slump, setSlump] = useState("");
+  const [slump, setSlump] = useState("12"); // Default 12 cm
   const [pelanggan, setPelanggan] = useState("");
   const [lokasi, setLokasi] = useState("");
   const [noKendaraan, setNoKendaraan] = useState("");
   const [sopir, setSopir] = useState("");
-  const [selectedSilos, setSelectedSilos] = useState<number[]>([]);
+  const [selectedSilo, setSelectedSilo] = useState<string>(""); // Single silo dropdown
+  const [jumlahMixing, setJumlahMixing] = useState<string>("2"); // Default 2
   const [mixingTime, setMixingTime] = useState<string>("10");
   const [jmfOptions, setJmfOptions] = useState<any[]>([]);
   const { toast } = useToast();
+
+  // Auto-calculate jumlahMixing from volume
+  useEffect(() => {
+    if (volume && parseFloat(volume) > 0) {
+      const calculatedMixing = Math.ceil(parseFloat(volume) / 3.5);
+      setJumlahMixing(calculatedMixing.toString());
+    }
+  }, [volume]);
 
   // Load JMF data and relay settings
   useEffect(() => {
@@ -87,15 +97,7 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
     }
   }, [open]);
 
-  const isFormValid = mutuBeton !== "" && volume !== "" && slump !== "" && selectedSilos.length > 0;
-
-  const handleSiloToggle = (siloId: number) => {
-    setSelectedSilos(prev => 
-      prev.includes(siloId) 
-        ? prev.filter(id => id !== siloId)
-        : [...prev, siloId]
-    );
-  };
+  const isFormValid = mutuBeton !== "" && volume !== "" && slump !== "" && selectedSilo !== "" && jumlahMixing !== "";
 
   const handleStart = () => {
     if (!isFormValid) return;
@@ -111,40 +113,46 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
       return;
     }
 
-    // Calculate material requirements based on volume
+    // Calculate total material requirements and divide by jumlahMixing
     const batchVolume = parseFloat(volume);
-    const targetWeights = {
+    const mixingCount = parseInt(jumlahMixing);
+    
+    // Calculate total weights
+    const totalWeights = {
       semen: (parseFloat(selectedFormula.semen) || 0) * batchVolume,
       pasir: (parseFloat(selectedFormula.pasir) || 0) * batchVolume,
       batu: (parseFloat(selectedFormula.batu1) || 0) * batchVolume + (parseFloat(selectedFormula.batu2) || 0) * batchVolume,
       air: (parseFloat(selectedFormula.air) || 0) * batchVolume,
       additive: (parseFloat(selectedFormula.additive) || 0) * batchVolume,
     };
+    
+    // Divide equally per mixing
+    const targetWeights = {
+      semen: totalWeights.semen / mixingCount,
+      pasir: totalWeights.pasir / mixingCount,
+      batu: totalWeights.batu / mixingCount,
+      air: totalWeights.air / mixingCount,
+      additive: totalWeights.additive / mixingCount,
+    };
 
-    // Check if selected silos have enough cement
-    const totalAvailableCement = selectedSilos.reduce((sum, siloId) => {
-      const silo = silos.find(s => s.id === siloId);
-      return sum + (silo?.currentVolume || 0);
-    }, 0);
-
-    if (totalAvailableCement < targetWeights.semen) {
-      toast({
-        title: "Volume Tidak Mencukupi",
-        description: `Total semen tidak mencukupi. Tersedia: ${totalAvailableCement.toLocaleString('id-ID')} kg, Dibutuhkan: ${targetWeights.semen.toLocaleString('id-ID')} kg`,
-        variant: "destructive",
-      });
-      return;
-    }
+    // Check if selected silo has enough cement (can go negative)
+    const siloId = parseInt(selectedSilo);
+    const silo = silos.find(s => s.id === siloId);
+    const totalCementNeeded = totalWeights.semen;
+    
+    // Note: We allow negative silo values, so no check needed here
 
     // Start production
     onStart({
-      selectedSilos,
+      selectedSilos: [parseInt(selectedSilo)], // Single silo as array
       selectedBins: {
         pasir: 1, // Bin 1 untuk PASIR
         batu: 2,  // Bin 2 untuk BATU 1
       },
-      targetWeights,
+      targetWeights, // Already divided per mixing
       mixingTime: parseInt(mixingTime),
+      jumlahMixing: mixingCount,
+      currentMixing: 1, // Start with mixing 1
     });
 
     onOpenChange(false);
@@ -152,12 +160,13 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
     // Reset form
     setMutuBeton("");
     setVolume("");
-    setSlump("");
+    setSlump("12");
     setPelanggan("");
     setLokasi("");
     setNoKendaraan("");
     setSopir("");
-    setSelectedSilos([]);
+    setSelectedSilo("");
+    setJumlahMixing("2");
     setMixingTime("120");
   };
 
@@ -196,69 +205,76 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
               </Select>
             </div>
 
-            {/* Volume - Required */}
-            <div className="grid gap-2">
-              <Label htmlFor="volume">
-                Volume (m³) <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="volume"
-                type="number"
-                placeholder="Masukkan volume"
-                value={volume}
-                onChange={(e) => setVolume(e.target.value)}
-                min="0"
-                step="0.1"
-              />
+            {/* Volume & Jumlah Mixing - Horizontal (Opsi A) */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="volume">
+                  Volume (m³) <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="volume"
+                  type="number"
+                  placeholder="Masukkan volume"
+                  value={volume}
+                  onChange={(e) => setVolume(e.target.value)}
+                  min="0"
+                  step="0.1"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="jumlah-mixing">
+                  Jumlah Mixing <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="jumlah-mixing"
+                  type="number"
+                  placeholder="Auto dari volume"
+                  value={jumlahMixing}
+                  onChange={(e) => setJumlahMixing(e.target.value)}
+                  min="1"
+                />
+                <p className="text-xs text-muted-foreground">↑ auto dari volume</p>
+              </div>
             </div>
 
-            {/* Slump - Required */}
+            {/* Slump - Required (Dropdown) */}
             <div className="grid gap-2">
               <Label htmlFor="slump">
-                Slump (cm) <span className="text-destructive">*</span>
+                Slump <span className="text-destructive">*</span>
               </Label>
-              <Input
-                id="slump"
-                type="number"
-                placeholder="Masukkan slump"
-                value={slump}
-                onChange={(e) => setSlump(e.target.value)}
-                min="0"
-                step="1"
-              />
+              <Select value={slump} onValueChange={setSlump}>
+                <SelectTrigger id="slump">
+                  <SelectValue placeholder="Pilih slump" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="8">8 cm</SelectItem>
+                  <SelectItem value="10">10 cm</SelectItem>
+                  <SelectItem value="12">12 cm</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            {/* Pilih Silo Semen - Required (Multiple Selection) */}
+            {/* Pilih Silo Semen - Required (Single Dropdown) */}
             <div className="grid gap-2">
-              <Label>
-                Pilih Silo Semen (bisa pilih lebih dari 1) <span className="text-destructive">*</span>
+              <Label htmlFor="silo-select">
+                Pilih Silo Semen <span className="text-destructive">*</span>
               </Label>
-              <div className="border rounded-md p-3 space-y-2 max-h-[150px] overflow-y-auto">
-                {silos.map((silo) => {
-                  const percentage = (silo.currentVolume / silo.capacity) * 100;
-                  const isLow = percentage < 20;
-                  const isEmpty = silo.currentVolume === 0;
-                  
-                  return (
-                    <div key={silo.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`silo-${silo.id}`}
-                        checked={selectedSilos.includes(silo.id)}
-                        onCheckedChange={() => handleSiloToggle(silo.id)}
-                        disabled={isEmpty}
-                      />
-                      <label
-                        htmlFor={`silo-${silo.id}`}
-                        className={`text-sm flex-1 ${isEmpty ? "text-muted-foreground" : ""} cursor-pointer`}
-                      >
+              <Select value={selectedSilo} onValueChange={setSelectedSilo}>
+                <SelectTrigger id="silo-select">
+                  <SelectValue placeholder="Pilih silo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {silos.map((silo) => {
+                    const isNegative = silo.currentVolume < 0;
+                    return (
+                      <SelectItem key={silo.id} value={silo.id.toString()}>
                         Silo {silo.id} - {silo.currentVolume.toLocaleString('id-ID')} kg
-                        {isEmpty && " (kosong)"}
-                        {!isEmpty && isLow && " ⚠️"}
-                      </label>
-                    </div>
-                  );
-                })}
-              </div>
+                        {isNegative && " ⚠️"}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Mixing Time */}
