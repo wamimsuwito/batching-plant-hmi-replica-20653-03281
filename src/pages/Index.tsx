@@ -280,9 +280,12 @@ const Index = () => {
       const tickets = savedTickets ? JSON.parse(savedTickets) : [];
       tickets.unshift(ticket); // Add to beginning
       localStorage.setItem('production_tickets', JSON.stringify(tickets));
+      console.log('Tiket tersimpan:', ticket);
+      console.log('Total tiket:', tickets.length);
       
       setTicketData(ticket);
       setPrintTicketOpen(true);
+      console.log('Dialog print dibuka');
     }
   );
 
