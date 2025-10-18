@@ -1,9 +1,13 @@
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Printer } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Printer, Eye } from 'lucide-react';
 import farikaLogo from '@/assets/farika-logo.png';
 
 export interface TicketData {
+  id?: string;
   jobOrder: string;
   nomorPO: string;
   tanggal: string;
@@ -211,5 +215,89 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
 }
 
 export default function PrintTicket() {
-  return null;
+  const [tickets, setTickets] = useState<TicketData[]>([]);
+  const [selectedTicket, setSelectedTicket] = useState<TicketData | null>(null);
+  const [printDialogOpen, setPrintDialogOpen] = useState(false);
+
+  useEffect(() => {
+    loadTickets();
+  }, []);
+
+  const loadTickets = () => {
+    const saved = localStorage.getItem('production_tickets');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setTickets(parsed);
+      } catch (error) {
+        console.error('Error loading tickets:', error);
+      }
+    }
+  };
+
+  const handleViewTicket = (ticket: TicketData) => {
+    setSelectedTicket(ticket);
+    setPrintDialogOpen(true);
+  };
+
+  return (
+    <div className="p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Riwayat Print Tiket Produksi</CardTitle>
+          <CardDescription>Daftar tiket produksi yang sudah dibuat</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {tickets.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">Belum ada data tiket produksi</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Tanggal</TableHead>
+                  <TableHead>Job Order</TableHead>
+                  <TableHead>Jam Mulai</TableHead>
+                  <TableHead>Jam Selesai</TableHead>
+                  <TableHead>Pelanggan</TableHead>
+                  <TableHead>Mutu Beton</TableHead>
+                  <TableHead>Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {tickets.map((ticket, index) => (
+                  <TableRow key={ticket.id || index}>
+                    <TableCell>{ticket.tanggal}</TableCell>
+                    <TableCell>{ticket.jobOrder}</TableCell>
+                    <TableCell>{ticket.jamMulai}</TableCell>
+                    <TableCell>{ticket.jamSelesai}</TableCell>
+                    <TableCell>{ticket.namaPelanggan}</TableCell>
+                    <TableCell>{ticket.mutuBeton}</TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleViewTicket(ticket)}
+                        className="gap-2"
+                      >
+                        <Eye className="w-4 h-4" />
+                        Lihat & Print
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {selectedTicket && (
+        <PrintTicketDialog
+          open={printDialogOpen}
+          onOpenChange={setPrintDialogOpen}
+          ticketData={selectedTicket}
+        />
+      )}
+    </div>
+  );
 }

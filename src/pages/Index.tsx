@@ -235,6 +235,7 @@ const Index = () => {
       const startTime = productionStartTime || endTime;
       
       const ticket: TicketData = {
+        id: `TICKET-${Date.now()}`,
         jobOrder: "1",
         nomorPO: "-",
         tanggal: endTime.toLocaleDateString('id-ID'),
@@ -273,6 +274,12 @@ const Index = () => {
           }
         }
       };
+      
+      // Save to localStorage
+      const savedTickets = localStorage.getItem('production_tickets');
+      const tickets = savedTickets ? JSON.parse(savedTickets) : [];
+      tickets.unshift(ticket); // Add to beginning
+      localStorage.setItem('production_tickets', JSON.stringify(tickets));
       
       setTicketData(ticket);
       setPrintTicketOpen(true);
