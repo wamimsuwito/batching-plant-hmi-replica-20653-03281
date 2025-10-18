@@ -13,33 +13,35 @@ interface RelayConfig {
   timer2: string;
   timer3: string;
   timer4: string;
+  timer5: string;
+  timer6: string;
 }
 
 const defaultRelays: RelayConfig[] = [
-  { name: 'Mixer', relayNumber: '1', modbusCoil: '0', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Konveyor atas', relayNumber: '2', modbusCoil: '1', timer1: '1000', timer2: '', timer3: '', timer4: '' },
-  { name: 'Konveyor bawah', relayNumber: '3', modbusCoil: '2', timer1: '1000', timer2: '', timer3: '', timer4: '' },
-  { name: 'Kompressor', relayNumber: '4', modbusCoil: '3', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Pintu pasir 1', relayNumber: '5', modbusCoil: '4', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Pintu pasir 2', relayNumber: '6', modbusCoil: '5', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Pintu batu 1', relayNumber: '7', modbusCoil: '6', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Pintu batu 2', relayNumber: '8', modbusCoil: '7', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Dump material', relayNumber: '9', modbusCoil: '8', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Dump material 2', relayNumber: '10', modbusCoil: '9', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Vibrator', relayNumber: '11', modbusCoil: '10', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Tuang air', relayNumber: '12', modbusCoil: '11', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Tuang additive', relayNumber: '13', modbusCoil: '12', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Pintu mixer buka', relayNumber: '14', modbusCoil: '13', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Pintu mixer tutup', relayNumber: '15', modbusCoil: '14', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Klakson', relayNumber: '16', modbusCoil: '15', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Silo 1', relayNumber: '17', modbusCoil: '16', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Silo 2', relayNumber: '18', modbusCoil: '17', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Silo 3', relayNumber: '19', modbusCoil: '18', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Silo 4', relayNumber: '20', modbusCoil: '19', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Silo 5', relayNumber: '21', modbusCoil: '20', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Silo 6', relayNumber: '22', modbusCoil: '21', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Spare 1', relayNumber: '23', modbusCoil: '22', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Spare 2', relayNumber: '24', modbusCoil: '23', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Mixer', relayNumber: '1', modbusCoil: '0', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Konveyor atas', relayNumber: '2', modbusCoil: '1', timer1: '1000', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Konveyor bawah', relayNumber: '3', modbusCoil: '2', timer1: '1000', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Kompressor', relayNumber: '4', modbusCoil: '3', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Pintu pasir 1', relayNumber: '5', modbusCoil: '4', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Pintu pasir 2', relayNumber: '6', modbusCoil: '5', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Pintu batu 1', relayNumber: '7', modbusCoil: '6', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Pintu batu 2', relayNumber: '8', modbusCoil: '7', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Dump material', relayNumber: '9', modbusCoil: '8', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Dump material 2', relayNumber: '10', modbusCoil: '9', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Vibrator', relayNumber: '11', modbusCoil: '10', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Tuang air', relayNumber: '12', modbusCoil: '11', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Tuang additive', relayNumber: '13', modbusCoil: '12', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Pintu mixer buka', relayNumber: '14', modbusCoil: '13', timer1: '2000', timer2: '5000', timer3: '2000', timer4: '5000', timer5: '2000', timer6: '5000' },
+  { name: 'Pintu mixer tutup', relayNumber: '15', modbusCoil: '14', timer1: '4000', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Klakson', relayNumber: '16', modbusCoil: '15', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Silo 1', relayNumber: '17', modbusCoil: '16', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Silo 2', relayNumber: '18', modbusCoil: '17', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Silo 3', relayNumber: '19', modbusCoil: '18', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Silo 4', relayNumber: '20', modbusCoil: '19', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Silo 5', relayNumber: '21', modbusCoil: '20', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Silo 6', relayNumber: '22', modbusCoil: '21', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Spare 1', relayNumber: '23', modbusCoil: '22', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
+  { name: 'Spare 2', relayNumber: '24', modbusCoil: '23', timer1: '0', timer2: '', timer3: '', timer4: '', timer5: '', timer6: '' },
 ];
 
 const STORAGE_KEY = 'relay_settings';
@@ -93,7 +95,13 @@ export default function RelaySettings() {
       <Card>
         <CardHeader>
           <CardTitle>Pengaturan Relay & Timer (Autonics System)</CardTitle>
-          <CardDescription>Konfigurasi Modbus coil address dan timer untuk 24 relay outputs (ARM + 2x ARX)</CardDescription>
+          <CardDescription>
+            Konfigurasi Modbus coil address dan timer untuk 24 relay outputs (ARM + 2x ARX).
+            <br />
+            <strong>Pintu mixer buka:</strong> Timer 1=Buka1 ON, Timer 2=Buka1 Diam, Timer 3=Buka2 ON, Timer 4=Buka2 Diam, Timer 5=Buka3 ON, Timer 6=Buka3 Diam (dalam ms).
+            <br />
+            <strong>Pintu mixer tutup:</strong> Timer 1=Durasi relay ON (dalam ms).
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-auto">
@@ -107,6 +115,8 @@ export default function RelaySettings() {
                   <TableHead className="w-[120px]">Timer 2 (ms)</TableHead>
                   <TableHead className="w-[120px]">Timer 3 (ms)</TableHead>
                   <TableHead className="w-[120px]">Timer 4 (ms)</TableHead>
+                  <TableHead className="w-[120px]">Timer 5 (ms)</TableHead>
+                  <TableHead className="w-[120px]">Timer 6 (ms)</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -162,6 +172,24 @@ export default function RelaySettings() {
                         type="number"
                         value={relay.timer4}
                         onChange={(e) => handleInputChange(index, 'timer4', e.target.value)}
+                        placeholder="ms"
+                        className="w-full"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Input
+                        type="number"
+                        value={relay.timer5}
+                        onChange={(e) => handleInputChange(index, 'timer5', e.target.value)}
+                        placeholder="ms"
+                        className="w-full"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Input
+                        type="number"
+                        value={relay.timer6}
+                        onChange={(e) => handleInputChange(index, 'timer6', e.target.value)}
                         placeholder="ms"
                         className="w-full"
                       />
