@@ -81,8 +81,10 @@ export interface ComponentStates {
   beltAtas: boolean;
   beltBawah: boolean;
   siloValves: boolean[];
-  sandBinValve: boolean; // BIN gate for PASIR (fills hopper during weighing)
-  stoneBinValve: boolean; // BIN gate for BATU (fills hopper during weighing)
+  sandBin1Valve: boolean; // Bin Pasir 1 gate
+  sandBin2Valve: boolean; // Bin Pasir 2 gate
+  stoneBin1Valve: boolean; // Bin Batu 1 gate
+  stoneBin2Valve: boolean; // Bin Batu 2 gate
   hopperValvePasir: boolean; // HOPPER discharge valve (A1) - only during discharge
   hopperValveBatu: boolean; // HOPPER discharge valve (A2) - only during discharge
   waterTankValve: boolean; // Tank AIR valve to weigh hopper (RED blinking during weighing)
@@ -143,8 +145,10 @@ const initialComponentStates: ComponentStates = {
   beltAtas: false,
   beltBawah: false,
   siloValves: [false, false, false, false, false, false],
-  sandBinValve: false,
-  stoneBinValve: false,
+  sandBin1Valve: false,
+  sandBin2Valve: false,
+  stoneBin1Valve: false,
+  stoneBin2Valve: false,
   hopperValvePasir: false,
   hopperValveBatu: false,
   waterTankValve: false,
@@ -504,8 +508,10 @@ export const useProductionSequence = (
     // Turn off weighing relays
     setComponentStates(prev => ({
       ...prev,
-      sandBinValve: false,
-      stoneBinValve: false,
+      sandBin1Valve: false,
+      sandBin2Valve: false,
+      stoneBin1Valve: false,
+      stoneBin2Valve: false,
       waterTankValve: false,
     }));
     
@@ -540,20 +546,36 @@ export const useProductionSequence = (
       let simulatedWeight = startingWeight; // Start from startingWeight (not 0)
 
       // Open material relay
-      if (material === 'pasir1' || material === 'pasir2') {
-        const binId = material === 'pasir1' ? config.selectedBins.pasir1 : config.selectedBins.pasir2;
+      if (material === 'pasir1') {
+        const binId = config.selectedBins.pasir1;
         const relayName = getAggregateRelayName(material, binId);
         if (relayName) {
           console.log(`🟢 AGG relay: ${relayName} -> ON (${material}, binId=${binId})`);
-          setComponentStates(prev => ({ ...prev, sandBinValve: true }));
+          setComponentStates(prev => ({ ...prev, sandBin1Valve: true }));
           controlRelay(relayName, true);
         }
-      } else if (material === 'batu1' || material === 'batu2') {
-        const binId = material === 'batu1' ? config.selectedBins.batu1 : config.selectedBins.batu2;
+      } else if (material === 'pasir2') {
+        const binId = config.selectedBins.pasir2;
         const relayName = getAggregateRelayName(material, binId);
         if (relayName) {
           console.log(`🟢 AGG relay: ${relayName} -> ON (${material}, binId=${binId})`);
-          setComponentStates(prev => ({ ...prev, stoneBinValve: true }));
+          setComponentStates(prev => ({ ...prev, sandBin2Valve: true }));
+          controlRelay(relayName, true);
+        }
+      } else if (material === 'batu1') {
+        const binId = config.selectedBins.batu1;
+        const relayName = getAggregateRelayName(material, binId);
+        if (relayName) {
+          console.log(`🟢 AGG relay: ${relayName} -> ON (${material}, binId=${binId})`);
+          setComponentStates(prev => ({ ...prev, stoneBin1Valve: true }));
+          controlRelay(relayName, true);
+        }
+      } else if (material === 'batu2') {
+        const binId = config.selectedBins.batu2;
+        const relayName = getAggregateRelayName(material, binId);
+        if (relayName) {
+          console.log(`🟢 AGG relay: ${relayName} -> ON (${material}, binId=${binId})`);
+          setComponentStates(prev => ({ ...prev, stoneBin2Valve: true }));
           controlRelay(relayName, true);
         }
       } else if (material === 'semen') {
@@ -649,22 +671,38 @@ export const useProductionSequence = (
           joggingCycleStart = Date.now();
           
           // Turn off relay
-          if (material === 'pasir1' || material === 'pasir2') {
-            const binId = material === 'pasir1' ? config.selectedBins.pasir1 : config.selectedBins.pasir2;
+          if (material === 'pasir1') {
+            const binId = config.selectedBins.pasir1;
             const relayName = getAggregateRelayName(material, binId);
             if (relayName) {
               console.log(`🔴 AGG relay: ${relayName} -> OFF (jogging start, binId=${binId})`);
               controlRelay(relayName, false);
             }
-            setComponentStates(prev => ({ ...prev, sandBinValve: false }));
-          } else if (material === 'batu1' || material === 'batu2') {
-            const binId = material === 'batu1' ? config.selectedBins.batu1 : config.selectedBins.batu2;
+            setComponentStates(prev => ({ ...prev, sandBin1Valve: false }));
+          } else if (material === 'pasir2') {
+            const binId = config.selectedBins.pasir2;
             const relayName = getAggregateRelayName(material, binId);
             if (relayName) {
               console.log(`🔴 AGG relay: ${relayName} -> OFF (jogging start, binId=${binId})`);
               controlRelay(relayName, false);
             }
-            setComponentStates(prev => ({ ...prev, stoneBinValve: false }));
+            setComponentStates(prev => ({ ...prev, sandBin2Valve: false }));
+          } else if (material === 'batu1') {
+            const binId = config.selectedBins.batu1;
+            const relayName = getAggregateRelayName(material, binId);
+            if (relayName) {
+              console.log(`🔴 AGG relay: ${relayName} -> OFF (jogging start, binId=${binId})`);
+              controlRelay(relayName, false);
+            }
+            setComponentStates(prev => ({ ...prev, stoneBin1Valve: false }));
+          } else if (material === 'batu2') {
+            const binId = config.selectedBins.batu2;
+            const relayName = getAggregateRelayName(material, binId);
+            if (relayName) {
+              console.log(`🔴 AGG relay: ${relayName} -> OFF (jogging start, binId=${binId})`);
+              controlRelay(relayName, false);
+            }
+            setComponentStates(prev => ({ ...prev, stoneBin2Valve: false }));
           } else if (material === 'air') {
             controlRelay('water_tank_valve', false);
             setComponentStates(prev => ({ ...prev, waterTankValve: false }));
@@ -690,20 +728,36 @@ export const useProductionSequence = (
             joggingState = shouldBeOn;
             console.log(`🔄 ${material} jogging: ${shouldBeOn ? 'ON' : 'OFF'} (${currentWeight.toFixed(1)}kg / ${finalWeight.toFixed(1)}kg)`);
             
-            if (material === 'pasir1' || material === 'pasir2') {
-              const binId = material === 'pasir1' ? config.selectedBins.pasir1 : config.selectedBins.pasir2;
+            if (material === 'pasir1') {
+              const binId = config.selectedBins.pasir1;
               const relayName = getAggregateRelayName(material, binId);
               if (relayName) {
                 console.log(`🟡 AGG relay: ${relayName} -> ${shouldBeOn ? 'ON' : 'OFF'} (jogging, binId=${binId})`);
-                setComponentStates(prev => ({ ...prev, sandBinValve: shouldBeOn }));
+                setComponentStates(prev => ({ ...prev, sandBin1Valve: shouldBeOn }));
                 controlRelay(relayName, shouldBeOn);
               }
-            } else if (material === 'batu1' || material === 'batu2') {
-              const binId = material === 'batu1' ? config.selectedBins.batu1 : config.selectedBins.batu2;
+            } else if (material === 'pasir2') {
+              const binId = config.selectedBins.pasir2;
               const relayName = getAggregateRelayName(material, binId);
               if (relayName) {
                 console.log(`🟡 AGG relay: ${relayName} -> ${shouldBeOn ? 'ON' : 'OFF'} (jogging, binId=${binId})`);
-                setComponentStates(prev => ({ ...prev, stoneBinValve: shouldBeOn }));
+                setComponentStates(prev => ({ ...prev, sandBin2Valve: shouldBeOn }));
+                controlRelay(relayName, shouldBeOn);
+              }
+            } else if (material === 'batu1') {
+              const binId = config.selectedBins.batu1;
+              const relayName = getAggregateRelayName(material, binId);
+              if (relayName) {
+                console.log(`🟡 AGG relay: ${relayName} -> ${shouldBeOn ? 'ON' : 'OFF'} (jogging, binId=${binId})`);
+                setComponentStates(prev => ({ ...prev, stoneBin1Valve: shouldBeOn }));
+                controlRelay(relayName, shouldBeOn);
+              }
+            } else if (material === 'batu2') {
+              const binId = config.selectedBins.batu2;
+              const relayName = getAggregateRelayName(material, binId);
+              if (relayName) {
+                console.log(`🟡 AGG relay: ${relayName} -> ${shouldBeOn ? 'ON' : 'OFF'} (jogging, binId=${binId})`);
+                setComponentStates(prev => ({ ...prev, stoneBin2Valve: shouldBeOn }));
                 controlRelay(relayName, shouldBeOn);
               }
             } else if (material === 'air') {
@@ -719,27 +773,37 @@ export const useProductionSequence = (
           clearInterval(weighingInterval);
           
           // Close relay
-          if (material === 'pasir1' || material === 'pasir2') {
-            const binId = material === 'pasir1' ? config.selectedBins.pasir1 : config.selectedBins.pasir2;
+          if (material === 'pasir1') {
+            const binId = config.selectedBins.pasir1;
             const relayName = getAggregateRelayName(material, binId);
             if (relayName) {
               console.log(`🔴 AGG relay: ${relayName} -> OFF`);
               controlRelay(relayName, false);
-              // ONLY turn off sandBinValve if BOTH pasir1 and pasir2 are done
-              if (material === 'pasir2' || config.targetWeights.pasir2 === 0) {
-                setComponentStates(prev => ({ ...prev, sandBinValve: false }));
-              }
+              setComponentStates(prev => ({ ...prev, sandBin1Valve: false }));
             }
-          } else if (material === 'batu1' || material === 'batu2') {
-            const binId = material === 'batu1' ? config.selectedBins.batu1 : config.selectedBins.batu2;
+          } else if (material === 'pasir2') {
+            const binId = config.selectedBins.pasir2;
             const relayName = getAggregateRelayName(material, binId);
             if (relayName) {
               console.log(`🔴 AGG relay: ${relayName} -> OFF`);
               controlRelay(relayName, false);
-              // ONLY turn off stoneBinValve if BOTH batu1 and batu2 are done
-              if (material === 'batu2' || config.targetWeights.batu2 === 0) {
-                setComponentStates(prev => ({ ...prev, stoneBinValve: false }));
-              }
+              setComponentStates(prev => ({ ...prev, sandBin2Valve: false }));
+            }
+          } else if (material === 'batu1') {
+            const binId = config.selectedBins.batu1;
+            const relayName = getAggregateRelayName(material, binId);
+            if (relayName) {
+              console.log(`🔴 AGG relay: ${relayName} -> OFF`);
+              controlRelay(relayName, false);
+              setComponentStates(prev => ({ ...prev, stoneBin1Valve: false }));
+            }
+          } else if (material === 'batu2') {
+            const binId = config.selectedBins.batu2;
+            const relayName = getAggregateRelayName(material, binId);
+            if (relayName) {
+              console.log(`🔴 AGG relay: ${relayName} -> OFF`);
+              controlRelay(relayName, false);
+              setComponentStates(prev => ({ ...prev, stoneBin2Valve: false }));
             }
           } else if (material === 'semen') {
             // ✅ FIX: Turn off silo valves after cement weighing complete

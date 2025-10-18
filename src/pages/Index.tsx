@@ -340,7 +340,7 @@ const Index = () => {
                 x={25} 
                 y={130} 
                 fillLevel={(aggregateBins[0].currentVolume / aggregateBins[0].capacity) * 100} 
-                gateOpen={componentStates.sandBinValve && productionState.selectedBins?.pasir1 === 1} 
+                gateOpen={componentStates.sandBin1Valve} 
                 label="PASIR 1"
                 materialType="pasir"
               />
@@ -349,7 +349,7 @@ const Index = () => {
                 x={105} 
                 y={130} 
                 fillLevel={(aggregateBins[1].currentVolume / aggregateBins[1].capacity) * 100} 
-                gateOpen={componentStates.sandBinValve && productionState.selectedBins?.pasir2 === 2} 
+                gateOpen={componentStates.sandBin2Valve} 
                 label="PASIR 2"
                 materialType="pasir"
               />
@@ -358,7 +358,7 @@ const Index = () => {
                 x={185} 
                 y={130} 
                 fillLevel={(aggregateBins[2].currentVolume / aggregateBins[2].capacity) * 100} 
-                gateOpen={componentStates.stoneBinValve && productionState.selectedBins?.batu1 === 3} 
+                gateOpen={componentStates.stoneBin1Valve} 
                 label="BATU 1"
                 materialType="batu"
               />
@@ -367,7 +367,7 @@ const Index = () => {
                 x={265} 
                 y={130} 
                 fillLevel={(aggregateBins[3].currentVolume / aggregateBins[3].capacity) * 100} 
-                gateOpen={componentStates.stoneBinValve && productionState.selectedBins?.batu2 === 4} 
+                gateOpen={componentStates.stoneBin2Valve} 
                 label="BATU 2"
                 materialType="batu"
               />
@@ -379,7 +379,7 @@ const Index = () => {
                 y={270} 
                 fillLevel={productionState.hopperFillLevels?.pasir || 0} 
                 isActive={componentStates.hopperValvePasir}
-                isFilling={componentStates.sandBinValve}
+                isFilling={componentStates.sandBin1Valve || componentStates.sandBin2Valve}
                 materialType="pasir"
                 width={140}
               />
@@ -389,7 +389,7 @@ const Index = () => {
                 y={270} 
                 fillLevel={productionState.hopperFillLevels?.batu || 0} 
                 isActive={componentStates.hopperValveBatu}
-                isFilling={componentStates.stoneBinValve}
+                isFilling={componentStates.stoneBin1Valve || componentStates.stoneBin2Valve}
                 materialType="batu"
                 width={130}
               />
