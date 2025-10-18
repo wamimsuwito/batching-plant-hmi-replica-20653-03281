@@ -23,6 +23,10 @@ export interface ProductionState {
   isProducing: boolean;
   currentStep: string;
   selectedSilos: number[];
+  selectedBins: {
+    pasir: number; // bin ID (1-4)
+    batu: number;  // bin ID (1-4)
+  };
   targetWeights: {
     pasir: number;
     batu: number;
@@ -104,6 +108,7 @@ const initialProductionState: ProductionState = {
   isProducing: false,
   currentStep: 'idle',
   selectedSilos: [],
+  selectedBins: { pasir: 0, batu: 0 },
   targetWeights: { pasir: 0, batu: 0, semen: 0, air: 0, additive: 0 },
   currentWeights: { pasir: 0, batu: 0, semen: 0, air: 0, additive: 0 },
   weighingComplete: { pasir: false, batu: false, semen: false, air: false },
@@ -197,6 +202,19 @@ export const useProductionSequence = (
     };
   };
 
+  // Helper to get relay name for aggregate bins
+  const getAggregateRelayName = (material: 'pasir' | 'batu', binId: number): string | null => {
+    if (material === 'pasir') {
+      // Bin 1 = pasir_1, Bin 2 = pasir_2
+      const idx = binId === 1 ? 1 : binId === 2 ? 2 : null;
+      return idx ? `pintu_pasir_${idx}` : null;
+    } else {
+      // Bin 3 = batu_1, Bin 4 = batu_2
+      const idx = binId === 3 ? 1 : binId === 4 ? 2 : null;
+      return idx ? `pintu_batu_${idx}` : null;
+    }
+  };
+
   const controlRelay = (relayName: string, state: boolean) => {
     console.log(`🔌 Relay Control: ${relayName} = ${state ? 'ON' : 'OFF'}`);
     
@@ -288,6 +306,7 @@ export const useProductionSequence = (
       isProducing: true,
       currentStep: 'weighing',
       selectedSilos: config.selectedSilos,
+      selectedBins: config.selectedBins,
       targetWeights: config.targetWeights,
       mixingTimeRemaining: config.mixingTime,
       jumlahMixing: config.jumlahMixing,
@@ -389,11 +408,19 @@ export const useProductionSequence = (
 
     // Open material relay
     if (material === 'pasir') {
-      setComponentStates(prev => ({ ...prev, sandBinValve: true }));
-      controlRelay('pintu_pasir_1', true);
+      const relayName = getAggregateRelayName('pasir', config.selectedBins.pasir);
+      if (relayName) {
+        console.log(`🔵 AGG relay: ${relayName} -> ON (binId=${config.selectedBins.pasir})`);
+        setComponentStates(prev => ({ ...prev, sandBinValve: true }));
+        controlRelay(relayName, true);
+      }
     } else if (material === 'batu') {
-      setComponentStates(prev => ({ ...prev, stoneBinValve: true }));
-      controlRelay('pintu_batu_1', true);
+      const relayName = getAggregateRelayName('batu', config.selectedBins.batu);
+      if (relayName) {
+        console.log(`🔵 AGG relay: ${relayName} -> ON (binId=${config.selectedBins.batu})`);
+        setComponentStates(prev => ({ ...prev, stoneBinValve: true }));
+        controlRelay(relayName, true);
+      }
     } else if (material === 'semen') {
       // Semen uses selected silo valve (already opened)
     } else if (material === 'air') {
@@ -469,10 +496,18 @@ export const useProductionSequence = (
         
         // Turn off relay
         if (material === 'pasir') {
-          controlRelay('pintu_pasir_1', false);
+          const relayName = getAggregateRelayName('pasir', config.selectedBins.pasir);
+          if (relayName) {
+            console.log(`🔴 AGG relay: ${relayName} -> OFF (jogging start, binId=${config.selectedBins.pasir})`);
+            controlRelay(relayName, false);
+          }
           setComponentStates(prev => ({ ...prev, sandBinValve: false }));
         } else if (material === 'batu') {
-          controlRelay('pintu_batu_1', false);
+          const relayName = getAggregateRelayName('batu', config.selectedBins.batu);
+          if (relayName) {
+            console.log(`🔴 AGG relay: ${relayName} -> OFF (jogging start, binId=${config.selectedBins.batu})`);
+            controlRelay(relayName, false);
+          }
           setComponentStates(prev => ({ ...prev, stoneBinValve: false }));
         } else if (material === 'air') {
           controlRelay('water_tank_valve', false);
@@ -500,11 +535,19 @@ export const useProductionSequence = (
           console.log(`🔄 ${material} jogging: ${shouldBeOn ? 'ON' : 'OFF'} (${currentWeight.toFixed(1)}kg / ${finalWeight.toFixed(1)}kg)`);
           
           if (material === 'pasir') {
-            setComponentStates(prev => ({ ...prev, sandBinValve: shouldBeOn }));
-            controlRelay('pintu_pasir_1', shouldBeOn);
+            const relayName = getAggregateRelayName('pasir', config.selectedBins.pasir);
+            if (relayName) {
+              console.log(`🟡 AGG relay: ${relayName} -> ${shouldBeOn ? 'ON' : 'OFF'} (jogging, binId=${config.selectedBins.pasir})`);
+              setComponentStates(prev => ({ ...prev, sandBinValve: shouldBeOn }));
+              controlRelay(relayName, shouldBeOn);
+            }
           } else if (material === 'batu') {
-            setComponentStates(prev => ({ ...prev, stoneBinValve: shouldBeOn }));
-            controlRelay('pintu_batu_1', shouldBeOn);
+            const relayName = getAggregateRelayName('batu', config.selectedBins.batu);
+            if (relayName) {
+              console.log(`🟡 AGG relay: ${relayName} -> ${shouldBeOn ? 'ON' : 'OFF'} (jogging, binId=${config.selectedBins.batu})`);
+              setComponentStates(prev => ({ ...prev, stoneBinValve: shouldBeOn }));
+              controlRelay(relayName, shouldBeOn);
+            }
           } else if (material === 'air') {
             // Water tank valve toggled (RED blinking during jogging)
             setComponentStates(prev => ({ ...prev, waterTankValve: shouldBeOn }));

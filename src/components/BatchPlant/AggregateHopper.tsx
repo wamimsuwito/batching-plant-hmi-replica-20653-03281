@@ -3,10 +3,18 @@ interface AggregateHopperProps {
   y: number;
   fillLevel?: number;
   isActive?: boolean;
+  isFilling?: boolean;
   materialType?: 'pasir' | 'batu';
 }
 
-export const AggregateHopper = ({ x, y, fillLevel = 70, isActive = false, materialType = 'pasir' }: AggregateHopperProps) => {
+export const AggregateHopper = ({ 
+  x, 
+  y, 
+  fillLevel = 70, 
+  isActive = false, 
+  isFilling = false,
+  materialType = 'pasir' 
+}: AggregateHopperProps) => {
   // Determine material color based on type
   const materialColor = materialType === 'batu' 
     ? 'fill-equipment-stone' 
@@ -30,7 +38,20 @@ export const AggregateHopper = ({ x, y, fillLevel = 70, isActive = false, materi
         className="fill-equipment-silo stroke-hmi-border"
         strokeWidth="2"
       />
-      {/* Valve with status indicator */}
+      
+      {/* Filling Indicator - Yellow LED at top when material is being filled from bin */}
+      {isFilling && (
+        <circle cx="45" cy="5" r="3" className="fill-yellow-400">
+          <animate
+            attributeName="opacity"
+            values="1;0.3;1"
+            dur="0.5s"
+            repeatCount="indefinite"
+          />
+        </circle>
+      )}
+      
+      {/* Discharge Valve with status indicator (bottom) */}
       <circle 
         cx="25" 
         cy="80" 
@@ -49,7 +70,7 @@ export const AggregateHopper = ({ x, y, fillLevel = 70, isActive = false, materi
         )}
       </circle>
       
-      {/* LED Indicator */}
+      {/* LED Indicator for discharge */}
       {isActive && (
         <circle cx="33" cy="80" r="2" className="fill-red-400">
           <animate

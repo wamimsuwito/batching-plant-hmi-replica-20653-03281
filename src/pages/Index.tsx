@@ -339,7 +339,7 @@ const Index = () => {
                 x={25} 
                 y={130} 
                 fillLevel={(aggregateBins[0].currentVolume / aggregateBins[0].capacity) * 100} 
-                gateOpen={componentStates.sandBinValve} 
+                gateOpen={componentStates.sandBinValve && productionState.selectedBins?.pasir === 1} 
                 label={aggregateBins[0].label}
                 materialType={aggregateBins[0].type}
               />
@@ -347,7 +347,7 @@ const Index = () => {
                 x={105} 
                 y={130} 
                 fillLevel={(aggregateBins[1].currentVolume / aggregateBins[1].capacity) * 100} 
-                gateOpen={false} 
+                gateOpen={componentStates.sandBinValve && productionState.selectedBins?.pasir === 2} 
                 label={aggregateBins[1].label}
                 materialType={aggregateBins[1].type}
               />
@@ -355,7 +355,7 @@ const Index = () => {
                 x={185} 
                 y={130} 
                 fillLevel={(aggregateBins[2].currentVolume / aggregateBins[2].capacity) * 100} 
-                gateOpen={componentStates.stoneBinValve} 
+                gateOpen={componentStates.stoneBinValve && productionState.selectedBins?.batu === 3} 
                 label={aggregateBins[2].label}
                 materialType={aggregateBins[2].type}
               />
@@ -363,7 +363,7 @@ const Index = () => {
                 x={265} 
                 y={130} 
                 fillLevel={(aggregateBins[3].currentVolume / aggregateBins[3].capacity) * 100} 
-                gateOpen={false} 
+                gateOpen={componentStates.stoneBinValve && productionState.selectedBins?.batu === 4} 
                 label={aggregateBins[3].label}
                 materialType={aggregateBins[3].type}
               />
@@ -379,15 +379,17 @@ const Index = () => {
               <AggregateHopper 
                 x={40} 
                 y={270} 
-                fillLevel={componentStates.sandBinValve ? (productionState.hopperFillLevels?.pasir || 0) : 0} 
+                fillLevel={productionState.hopperFillLevels?.pasir || 0} 
                 isActive={componentStates.hopperValvePasir}
+                isFilling={componentStates.sandBinValve}
                 materialType="pasir"
               />
               <AggregateHopper 
                 x={120} 
                 y={270} 
-                fillLevel={componentStates.stoneBinValve ? (productionState.hopperFillLevels?.batu || 0) : 0} 
+                fillLevel={productionState.hopperFillLevels?.batu || 0} 
                 isActive={componentStates.hopperValveBatu}
+                isFilling={componentStates.stoneBinValve}
                 materialType="batu"
               />
               <AggregateHopper x={200} y={270} fillLevel={0} isActive={false} />
