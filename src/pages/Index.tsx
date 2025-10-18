@@ -31,6 +31,7 @@ const Index = () => {
   const [printTicketOpen, setPrintTicketOpen] = useState(false);
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
   const [productionStartTime, setProductionStartTime] = useState<Date | null>(null);
+  const [currentBatchConfig, setCurrentBatchConfig] = useState<any>(null);
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -225,7 +226,7 @@ const Index = () => {
     relaySettings,
     raspberryPi,
     isAutoMode,
-    () => {
+    (finalWeights) => {
       // Auto-stop when production completes
       setIsRunning(false);
       console.log('✅ Production complete - Start button ready for next batch');
@@ -234,21 +235,22 @@ const Index = () => {
       const endTime = new Date();
       const startTime = productionStartTime || endTime;
       
-      // Calculate total volume from actual weights
-      const totalPasir = productionState.targetWeights.pasir1 + productionState.targetWeights.pasir2;
-      const totalBatu = productionState.targetWeights.batu1 + productionState.targetWeights.batu2;
-      const totalWeight = totalPasir + totalBatu + productionState.targetWeights.semen + productionState.targetWeights.air;
-      const totalVolumeM3 = (totalWeight / 2400).toFixed(2); // Convert kg to m³ (density ~2400 kg/m³ for concrete)
-
-      // Use actual weights from Raspberry Pi if connected, otherwise use data from production sequence
-      const actualWeights = raspberryPi.isConnected && raspberryPi.actualWeights
-        ? raspberryPi.actualWeights
-        : productionState.currentWeights;
+      // Get target weights from production state (already per mixing)
+      const targetPasir = Math.round(productionState.targetWeights.pasir1 + productionState.targetWeights.pasir2);
+      const targetBatu = Math.round(productionState.targetWeights.batu1 + productionState.targetWeights.batu2);
+      const targetSemen = Math.round(productionState.targetWeights.semen);
+      const targetAir = Math.round(productionState.targetWeights.air);
       
-      const realisasiPasir = Math.round(actualWeights.pasir);
-      const realisasiBatu = Math.round(actualWeights.batu);
-      const realisasiSemen = Math.round(actualWeights.semen);
-      const realisasiAir = Math.round(actualWeights.air);
+      // Get realisasi from finalWeights parameter (actual scale data)
+      const realisasiPasir = Math.round(finalWeights?.pasir || 0);
+      const realisasiBatu = Math.round(finalWeights?.batu || 0);
+      const realisasiSemen = Math.round(finalWeights?.semen || 0);
+      const realisasiAir = Math.round(finalWeights?.air || 0);
+      
+      // Calculate total volume (use volume per mixing if available, otherwise calculate)
+      const volumePerMixing = currentBatchConfig?.volume 
+        ? (currentBatchConfig.volume / productionState.jumlahMixing).toFixed(2)
+        : ((targetPasir + targetBatu + targetSemen + targetAir) / 2400).toFixed(2);
 
       const ticket: TicketData = {
         id: `TICKET-${Date.now()}`,
@@ -257,36 +259,36 @@ const Index = () => {
         tanggal: endTime.toLocaleDateString('id-ID'),
         jamMulai: startTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
         jamSelesai: endTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-        namaPelanggan: "PT SIDOMUNCUL",
-        lokasiProyek: "Pabrik Baru Pekanbaru",
-        mutuBeton: "K300",
-        slump: "12 cm",
-        volume: `${totalVolumeM3} M³`,
-        namaSopir: "UMAR",
-        nomorMobil: "BM 0978 VOX",
+        namaPelanggan: currentBatchConfig?.pelanggan || "PT SIDOMUNCUL",
+        lokasiProyek: currentBatchConfig?.lokasi || "Pabrik Baru Pekanbaru",
+        mutuBeton: currentBatchConfig?.mutuBeton || "K300",
+        slump: `${currentBatchConfig?.slump || "12"} cm`,
+        volume: `${volumePerMixing} M³`,
+        namaSopir: currentBatchConfig?.sopir || "UMAR",
+        nomorMobil: currentBatchConfig?.noKendaraan || "BM 0978 VOX",
         nomorLambung: "FC98",
         nomorRitasi: `${productionState.currentMixing}`,
-        totalVolume: `${totalVolumeM3} M³`,
+        totalVolume: `${currentBatchConfig?.volume || volumePerMixing} M³`,
         materials: {
           pasir: {
-            target: Math.round(totalPasir),
+            target: targetPasir,
             realisasi: realisasiPasir,
-            deviasi: realisasiPasir - Math.round(totalPasir)
+            deviasi: realisasiPasir - targetPasir
           },
           batu: {
-            target: Math.round(totalBatu),
+            target: targetBatu,
             realisasi: realisasiBatu,
-            deviasi: realisasiBatu - Math.round(totalBatu)
+            deviasi: realisasiBatu - targetBatu
           },
           semen: {
-            target: Math.round(productionState.targetWeights.semen),
+            target: targetSemen,
             realisasi: realisasiSemen,
-            deviasi: realisasiSemen - Math.round(productionState.targetWeights.semen)
+            deviasi: realisasiSemen - targetSemen
           },
           air: {
-            target: Math.round(productionState.targetWeights.air),
+            target: targetAir,
             realisasi: realisasiAir,
-            deviasi: realisasiAir - Math.round(productionState.targetWeights.air)
+            deviasi: realisasiAir - targetAir
           }
         }
       };
@@ -383,6 +385,7 @@ const Index = () => {
         open={batchStartOpen} 
         onOpenChange={setBatchStartOpen}
         onStart={(config) => {
+          setCurrentBatchConfig(config); // Store batch config for ticket generation
           startProduction(config);
           handleStart();
         }}

@@ -48,6 +48,14 @@ interface BatchStartDialogProps {
     mixingTime: number;
     jumlahMixing: number;
     currentMixing: number;
+    // Additional form data for ticket generation
+    mutuBeton?: string;
+    volume?: number;
+    slump?: string;
+    pelanggan?: string;
+    lokasi?: string;
+    noKendaraan?: string;
+    sopir?: string;
   }) => void;
   silos: SiloData[];
 }
@@ -158,7 +166,7 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
       mixingCount
     });
 
-    // Start production
+    // Start production with full config including form data
     onStart({
       selectedSilos: [parseInt(selectedSilo)],
       selectedBins,
@@ -166,6 +174,14 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
       mixingTime: parseInt(mixingTime),
       jumlahMixing: mixingCount,
       currentMixing: 1,
+      // Additional form data for ticket
+      mutuBeton,
+      volume: batchVolume,
+      slump,
+      pelanggan: pelanggan || "PT SIDOMUNCUL",
+      lokasi: lokasi || "Pabrik Baru Pekanbaru",
+      noKendaraan: noKendaraan || "BM 0978 VOX",
+      sopir: sopir || "UMAR",
     });
 
     onOpenChange(false);
