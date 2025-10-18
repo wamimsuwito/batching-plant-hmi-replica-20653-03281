@@ -242,11 +242,14 @@ const Index = () => {
       {/* Header */}
       <header className="bg-hmi-header text-white py-3 px-6 border-b-2 border-hmi-border flex items-center justify-between relative">
         {/* Logo - Top Left */}
-        <img 
-          src={farikaLogo} 
-          alt="PT Farika Riau Perkasa Indonesia" 
-          className="absolute top-2 left-6 w-16 h-16 object-contain"
-        />
+        <div className="absolute top-2 left-6 flex flex-col items-center">
+          <img 
+            src={farikaLogo} 
+            alt="PT Farika Riau Perkasa Indonesia" 
+            className="w-16 h-16 object-contain"
+          />
+          <p className="text-xs italic text-white/90 mt-1">One Stop Concrete Solution</p>
+        </div>
         
         <div className="flex-1 flex items-center gap-3 pl-20">
         </div>
