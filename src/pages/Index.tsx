@@ -347,7 +347,7 @@ const Index = () => {
                 x={105} 
                 y={130} 
                 fillLevel={(aggregateBins[1].currentVolume / aggregateBins[1].capacity) * 100} 
-                gateOpen={componentStates.stoneBinValve} 
+                gateOpen={false} 
                 label={aggregateBins[1].label}
                 materialType={aggregateBins[1].type}
               />
@@ -355,7 +355,7 @@ const Index = () => {
                 x={185} 
                 y={130} 
                 fillLevel={(aggregateBins[2].currentVolume / aggregateBins[2].capacity) * 100} 
-                gateOpen={false} 
+                gateOpen={componentStates.stoneBinValve} 
                 label={aggregateBins[2].label}
                 materialType={aggregateBins[2].type}
               />
