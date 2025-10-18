@@ -176,26 +176,53 @@ export const useProductionSequence = (
   // Load jogging settings
   const getJoggingSettings = (materialName: string): JoggingSettings => {
     const saved = localStorage.getItem('material_jogging_settings');
+    console.log(`🔍 Loading jogging settings for: ${materialName}`);
+    
     if (saved) {
       try {
         const settings = JSON.parse(saved);
+        
+        // ✅ FIX: Map material parameter names to jogging menu names
+        const materialMapping: { [key: string]: string } = {
+          'pasir1': 'Pasir 1',
+          'pasir2': 'Pasir 2',
+          'batu1': 'Batu 1',
+          'batu2': 'Batu 2',
+          'semen': 'Semen',
+          'air': 'Air',
+          'additive': 'Additive',
+        };
+        
+        const joggingMenuName = materialMapping[materialName.toLowerCase()] || materialName;
+        console.log(`🔍 Mapped to jogging menu name: ${joggingMenuName}`);
+        
         const material = settings.find((m: any) => 
-          m.nama.toLowerCase().includes(materialName.toLowerCase())
+          m.nama === joggingMenuName
         );
+        
         if (material) {
-          return {
+          const joggingConfig = {
             trigger: parseFloat(material.trigger) || 70,
             jogingOn: parseFloat(material.jogingOn) || 1,
             jogingOff: parseFloat(material.jogingOff) || 2,
             toleransi: parseFloat(material.toleransi) || 5,
           };
+          console.log(`✅ Found jogging settings for ${materialName}:`, joggingConfig);
+          return joggingConfig;
+        } else {
+          console.log(`⚠️ No jogging settings found for ${materialName} (${joggingMenuName})`);
         }
       } catch (error) {
         console.error('Error loading jogging settings:', error);
       }
+    } else {
+      console.log('⚠️ No saved jogging settings found in localStorage');
     }
+    
     // Default values
-    return { trigger: 70, jogingOn: 1, jogingOff: 2, toleransi: 5 };
+    const defaultConfig = { trigger: 70, jogingOn: 1, jogingOff: 2, toleransi: 5 };
+    console.log(`⚠️ Using default jogging settings for ${materialName}:`, defaultConfig);
+    return defaultConfig;
   };
 
   // Load mixing sequence settings
