@@ -381,12 +381,13 @@ const Index = () => {
               {/* 2 Aggregate Hoppers - Cumulative weighing */}
               {/* Hopper 1 - PASIR (Cumulative: Pasir 1 + Pasir 2) */}
               <AggregateHopper 
-                x={76} 
+                x={66} 
                 y={270} 
                 fillLevel={productionState.hopperFillLevels?.pasir || 0} 
                 isActive={componentStates.hopperValvePasir}
                 isFilling={componentStates.sandBinValve}
                 materialType="pasir"
+                width={70}
               />
               {/* Hopper 2 - BATU (Cumulative: Batu 1 + Batu 2) */}
               <AggregateHopper 
