@@ -11,7 +11,8 @@ interface MixFormula {
   id: string;
   mutuBeton: string;
   semen: string;
-  pasir: string;
+  pasir1: string;
+  pasir2: string;
   batu1: string;
   batu2: string;
   air: string;
@@ -29,7 +30,8 @@ export default function JobMixFormula() {
     id: '',
     mutuBeton: '',
     semen: '',
-    pasir: '',
+    pasir1: '',
+    pasir2: '',
     batu1: '',
     batu2: '',
     air: '',
@@ -113,14 +115,15 @@ export default function JobMixFormula() {
   useEffect(() => {
     const total = 
       (parseFloat(formData.semen) || 0) +
-      (parseFloat(formData.pasir) || 0) +
+      (parseFloat(formData.pasir1) || 0) +
+      (parseFloat(formData.pasir2) || 0) +
       (parseFloat(formData.batu1) || 0) +
       (parseFloat(formData.batu2) || 0) +
       (parseFloat(formData.air) || 0) +
       (parseFloat(formData.additive) || 0);
     
     setFormData(prev => ({ ...prev, totalVolume: total.toString() }));
-  }, [formData.semen, formData.pasir, formData.batu1, formData.batu2, formData.air, formData.additive]);
+  }, [formData.semen, formData.pasir1, formData.pasir2, formData.batu1, formData.batu2, formData.air, formData.additive]);
 
   const saveToStorage = (data: MixFormula[]) => {
     console.log('[JobMixFormula] Saving', data.length, 'formulas to localStorage');
@@ -177,7 +180,8 @@ export default function JobMixFormula() {
       id: '',
       mutuBeton: '',
       semen: '',
-      pasir: '',
+      pasir1: '',
+      pasir2: '',
       batu1: '',
       batu2: '',
       air: '',
@@ -199,7 +203,8 @@ export default function JobMixFormula() {
       id: '',
       mutuBeton: '',
       semen: '',
-      pasir: '',
+      pasir1: '',
+      pasir2: '',
       batu1: '',
       batu2: '',
       air: '',
@@ -233,7 +238,8 @@ export default function JobMixFormula() {
       id: '',
       mutuBeton: '',
       semen: '',
-      pasir: '',
+      pasir1: '',
+      pasir2: '',
       batu1: '',
       batu2: '',
       air: '',
@@ -271,12 +277,22 @@ export default function JobMixFormula() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="pasir">Pasir (kg)</Label>
+              <Label htmlFor="pasir1">Pasir 1 (kg)</Label>
               <Input
-                id="pasir"
+                id="pasir1"
                 type="number"
-                value={formData.pasir}
-                onChange={(e) => setFormData({ ...formData, pasir: e.target.value })}
+                value={formData.pasir1}
+                onChange={(e) => setFormData({ ...formData, pasir1: e.target.value })}
+                placeholder="0"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pasir2">Pasir 2 (kg)</Label>
+              <Input
+                id="pasir2"
+                type="number"
+                value={formData.pasir2}
+                onChange={(e) => setFormData({ ...formData, pasir2: e.target.value })}
                 placeholder="0"
               />
             </div>
@@ -359,7 +375,8 @@ export default function JobMixFormula() {
                 <TableRow>
                   <TableHead>Mutu Beton</TableHead>
                   <TableHead>Semen (kg)</TableHead>
-                  <TableHead>Pasir (kg)</TableHead>
+                  <TableHead>Pasir 1 (kg)</TableHead>
+                  <TableHead>Pasir 2 (kg)</TableHead>
                   <TableHead>Batu 1 (kg)</TableHead>
                   <TableHead>Batu 2 (kg)</TableHead>
                   <TableHead>Air (L)</TableHead>
@@ -371,7 +388,7 @@ export default function JobMixFormula() {
               <TableBody>
                 {formulas.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center text-muted-foreground">
+                    <TableCell colSpan={10} className="text-center text-muted-foreground">
                       Belum ada formula. Tambahkan formula baru di atas.
                     </TableCell>
                   </TableRow>
@@ -380,7 +397,8 @@ export default function JobMixFormula() {
                     <TableRow key={formula.id}>
                       <TableCell className="font-medium">{formula.mutuBeton}</TableCell>
                       <TableCell>{formula.semen || '-'}</TableCell>
-                      <TableCell>{formula.pasir || '-'}</TableCell>
+                      <TableCell>{(formula as any).pasir1 || (formula as any).pasir || '-'}</TableCell>
+                      <TableCell>{(formula as any).pasir2 || '-'}</TableCell>
                       <TableCell>{formula.batu1 || '-'}</TableCell>
                       <TableCell>{formula.batu2 || '-'}</TableCell>
                       <TableCell>{formula.air || '-'}</TableCell>
