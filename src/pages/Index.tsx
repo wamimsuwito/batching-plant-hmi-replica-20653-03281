@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { LoginDialog } from "@/components/auth/LoginDialog";
 import { BatchStartDialog } from "@/components/BatchPlant/BatchStartDialog";
 import { SiloFillDialog, SiloData } from "@/components/BatchPlant/SiloFillDialog";
+import { PrintTicketDialog, TicketData } from "@/pages/admin/PrintTicket";
 import { useAuth } from "@/contexts/AuthContext";
 import { LogIn, Settings, Package, Wifi, WifiOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -27,6 +28,9 @@ const Index = () => {
   const [loginOpen, setLoginOpen] = useState(false);
   const [batchStartOpen, setBatchStartOpen] = useState(false);
   const [siloFillOpen, setSiloFillOpen] = useState(false);
+  const [printTicketOpen, setPrintTicketOpen] = useState(false);
+  const [ticketData, setTicketData] = useState<TicketData | null>(null);
+  const [productionStartTime, setProductionStartTime] = useState<Date | null>(null);
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -225,11 +229,59 @@ const Index = () => {
       // Auto-stop when production completes
       setIsRunning(false);
       console.log('✅ Production complete - Start button ready for next batch');
+      
+      // Generate ticket data
+      const endTime = new Date();
+      const startTime = productionStartTime || endTime;
+      
+      const ticket: TicketData = {
+        jobOrder: "1",
+        nomorPO: "-",
+        tanggal: endTime.toLocaleDateString('id-ID'),
+        jamMulai: startTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        jamSelesai: endTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        namaPelanggan: "PT SIDOMUNCUL",
+        lokasiProyek: "Pabrik Baru Pekanbaru",
+        mutuBeton: "K300",
+        slump: "12 cm",
+        volume: "5 M³",
+        namaSopir: "UMAR",
+        nomorMobil: "BM 0978 VOX",
+        nomorLambung: "FC98",
+        nomorRitasi: "1",
+        totalVolume: "16 M³",
+        materials: {
+          pasir: {
+            target: productionState.targetWeights.pasir1 + productionState.targetWeights.pasir2,
+            realisasi: Math.round((productionState.targetWeights.pasir1 + productionState.targetWeights.pasir2) * 1.01),
+            deviasi: Math.round((productionState.targetWeights.pasir1 + productionState.targetWeights.pasir2) * 0.01)
+          },
+          batu: {
+            target: productionState.targetWeights.batu1 + productionState.targetWeights.batu2,
+            realisasi: Math.round((productionState.targetWeights.batu1 + productionState.targetWeights.batu2) * 0.99),
+            deviasi: Math.round((productionState.targetWeights.batu1 + productionState.targetWeights.batu2) * -0.01)
+          },
+          semen: {
+            target: productionState.targetWeights.semen,
+            realisasi: Math.round(productionState.targetWeights.semen * 1.005),
+            deviasi: Math.round(productionState.targetWeights.semen * 0.005)
+          },
+          air: {
+            target: productionState.targetWeights.air,
+            realisasi: Math.round(productionState.targetWeights.air * 1.01),
+            deviasi: Math.round(productionState.targetWeights.air * 0.01)
+          }
+        }
+      };
+      
+      setTicketData(ticket);
+      setPrintTicketOpen(true);
     }
   );
 
   const handleStart = () => {
     setIsRunning(true);
+    setProductionStartTime(new Date());
   };
   
   const handleStop = () => {
@@ -319,6 +371,13 @@ const Index = () => {
         silos={silos}
         onFill={handleSiloFill}
       />
+      {ticketData && (
+        <PrintTicketDialog
+          open={printTicketOpen}
+          onOpenChange={setPrintTicketOpen}
+          ticketData={ticketData}
+        />
+      )}
 
       {/* Main HMI Panel */}
       <main className="flex-1 p-4">

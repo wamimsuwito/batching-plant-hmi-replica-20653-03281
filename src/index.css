@@ -108,3 +108,48 @@ All colors MUST be HSL.
     50% { opacity: 0.6; transform: scale(1.1); }
   }
 }
+
+/* Print Styles */
+@media print {
+  @page {
+    size: A4;
+    margin: 1cm;
+  }
+  
+  body * {
+    visibility: hidden;
+  }
+  
+  .print\:max-w-full,
+  .print\:max-w-full * {
+    visibility: visible;
+  }
+  
+  .print\:max-w-full {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  
+  .print\:hidden {
+    display: none !important;
+  }
+  
+  .print\:p-8 {
+    padding: 2rem;
+  }
+  
+  /* Override dark theme for printing */
+  body,
+  body::before,
+  body::after {
+    background: white !important;
+    color: black !important;
+  }
+  
+  /* Ensure all text is visible when printing */
+  * {
+    color: black !important;
+  }
+}
