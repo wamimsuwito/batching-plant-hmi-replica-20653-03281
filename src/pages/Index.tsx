@@ -375,8 +375,8 @@ const Index = () => {
               {/* Support structure connecting bins to 2 hoppers */}
               <line x1="60" y1="252" x2="130" y2="270" className="stroke-hmi-border" strokeWidth="2" />
               <line x1="140" y1="252" x2="130" y2="270" className="stroke-hmi-border" strokeWidth="2" />
-              <line x1="220" y1="252" x2="220" y2="270" className="stroke-hmi-border" strokeWidth="2" />
-              <line x1="300" y1="252" x2="220" y2="270" className="stroke-hmi-border" strokeWidth="2" />
+              <line x1="220" y1="252" x2="230" y2="270" className="stroke-hmi-border" strokeWidth="2" />
+              <line x1="300" y1="252" x2="230" y2="270" className="stroke-hmi-border" strokeWidth="2" />
               
               {/* 2 Aggregate Hoppers - Cumulative weighing */}
               {/* Hopper 1 - PASIR (Cumulative: Pasir 1 + Pasir 2) */}
@@ -390,7 +390,7 @@ const Index = () => {
               />
               {/* Hopper 2 - BATU (Cumulative: Batu 1 + Batu 2) */}
               <AggregateHopper 
-                x={195} 
+                x={205} 
                 y={270} 
                 fillLevel={productionState.hopperFillLevels?.batu || 0} 
                 isActive={componentStates.hopperValveBatu}
