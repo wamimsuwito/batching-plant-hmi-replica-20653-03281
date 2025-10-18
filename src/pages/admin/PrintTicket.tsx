@@ -46,25 +46,25 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto print:max-w-none print:max-h-none print:overflow-visible print:p-0">
         <DialogTitle className="sr-only">Tiket Produksi</DialogTitle>
-        <div className="p-6 print:p-8 print:w-full">
+        <div className="p-6 print:p-4 print:w-full">
           {/* Header */}
-          <div className="flex items-start gap-4 border-b-2 border-black pb-4 mb-4">
-            <img src={farikaLogo} alt="PT Farika Logo" className="w-20 h-20" />
+          <div className="flex items-start gap-4 border-b-2 border-black pb-2 mb-2 print:pb-2 print:mb-2">
+            <img src={farikaLogo} alt="PT Farika Logo" className="w-16 h-16 print:w-12 print:h-12" />
             <div className="flex-1">
-              <h1 className="text-2xl font-bold">PT. FARIKA RIAU PERKASA</h1>
-              <p className="text-sm italic">one stop concrete solution</p>
-              <p className="text-sm font-semibold">READYMIX & PRECAST CONCRETE</p>
-              <p className="text-xs mt-1">
+              <h1 className="text-xl print:text-lg font-bold">PT. FARIKA RIAU PERKASA</h1>
+              <p className="text-sm print:text-xs italic">one stop concrete solution</p>
+              <p className="text-sm print:text-xs font-semibold">READYMIX & PRECAST CONCRETE</p>
+              <p className="text-xs print:text-[10px] mt-1">
                 Jl. Soekarno Hatta Komp. SKA No. 62 E Pekanbaru Telp. (0761) 7090228 - 571662
               </p>
             </div>
           </div>
 
           {/* Title */}
-          <h2 className="text-center text-xl font-bold mb-4">BUKTI TIMBANG (BP-1)</h2>
+          <h2 className="text-center text-lg print:text-base font-bold mb-2 print:mb-2">BUKTI TIMBANG (BP-1)</h2>
 
           {/* Info Grid */}
-          <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+          <div className="grid grid-cols-2 gap-2 print:gap-2 mb-2 print:mb-2 text-sm print:text-xs">
             {/* Left Column */}
             <div>
               <div className="flex gap-2 mb-1">
@@ -75,7 +75,7 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
                 <span className="font-semibold min-w-[120px]">Nomor PO</span>
                 <span>: {ticketData.nomorPO}</span>
               </div>
-              <div className="flex gap-2 mb-3">
+              <div className="flex gap-2 mb-2">
                 <span className="font-semibold min-w-[120px]">Tanggal</span>
                 <span>: {ticketData.tanggal}</span>
               </div>
@@ -108,7 +108,7 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
                 <span className="font-semibold min-w-[120px]">Jam Mulai:</span>
                 <span className="min-w-[100px]">{ticketData.jamMulai}</span>
               </div>
-              <div className="flex gap-2 mb-3 justify-end">
+              <div className="flex gap-2 mb-2 justify-end">
                 <span className="font-semibold min-w-[120px]">Jam Selesai:</span>
                 <span className="min-w-[100px]">{ticketData.jamSelesai}</span>
               </div>
@@ -137,64 +137,64 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
           </div>
 
           {/* Material Table */}
-          <div className="mb-6">
-            <h3 className="text-center text-sm font-semibold mb-2">Aktual penimbangan (Kg)</h3>
-            <table className="w-full border border-black">
+          <div className="mb-3 print:mb-2">
+            <h3 className="text-center text-sm print:text-xs font-semibold mb-2">Aktual penimbangan (Kg)</h3>
+            <table className="w-full border border-black text-sm print:text-xs">
               <thead>
                 <tr className="border-b border-black">
-                  <th className="border-r border-black p-2 text-left">Material</th>
-                  <th className="border-r border-black p-2 text-right">Target</th>
-                  <th className="border-r border-black p-2 text-right">Realisasi</th>
-                  <th className="p-2 text-right">Deviasi</th>
+                  <th className="border-r border-black p-1.5 print:p-1 text-left">Material</th>
+                  <th className="border-r border-black p-1.5 print:p-1 text-right">Target</th>
+                  <th className="border-r border-black p-1.5 print:p-1 text-right">Realisasi</th>
+                  <th className="p-1.5 print:p-1 text-right">Deviasi</th>
                 </tr>
               </thead>
               <tbody>
                 <tr className="border-b border-black">
-                  <td className="border-r border-black p-2">Pasir</td>
-                  <td className="border-r border-black p-2 text-right">{ticketData.materials.pasir.target}</td>
-                  <td className="border-r border-black p-2 text-right">{ticketData.materials.pasir.realisasi}</td>
-                  <td className="p-2 text-right">{ticketData.materials.pasir.deviasi}</td>
+                  <td className="border-r border-black p-1.5 print:p-1">Pasir</td>
+                  <td className="border-r border-black p-1.5 print:p-1 text-right">{ticketData.materials.pasir.target}</td>
+                  <td className="border-r border-black p-1.5 print:p-1 text-right">{ticketData.materials.pasir.realisasi}</td>
+                  <td className="p-1.5 print:p-1 text-right">{ticketData.materials.pasir.deviasi}</td>
                 </tr>
                 <tr className="border-b border-black">
-                  <td className="border-r border-black p-2">Batu</td>
-                  <td className="border-r border-black p-2 text-right">{ticketData.materials.batu.target}</td>
-                  <td className="border-r border-black p-2 text-right">{ticketData.materials.batu.realisasi}</td>
-                  <td className="p-2 text-right">{ticketData.materials.batu.deviasi}</td>
+                  <td className="border-r border-black p-1.5 print:p-1">Batu</td>
+                  <td className="border-r border-black p-1.5 print:p-1 text-right">{ticketData.materials.batu.target}</td>
+                  <td className="border-r border-black p-1.5 print:p-1 text-right">{ticketData.materials.batu.realisasi}</td>
+                  <td className="p-1.5 print:p-1 text-right">{ticketData.materials.batu.deviasi}</td>
                 </tr>
                 <tr className="border-b border-black">
-                  <td className="border-r border-black p-2">Semen</td>
-                  <td className="border-r border-black p-2 text-right">{ticketData.materials.semen.target}</td>
-                  <td className="border-r border-black p-2 text-right">{ticketData.materials.semen.realisasi}</td>
-                  <td className="p-2 text-right">{ticketData.materials.semen.deviasi}</td>
+                  <td className="border-r border-black p-1.5 print:p-1">Semen</td>
+                  <td className="border-r border-black p-1.5 print:p-1 text-right">{ticketData.materials.semen.target}</td>
+                  <td className="border-r border-black p-1.5 print:p-1 text-right">{ticketData.materials.semen.realisasi}</td>
+                  <td className="p-1.5 print:p-1 text-right">{ticketData.materials.semen.deviasi}</td>
                 </tr>
                 <tr className="border-b border-black">
-                  <td className="border-r border-black p-2">Air</td>
-                  <td className="border-r border-black p-2 text-right">{ticketData.materials.air.target}</td>
-                  <td className="border-r border-black p-2 text-right">{ticketData.materials.air.realisasi}</td>
-                  <td className="p-2 text-right">{ticketData.materials.air.deviasi}</td>
+                  <td className="border-r border-black p-1.5 print:p-1">Air</td>
+                  <td className="border-r border-black p-1.5 print:p-1 text-right">{ticketData.materials.air.target}</td>
+                  <td className="border-r border-black p-1.5 print:p-1 text-right">{ticketData.materials.air.realisasi}</td>
+                  <td className="p-1.5 print:p-1 text-right">{ticketData.materials.air.deviasi}</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
           {/* Signatures */}
-          <div className="grid grid-cols-3 gap-8 mb-6 text-sm">
+          <div className="grid grid-cols-3 gap-4 print:gap-3 mb-3 print:mb-2 text-sm signature-section">
             <div className="text-center">
-              <p className="mb-16">Penerima,</p>
-              <p className="border-t border-black pt-1">(_____________________)</p>
+              <p className="print:text-xs mb-8 print:mb-6">Penerima,</p>
+              <p className="border-t border-black pt-1 print:text-xs">(_____________________)</p>
             </div>
             <div className="text-center">
-              <p className="mb-16">Operator,</p>
-              <p className="border-t border-black pt-1">(_____________________)</p>
+              <p className="print:text-xs mb-8 print:mb-6">Operator,</p>
+              <p className="border-t border-black pt-1 print:text-xs">(_____________________)</p>
             </div>
             <div className="text-center">
-              <p className="mb-16">Quality Control,</p>
-              <p className="border-t border-black pt-1">(_____________________)</p>
+              <p className="print:text-xs mb-8 print:mb-6">Quality Control,</p>
+              <p className="border-t border-black pt-1 print:text-xs">(_____________________)</p>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="text-center text-xs">
+          <div className="text-center text-xs print:text-[10px]">
             <p>Dokumen ini dibuat secara otomatis oleh sistem.</p>
             <p>Waktu Cetak: {new Date().toLocaleString('id-ID')}</p>
           </div>

@@ -112,26 +112,37 @@ All colors MUST be HSL.
 /* Print Styles */
 @media print {
   @page {
-    size: A4;
-    margin: 1cm;
+    size: A4 portrait;
+    margin: 0.75cm;
   }
-  
-  .print\:hidden {
-    display: none !important;
-  }
-  
-  /* Override dark theme for printing */
+
   body,
   body::before,
   body::after {
     background: white !important;
     color: black !important;
   }
-  
+
   /* Ensure all text is visible when printing */
   * {
     color: black !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Prevent page breaks inside elements */
+  h1, h2, h3, table, .signature-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Keep related elements together */
+  tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 }
