@@ -1262,148 +1262,159 @@ export const useProductionSequence = (
   };
 
   const completeProduction = () => {
-    const { currentMixing, jumlahMixing, nextMixingReady } = productionState;
-    
-    // Check if there are more mixings to do
-    if (currentMixing < jumlahMixing) {
-      // Cek apakah penimbangan mixing berikutnya sudah selesai
-      if (nextMixingReady) {
-        console.log(`✅ Mixing ${currentMixing} selesai, material Mixing ${currentMixing + 1} sudah siap di hopper`);
-        
-        // Update state untuk mixing berikutnya
-        setProductionState(prev => ({
-          ...prev,
-          currentMixing: prev.currentMixing + 1,
-          currentStep: 'discharging',
-          nextMixingReady: false,
-        }));
-        
-        toast({
-          title: `Mixing ${currentMixing + 1} of ${jumlahMixing}`,
-          description: 'Memulai proses discharge material ke mixer',
-        });
-        
-        // Langsung discharge material yang sudah ditimbang
-        setTimeout(() => {
-          if (lastConfigRef.current) {
-            startDischargeSequence(lastConfigRef.current);
-          }
-        }, 2000);
-        
-      } else {
-        // Material mixing berikutnya belum siap (edge case: mixing terlalu cepat)
-        console.log(`⚠️ Mixing ${currentMixing} selesai, tapi material Mixing ${currentMixing + 1} belum siap. Menunggu...`);
-        
-        // Set flag menunggu mixer
-        setProductionState(prev => ({ 
-          ...prev, 
-          isWaitingForMixer: true,
-          currentStep: 'waiting_for_material',
-        }));
-        
-        toast({
-          title: 'Menunggu Material',
-          description: `Penimbangan Mixing ${currentMixing + 1} masih berlangsung`,
-        });
-        
-        // Poll setiap 2 detik sampai material siap
-        const waitInterval = setInterval(() => {
-          if (productionState.nextMixingReady) {
-            clearInterval(waitInterval);
-            console.log('✅ Material ready! Starting discharge for next mixing');
-            
-            setProductionState(prev => ({
-              ...prev,
-              currentMixing: prev.currentMixing + 1,
-              currentStep: 'discharging',
-              isWaitingForMixer: false,
-              nextMixingReady: false,
-            }));
-            
-            setTimeout(() => {
-              if (lastConfigRef.current) {
-                startDischargeSequence(lastConfigRef.current);
-              }
-            }, 1000);
-          }
-        }, 2000);
-        addInterval(waitInterval);
-      }
+    // ✅ FIX: Use setState callback to get latest state
+    setProductionState(prev => {
+      const { currentMixing, jumlahMixing, nextMixingReady } = prev;
       
-    } else {
-      // All mixing cycles complete
-      console.log(`✅ Semua mixing selesai (${jumlahMixing} mixing)`);
+      console.log(`🏁 completeProduction called: currentMixing=${currentMixing}, jumlahMixing=${jumlahMixing}, nextMixingReady=${nextMixingReady}`);
       
-      // AKTIVASI KLAKSON - 1 detik
-      console.log('🔔 Activating klakson for 1 second');
-      controlRelay('klakson', true);
-      setComponentStates(prev => ({ ...prev, klakson: true }));
-      
-      // Toast notification untuk klakson
-      toast({
-        title: '🔔 Klakson Aktif',
-        description: 'Semua produksi selesai - klakson berbunyi 1 detik',
-        duration: 2000,
-      });
-      
-      const klaksonTimer = setTimeout(() => {
-        controlRelay('klakson', false);
-        setComponentStates(prev => ({ ...prev, klakson: false }));
-      }, 1000);
-      addTimer(klaksonTimer);
-      
-      // Refill aggregate bins to 10000 kg after 2 seconds
-      setTimeout(() => {
-        console.log('🔄 Refilling aggregate bins to 10000 kg...');
-        onAggregateDeduction(1, -10000); // Bin 1 (PASIR)
-        onAggregateDeduction(2, -10000); // Bin 2 (BATU 1)
-        onAggregateDeduction(3, -10000); // Bin 3 (BATU 2)
-        onAggregateDeduction(4, -10000); // Bin 4
-        
-        toast({
-          title: 'Bin Refilled',
-          description: 'Aggregate bins telah diisi ulang ke 10000 kg',
-        });
-      }, 2000);
-
-      toast({
-        title: 'Produksi Selesai',
-        description: `${jumlahMixing} mixing berhasil diselesaikan`,
-      });
-
-      setProductionState(prev => ({ ...prev, currentStep: 'complete' }));
-      
-      // Reset after 2 seconds and call onComplete callback
-      const resetTimer = setTimeout(() => {
-        setProductionState(initialProductionState);
-        // DON'T reset componentStates - keep mixer running
-        
-        // Start 5-minute idle timer for mixer
-        console.log('⏰ Starting 5-minute idle timer for mixer...');
-        mixerIdleTimerRef.current = setTimeout(() => {
-          console.log('⏰ 5 minutes idle - turning off mixer');
-          setComponentStates(prev => ({ ...prev, mixer: false }));
-          controlRelay('mixer', false);
-          mixerIdleTimerRef.current = null;
+      // Check if there are more mixings to do
+      if (currentMixing < jumlahMixing) {
+        // Cek apakah penimbangan mixing berikutnya sudah selesai
+        if (nextMixingReady) {
+          console.log(`✅ Mixing ${currentMixing} selesai, material Mixing ${currentMixing + 1} sudah siap di hopper`);
           
           toast({
-            title: 'Mixer Dimatikan',
-            description: 'Mixer dimatikan setelah 5 menit idle',
+            title: `Mixing ${currentMixing + 1} of ${jumlahMixing}`,
+            description: 'Memulai proses discharge material ke mixer',
           });
-        }, 5 * 60 * 1000); // 5 minutes
+          
+          // Langsung discharge material yang sudah ditimbang
+          setTimeout(() => {
+            if (lastConfigRef.current) {
+              startDischargeSequence(lastConfigRef.current);
+            }
+          }, 2000);
+          
+          // Return updated state
+          return {
+            ...prev,
+            currentMixing: prev.currentMixing + 1,
+            currentStep: 'discharging',
+            nextMixingReady: false,
+            dischargedMaterialsCount: 0, // Reset counter for next cycle
+          };
         
+        } else {
+          // Material mixing berikutnya belum siap (edge case: mixing terlalu cepat)
+          console.log(`⚠️ Mixing ${currentMixing} selesai, tapi material Mixing ${currentMixing + 1} belum siap. Menunggu...`);
+          
+          toast({
+            title: 'Menunggu Material',
+            description: `Penimbangan Mixing ${currentMixing + 1} masih berlangsung`,
+          });
+          
+          // Poll setiap 2 detik sampai material siap
+          const waitInterval = setInterval(() => {
+            setProductionState(checkPrev => {
+              if (checkPrev.nextMixingReady) {
+                clearInterval(waitInterval);
+                console.log('✅ Material ready! Starting discharge for next mixing');
+                
+                setTimeout(() => {
+                  if (lastConfigRef.current) {
+                    startDischargeSequence(lastConfigRef.current);
+                  }
+                }, 1000);
+                
+                return {
+                  ...checkPrev,
+                  currentMixing: checkPrev.currentMixing + 1,
+                  currentStep: 'discharging',
+                  isWaitingForMixer: false,
+                  nextMixingReady: false,
+                  dischargedMaterialsCount: 0,
+                };
+              }
+              return checkPrev;
+            });
+          }, 2000);
+          addInterval(waitInterval);
+          
+          // Return waiting state
+          return { 
+            ...prev, 
+            isWaitingForMixer: true,
+            currentStep: 'waiting_for_material',
+          };
+        }
+        
+      } else {
+        // All mixing cycles complete
+        console.log(`✅ Semua mixing selesai (${jumlahMixing} mixing)`);
+        
+        // AKTIVASI KLAKSON - 1 detik
+        console.log('🔔 Activating klakson for 1 second');
+        controlRelay('klakson', true);
+        setComponentStates(prevComp => ({ ...prevComp, klakson: true }));
+        
+        // Toast notification untuk klakson
         toast({
-          title: 'Sistem Siap',
-          description: 'Mixer akan tetap hidup selama 5 menit. Mulai batch baru atau mixer akan mati otomatis.',
+          title: '🔔 Klakson Aktif',
+          description: 'Semua produksi selesai - klakson berbunyi 1 detik',
+          duration: 2000,
         });
         
-        // Call completion callback to reset UI state (stop button, enable start button)
-        if (onComplete) {
-          onComplete();
-        }
-      }, 2000);
-      addTimer(resetTimer);
-    }
+        const klaksonTimer = setTimeout(() => {
+          controlRelay('klakson', false);
+          setComponentStates(prevComp => ({ ...prevComp, klakson: false }));
+        }, 1000);
+        addTimer(klaksonTimer);
+        
+        // Refill aggregate bins to 10000 kg after 2 seconds
+        setTimeout(() => {
+          console.log('🔄 Refilling aggregate bins to 10000 kg...');
+          onAggregateDeduction(1, -10000); // Bin 1 (PASIR)
+          onAggregateDeduction(2, -10000); // Bin 2 (BATU 1)
+          onAggregateDeduction(3, -10000); // Bin 3 (BATU 2)
+          onAggregateDeduction(4, -10000); // Bin 4
+          
+          toast({
+            title: 'Bin Refilled',
+            description: 'Aggregate bins telah diisi ulang ke 10000 kg',
+          });
+        }, 2000);
+
+        toast({
+          title: 'Produksi Selesai',
+          description: `${jumlahMixing} mixing berhasil diselesaikan`,
+        });
+        
+        // Reset after 2 seconds and call onComplete callback
+        const resetTimer = setTimeout(() => {
+          setProductionState(initialProductionState);
+          // DON'T reset componentStates - keep mixer running
+          
+          // Start 5-minute idle timer for mixer
+          console.log('⏰ Starting 5-minute idle timer for mixer...');
+          mixerIdleTimerRef.current = setTimeout(() => {
+            console.log('⏰ 5 minutes idle - turning off mixer');
+            setComponentStates(prevComp => ({ ...prevComp, mixer: false }));
+            controlRelay('mixer', false);
+            mixerIdleTimerRef.current = null;
+            
+            toast({
+              title: 'Mixer Dimatikan',
+              description: 'Mixer dimatikan setelah 5 menit idle',
+            });
+          }, 5 * 60 * 1000); // 5 minutes
+          
+          toast({
+            title: 'Sistem Siap',
+            description: 'Mixer akan tetap hidup selama 5 menit. Mulai batch baru atau mixer akan mati otomatis.',
+          });
+          
+          // Call completion callback to reset UI state (stop button, enable start button)
+          if (onComplete) {
+            onComplete();
+          }
+        }, 2000);
+        addTimer(resetTimer);
+        
+        // Return complete state
+        return { ...prev, currentStep: 'complete' };
+      }
+    });
   };
 
   // Cleanup on unmount
