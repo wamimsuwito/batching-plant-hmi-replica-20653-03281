@@ -43,8 +43,8 @@ const Index = () => {
   const [aggregateBins, setAggregateBins] = useState([
     { id: 1, label: 'pasir 1', currentVolume: 10000, capacity: 10000, type: 'pasir' as const },
     { id: 2, label: 'pasir 2', currentVolume: 10000, capacity: 10000, type: 'pasir' as const },
-    { id: 3, label: 'Batu 1', currentVolume: 10000, capacity: 10000, type: 'pasir' as const },
-    { id: 4, label: 'Batu 2', currentVolume: 10000, capacity: 10000, type: 'pasir' as const },
+    { id: 3, label: 'Batu 1', currentVolume: 10000, capacity: 10000, type: 'batu' as const },
+    { id: 4, label: 'Batu 2', currentVolume: 10000, capacity: 10000, type: 'batu' as const },
   ]);
 
   // Initialize water tank with 2000 kg capacity
@@ -71,13 +71,20 @@ const Index = () => {
     localStorage.setItem('cement_silos', JSON.stringify(silos));
   }, [silos]);
 
-  // Load aggregate bin data from localStorage on mount
+  // Load aggregate bin data from localStorage on mount with migration
   useEffect(() => {
     const savedBins = localStorage.getItem('aggregate_bins');
     if (savedBins) {
       try {
         const parsedBins = JSON.parse(savedBins);
-        setAggregateBins(parsedBins);
+        // Migrate: ensure correct type based on label
+        const migratedBins = parsedBins.map((bin: any) => ({
+          ...bin,
+          type: bin.label.toLowerCase().includes('batu') ? 'batu' : 'pasir'
+        }));
+        setAggregateBins(migratedBins);
+        // Save migrated data back to localStorage
+        localStorage.setItem('aggregate_bins', JSON.stringify(migratedBins));
       } catch (error) {
         console.error('Error loading aggregate bin data:', error);
       }
@@ -737,24 +744,6 @@ const Index = () => {
             </div>
           </div>
           
-          {/* Legend Panel - Bottom Right */}
-          <div className="absolute bottom-4 left-[820px] bg-card/90 backdrop-blur-sm border-2 border-hmi-border rounded p-3 shadow-lg">
-            <h3 className="text-xs font-bold mb-2 text-foreground">Component Status Legend</h3>
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-[10px] font-semibold text-foreground">ACTIVE / ON</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                <span className="text-[10px] font-semibold text-foreground">INACTIVE / OFF</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
-                <span className="text-[10px] font-semibold text-foreground">WARNING</span>
-              </div>
-            </div>
-          </div>
         </div>
       </main>
     </div>
