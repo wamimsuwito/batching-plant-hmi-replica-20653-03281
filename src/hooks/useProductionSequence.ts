@@ -715,7 +715,15 @@ export const useProductionSequence = (
               }
             }
           } else if (material === 'semen') {
-            // Semen valves stay open until discharge
+            // ✅ FIX: Turn off silo valves after cement weighing complete
+            console.log('🔴 SEMEN: Closing all silo valves');
+            config.selectedSilos.forEach(siloId => {
+              controlRelay(`silo_${siloId}`, false);
+            });
+            setComponentStates(prev => ({
+              ...prev,
+              siloValves: prev.siloValves.map(() => false)
+            }));
           } else if (material === 'air') {
             setComponentStates(prev => ({ ...prev, waterTankValve: false }));
             controlRelay('water_tank_valve', false);
