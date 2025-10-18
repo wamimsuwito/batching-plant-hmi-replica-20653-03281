@@ -335,47 +335,51 @@ const Index = () => {
             {/* Aggregate Section - Left Side */}
             <g id="aggregate-section">
               {/* 4 Storage Bins - Dynamic fill level based on bin state */}
+              {/* Bin 1 - Pasir 1 */}
               <StorageBin 
                 x={25} 
                 y={130} 
                 fillLevel={(aggregateBins[0].currentVolume / aggregateBins[0].capacity) * 100} 
-                gateOpen={componentStates.sandBinValve && productionState.selectedBins?.pasir === 1} 
-                label={aggregateBins[0].label}
-                materialType={aggregateBins[0].type}
+                gateOpen={componentStates.sandBinValve && productionState.selectedBins?.pasir1 === 1} 
+                label="PASIR 1"
+                materialType="pasir"
               />
+              {/* Bin 2 - Pasir 2 */}
               <StorageBin 
                 x={105} 
                 y={130} 
                 fillLevel={(aggregateBins[1].currentVolume / aggregateBins[1].capacity) * 100} 
-                gateOpen={componentStates.sandBinValve && productionState.selectedBins?.pasir === 2} 
-                label={aggregateBins[1].label}
-                materialType={aggregateBins[1].type}
+                gateOpen={componentStates.sandBinValve && productionState.selectedBins?.pasir2 === 2} 
+                label="PASIR 2"
+                materialType="pasir"
               />
+              {/* Bin 3 - Batu 1 */}
               <StorageBin 
                 x={185} 
                 y={130} 
                 fillLevel={(aggregateBins[2].currentVolume / aggregateBins[2].capacity) * 100} 
-                gateOpen={componentStates.stoneBinValve && productionState.selectedBins?.batu === 3} 
-                label={aggregateBins[2].label}
-                materialType={aggregateBins[2].type}
+                gateOpen={componentStates.stoneBinValve && productionState.selectedBins?.batu1 === 3} 
+                label="BATU 1"
+                materialType="batu"
               />
+              {/* Bin 4 - Batu 2 */}
               <StorageBin 
                 x={265} 
                 y={130} 
                 fillLevel={(aggregateBins[3].currentVolume / aggregateBins[3].capacity) * 100} 
-                gateOpen={componentStates.stoneBinValve && productionState.selectedBins?.batu === 4} 
-                label={aggregateBins[3].label}
-                materialType={aggregateBins[3].type}
+                gateOpen={componentStates.stoneBinValve && productionState.selectedBins?.batu2 === 4} 
+                label="BATU 2"
+                materialType="batu"
               />
               
-              {/* Support structure connecting bins to hoppers */}
+              {/* Support structure connecting bins to 2 hoppers */}
               <line x1="60" y1="252" x2="65" y2="270" className="stroke-hmi-border" strokeWidth="2" />
-              <line x1="140" y1="252" x2="145" y2="270" className="stroke-hmi-border" strokeWidth="2" />
-              <line x1="220" y1="252" x2="225" y2="270" className="stroke-hmi-border" strokeWidth="2" />
-              <line x1="300" y1="252" x2="305" y2="270" className="stroke-hmi-border" strokeWidth="2" />
+              <line x1="140" y1="252" x2="65" y2="270" className="stroke-hmi-border" strokeWidth="2" />
+              <line x1="220" y1="252" x2="145" y2="270" className="stroke-hmi-border" strokeWidth="2" />
+              <line x1="300" y1="252" x2="145" y2="270" className="stroke-hmi-border" strokeWidth="2" />
               
-              {/* 4 Aggregate Hoppers with valve indicators and dynamic fill levels */}
-              {/* HOPPER fillLevel: 0 = empty, 100 = full */}
+              {/* 2 Aggregate Hoppers - Cumulative weighing */}
+              {/* Hopper 1 - PASIR (Cumulative: Pasir 1 + Pasir 2) */}
               <AggregateHopper 
                 x={40} 
                 y={270} 
@@ -384,6 +388,7 @@ const Index = () => {
                 isFilling={componentStates.sandBinValve}
                 materialType="pasir"
               />
+              {/* Hopper 2 - BATU (Cumulative: Batu 1 + Batu 2) */}
               <AggregateHopper 
                 x={120} 
                 y={270} 
@@ -392,8 +397,6 @@ const Index = () => {
                 isFilling={componentStates.stoneBinValve}
                 materialType="batu"
               />
-              <AggregateHopper x={200} y={270} fillLevel={0} isActive={false} />
-              <AggregateHopper x={280} y={270} fillLevel={0} isActive={false} />
 
               {/* Conveyor Belt 1 - Below hoppers (horizontal) */}
               <ConveyorBelt x={40} y={370} width={290} angle={0} isRunning={componentStates.beltBawah} />
@@ -663,12 +666,12 @@ const Index = () => {
               <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
                 <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
                 <div className="text-xs font-bold text-blue-200 tabular-nums">
-                  {productionState.targetWeights.pasir.toFixed(0)} kg
+                  {productionState.cumulativeTargets.pasir.toFixed(0)} kg
                 </div>
               </div>
               {/* Current weight indicator */}
               <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
-                productionState.targetWeights.pasir > 0 
+                productionState.cumulativeTargets.pasir > 0
                   ? 'bg-green-900/40 border-green-500/50' 
                   : 'bg-gray-800/40 border-gray-600'
               }`}>
@@ -685,12 +688,12 @@ const Index = () => {
               <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
                 <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
                 <div className="text-xs font-bold text-blue-200 tabular-nums">
-                  {productionState.targetWeights.batu.toFixed(0)} kg
+                  {productionState.cumulativeTargets.batu.toFixed(0)} kg
                 </div>
               </div>
               {/* Current weight indicator */}
               <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
-                productionState.targetWeights.batu > 0 
+                productionState.cumulativeTargets.batu > 0
                   ? 'bg-green-900/40 border-green-500/50' 
                   : 'bg-gray-800/40 border-gray-600'
               }`}>

@@ -4,12 +4,16 @@ import { useToast } from '@/hooks/use-toast';
 export interface ProductionConfig {
   selectedSilos: number[];
   selectedBins: {
-    pasir: number; // bin ID (1-4)
-    batu: number;  // bin ID (1-4)
+    pasir1: number; // bin ID (1 or 2)
+    pasir2: number; // bin ID (1 or 2)
+    batu1: number;  // bin ID (3 or 4)
+    batu2: number;  // bin ID (3 or 4)
   };
   targetWeights: {
-    pasir: number;
-    batu: number;
+    pasir1: number;
+    pasir2: number;
+    batu1: number;
+    batu2: number;
     semen: number;
     air: number;
     additive: number;
@@ -24,42 +28,52 @@ export interface ProductionState {
   currentStep: string;
   selectedSilos: number[];
   selectedBins: {
-    pasir: number; // bin ID (1-4)
-    batu: number;  // bin ID (1-4)
+    pasir1: number; // bin ID (1 or 2)
+    pasir2: number; // bin ID (1 or 2)
+    batu1: number;  // bin ID (3 or 4)
+    batu2: number;  // bin ID (3 or 4)
   };
   targetWeights: {
-    pasir: number;
-    batu: number;
+    pasir1: number;
+    pasir2: number;
+    batu1: number;
+    batu2: number;
     semen: number;
     air: number;
     additive: number;
   };
   currentWeights: {
-    pasir: number;
-    batu: number;
+    pasir: number; // Cumulative weight for display (pasir1 + pasir2)
+    batu: number;  // Cumulative weight for display (batu1 + batu2)
     semen: number;
     air: number;
     additive: number;
   };
   weighingComplete: {
-    pasir: boolean;
-    batu: boolean;
+    pasir1: boolean;
+    pasir2: boolean;
+    batu1: boolean;
+    batu2: boolean;
     semen: boolean;
     air: boolean;
   };
   mixingTimeRemaining: number;
   mixerDoorCycle: number;
   hopperFillLevels: {
-    pasir: number;
-    batu: number;
+    pasir: number; // Cumulative fill level (pasir1 + pasir2)
+    batu: number;  // Cumulative fill level (batu1 + batu2)
     air: number;
+  };
+  cumulativeTargets: {
+    pasir: number; // pasir1 + pasir2 for display
+    batu: number;  // batu1 + batu2 for display
   };
   jumlahMixing: number;
   currentMixing: number;
-  isWaitingForMixer: boolean; // TRUE jika material mixing berikutnya sudah ditimbang, nunggu mixer
-  nextMixingReady: boolean;   // TRUE jika penimbangan mixing berikutnya selesai
-  dischargedMaterialsCount: number; // Track berapa material yang sudah selesai discharge
-  totalMaterialsToDischarge: number; // Total material yang perlu di-discharge (4: pasir, batu, semen, air)
+  isWaitingForMixer: boolean;
+  nextMixingReady: boolean;
+  dischargedMaterialsCount: number;
+  totalMaterialsToDischarge: number;
 }
 
 export interface ComponentStates {
@@ -108,13 +122,14 @@ const initialProductionState: ProductionState = {
   isProducing: false,
   currentStep: 'idle',
   selectedSilos: [],
-  selectedBins: { pasir: 0, batu: 0 },
-  targetWeights: { pasir: 0, batu: 0, semen: 0, air: 0, additive: 0 },
+  selectedBins: { pasir1: 0, pasir2: 0, batu1: 0, batu2: 0 },
+  targetWeights: { pasir1: 0, pasir2: 0, batu1: 0, batu2: 0, semen: 0, air: 0, additive: 0 },
   currentWeights: { pasir: 0, batu: 0, semen: 0, air: 0, additive: 0 },
-  weighingComplete: { pasir: false, batu: false, semen: false, air: false },
+  weighingComplete: { pasir1: false, pasir2: false, batu1: false, batu2: false, semen: false, air: false },
   mixingTimeRemaining: 0,
   mixerDoorCycle: 0,
   hopperFillLevels: { pasir: 0, batu: 0, air: 0 },
+  cumulativeTargets: { pasir: 0, batu: 0 },
   jumlahMixing: 1,
   currentMixing: 1,
   isWaitingForMixer: false,
@@ -203,16 +218,22 @@ export const useProductionSequence = (
   };
 
   // Helper to get relay name for aggregate bins
-  const getAggregateRelayName = (material: 'pasir' | 'batu', binId: number): string | null => {
-    if (material === 'pasir') {
-      // Bin 1 = pasir_1, Bin 2 = pasir_2
-      const idx = binId === 1 ? 1 : binId === 2 ? 2 : null;
-      return idx ? `pintu_pasir_${idx}` : null;
-    } else {
-      // Bin 3 = batu_1, Bin 4 = batu_2
-      const idx = binId === 3 ? 1 : binId === 4 ? 2 : null;
-      return idx ? `pintu_batu_${idx}` : null;
+  const getAggregateRelayName = (
+    material: 'pasir1' | 'pasir2' | 'batu1' | 'batu2',
+    binId: number
+  ): string | null => {
+    if (material === 'pasir1' || material === 'pasir2') {
+      // Pasir 1 (binId=1) → pintu_pasir_1
+      // Pasir 2 (binId=2) → pintu_pasir_2
+      if (binId === 1) return 'pintu_pasir_1';
+      if (binId === 2) return 'pintu_pasir_2';
+    } else if (material === 'batu1' || material === 'batu2') {
+      // Batu 1 (binId=3) → pintu_batu_1
+      // Batu 2 (binId=4) → pintu_batu_2
+      if (binId === 3) return 'pintu_batu_1';
+      if (binId === 4) return 'pintu_batu_2';
     }
+    return null;
   };
 
   const controlRelay = (relayName: string, state: boolean) => {
@@ -308,6 +329,10 @@ export const useProductionSequence = (
       selectedSilos: config.selectedSilos,
       selectedBins: config.selectedBins,
       targetWeights: config.targetWeights,
+      cumulativeTargets: {
+        pasir: config.targetWeights.pasir1 + config.targetWeights.pasir2,
+        batu: config.targetWeights.batu1 + config.targetWeights.batu2,
+      },
       mixingTimeRemaining: config.mixingTime,
       jumlahMixing: config.jumlahMixing,
       currentMixing: config.currentMixing,
@@ -341,267 +366,384 @@ export const useProductionSequence = (
     addTimer(weighingTimer);
   };
 
-  const startWeighingWithJogging = (config: ProductionConfig) => {
-    const materials = ['pasir', 'batu', 'semen', 'air'] as const;
+  const startWeighingWithJogging = async (config: ProductionConfig) => {
+    console.log('🎯 Starting CUMULATIVE weighing for all materials');
+    console.log('Target weights:', config.targetWeights);
+    console.log('Selected bins:', config.selectedBins);
+
     const weighingStatus: { [key: string]: boolean } = {};
 
-    materials.forEach(material => {
-      if (config.targetWeights[material] > 0) {
-        weighingStatus[material] = false;
-        weighMaterialWithJogging(material, config.targetWeights[material], config, weighingStatus);
-      } else {
-        setProductionState(prev => ({
-          ...prev,
-          weighingComplete: { ...prev.weighingComplete, [material]: true }
-        }));
-      }
-    });
+    // SEQUENTIAL & CUMULATIVE WEIGHING ORDER:
+    // 1. Pasir 1 (0 → target pasir1)
+    // 2. Pasir 2 (pasir1 → pasir1 + pasir2) - CUMULATIVE
+    // 3. Batu 1 (0 → target batu1)
+    // 4. Batu 2 (batu1 → batu1 + batu2) - CUMULATIVE
+    // 5. Semen (independent)
+    // 6. Air (independent)
 
-    // Check completion every 500ms
-    const checkInterval = setInterval(() => {
-      const allComplete = materials.every(m => 
-        config.targetWeights[m] === 0 || weighingStatus[m]
+    // Material 1: Pasir 1
+    if (config.targetWeights.pasir1 > 0 && config.selectedBins.pasir1 > 0) {
+      console.log('📦 Weighing PASIR 1...');
+      await weighMaterialWithJogging(
+        'pasir1',
+        config.targetWeights.pasir1,
+        config,
+        weighingStatus,
+        0 // startingWeight = 0
       );
-      
-      if (allComplete) {
-        clearInterval(checkInterval);
-        console.log('✅ All weighing complete, starting discharge');
-        
-        // Turn off weighing relays (except cement - it stays on until discharge completes)
-        setComponentStates(prev => ({
-          ...prev,
-          sandBinValve: false,
-          stoneBinValve: false,
-          waterTankValve: false,
-        }));
-        
-        // Deduct cement from silos
-        const cementPerSilo = config.targetWeights.semen / config.selectedSilos.length;
-        config.selectedSilos.forEach(siloId => {
-          onCementDeduction(siloId, cementPerSilo);
-        });
-        
-        // Start discharge sequence
-        setTimeout(() => startDischargeSequence(config), 1000);
-      }
-    }, 500);
-    addInterval(checkInterval);
+      weighingStatus.pasir1 = true;
+    } else {
+      weighingStatus.pasir1 = true;
+      setProductionState(prev => ({
+        ...prev,
+        weighingComplete: { ...prev.weighingComplete, pasir1: true }
+      }));
+    }
+
+    // Material 2: Pasir 2 (CUMULATIVE)
+    if (config.targetWeights.pasir2 > 0 && config.selectedBins.pasir2 > 0) {
+      console.log('📦 Weighing PASIR 2 (cumulative)...');
+      const pasir1Weight = config.targetWeights.pasir1 || 0;
+      await weighMaterialWithJogging(
+        'pasir2',
+        config.targetWeights.pasir1 + config.targetWeights.pasir2, // CUMULATIVE TARGET
+        config,
+        weighingStatus,
+        pasir1Weight // startingWeight from pasir1
+      );
+      weighingStatus.pasir2 = true;
+    } else {
+      weighingStatus.pasir2 = true;
+      setProductionState(prev => ({
+        ...prev,
+        weighingComplete: { ...prev.weighingComplete, pasir2: true }
+      }));
+    }
+
+    // Material 3: Batu 1
+    if (config.targetWeights.batu1 > 0 && config.selectedBins.batu1 > 0) {
+      console.log('📦 Weighing BATU 1...');
+      await weighMaterialWithJogging(
+        'batu1',
+        config.targetWeights.batu1,
+        config,
+        weighingStatus,
+        0 // startingWeight = 0
+      );
+      weighingStatus.batu1 = true;
+    } else {
+      weighingStatus.batu1 = true;
+      setProductionState(prev => ({
+        ...prev,
+        weighingComplete: { ...prev.weighingComplete, batu1: true }
+      }));
+    }
+
+    // Material 4: Batu 2 (CUMULATIVE)
+    if (config.targetWeights.batu2 > 0 && config.selectedBins.batu2 > 0) {
+      console.log('📦 Weighing BATU 2 (cumulative)...');
+      const batu1Weight = config.targetWeights.batu1 || 0;
+      await weighMaterialWithJogging(
+        'batu2',
+        config.targetWeights.batu1 + config.targetWeights.batu2, // CUMULATIVE TARGET
+        config,
+        weighingStatus,
+        batu1Weight // startingWeight from batu1
+      );
+      weighingStatus.batu2 = true;
+    } else {
+      weighingStatus.batu2 = true;
+      setProductionState(prev => ({
+        ...prev,
+        weighingComplete: { ...prev.weighingComplete, batu2: true }
+      }));
+    }
+
+    // Material 5: Semen
+    if (config.targetWeights.semen > 0) {
+      await weighMaterialWithJogging('semen', config.targetWeights.semen, config, weighingStatus, 0);
+      weighingStatus.semen = true;
+    } else {
+      weighingStatus.semen = true;
+      setProductionState(prev => ({
+        ...prev,
+        weighingComplete: { ...prev.weighingComplete, semen: true }
+      }));
+    }
+
+    // Material 6: Air
+    if (config.targetWeights.air > 0) {
+      await weighMaterialWithJogging('air', config.targetWeights.air, config, weighingStatus, 0);
+      weighingStatus.air = true;
+    } else {
+      weighingStatus.air = true;
+      setProductionState(prev => ({
+        ...prev,
+        weighingComplete: { ...prev.weighingComplete, air: true }
+      }));
+    }
+
+    console.log('✅ All weighing complete, starting discharge');
+    
+    // Turn off weighing relays
+    setComponentStates(prev => ({
+      ...prev,
+      sandBinValve: false,
+      stoneBinValve: false,
+      waterTankValve: false,
+    }));
+    
+    // Deduct cement from silos
+    const cementPerSilo = config.targetWeights.semen / config.selectedSilos.length;
+    config.selectedSilos.forEach(siloId => {
+      onCementDeduction(siloId, cementPerSilo);
+    });
+    
+    // Start discharge sequence
+    setTimeout(() => startDischargeSequence(config), 1000);
   };
 
   const weighMaterialWithJogging = (
-    material: 'pasir' | 'batu' | 'semen' | 'air',
+    material: 'pasir1' | 'pasir2' | 'batu1' | 'batu2' | 'semen' | 'air',
     targetWeight: number,
     config: ProductionConfig,
-    weighingStatus: { [key: string]: boolean }
+    weighingStatus: { [key: string]: boolean },
+    startingWeight: number = 0 // NEW: for cumulative weighing
   ) => {
-    const jogging = getJoggingSettings(material);
-    const triggerWeight = targetWeight * (jogging.trigger / 100);
-    const finalWeight = targetWeight - jogging.toleransi;
-    
-    console.log(`⚖️ Weighing ${material}: trigger=${triggerWeight.toFixed(1)}kg, final=${finalWeight.toFixed(1)}kg, jogging=${jogging.jogingOn}s/${jogging.jogingOff}s`);
+    return new Promise<void>((resolve) => {
+      console.log(`⚖️ Weighing ${material}: target=${targetWeight.toFixed(1)}kg, starting=${startingWeight.toFixed(1)}kg`);
+      
+      const jogging = getJoggingSettings(material);
+      const triggerWeight = targetWeight * (jogging.trigger / 100);
+      const finalWeight = targetWeight - jogging.toleransi;
 
-    // Phase 1: Normal weighing until trigger %
-    let phase = 1;
-    let joggingState = false;
-    let joggingCycleStart = 0;
-    let simulatedWeight = 0;
+      // Phase 1: Normal weighing until trigger %
+      let phase = 1;
+      let joggingState = false;
+      let joggingCycleStart = 0;
+      let simulatedWeight = startingWeight; // Start from startingWeight (not 0)
 
-    // Open material relay
-    if (material === 'pasir') {
-      const relayName = getAggregateRelayName('pasir', config.selectedBins.pasir);
-      if (relayName) {
-        console.log(`🔵 AGG relay: ${relayName} -> ON (binId=${config.selectedBins.pasir})`);
-        setComponentStates(prev => ({ ...prev, sandBinValve: true }));
-        controlRelay(relayName, true);
+      // Open material relay
+      if (material === 'pasir1' || material === 'pasir2') {
+        const binId = material === 'pasir1' ? config.selectedBins.pasir1 : config.selectedBins.pasir2;
+        const relayName = getAggregateRelayName(material, binId);
+        if (relayName) {
+          console.log(`🟢 AGG relay: ${relayName} -> ON (${material}, binId=${binId})`);
+          setComponentStates(prev => ({ ...prev, sandBinValve: true }));
+          controlRelay(relayName, true);
+        }
+      } else if (material === 'batu1' || material === 'batu2') {
+        const binId = material === 'batu1' ? config.selectedBins.batu1 : config.selectedBins.batu2;
+        const relayName = getAggregateRelayName(material, binId);
+        if (relayName) {
+          console.log(`🟢 AGG relay: ${relayName} -> ON (${material}, binId=${binId})`);
+          setComponentStates(prev => ({ ...prev, stoneBinValve: true }));
+          controlRelay(relayName, true);
+        }
+      } else if (material === 'semen') {
+        // Semen uses selected silo valve (already opened)
+      } else if (material === 'air') {
+        // Water tank valve ON (RED blinking) - filling weigh hopper
+        setComponentStates(prev => ({ ...prev, waterTankValve: true }));
+        controlRelay('water_tank_valve', true);
       }
-    } else if (material === 'batu') {
-      const relayName = getAggregateRelayName('batu', config.selectedBins.batu);
-      if (relayName) {
-        console.log(`🔵 AGG relay: ${relayName} -> ON (binId=${config.selectedBins.batu})`);
-        setComponentStates(prev => ({ ...prev, stoneBinValve: true }));
-        controlRelay(relayName, true);
-      }
-    } else if (material === 'semen') {
-      // Semen uses selected silo valve (already opened)
-    } else if (material === 'air') {
-      // Water tank valve ON (RED blinking) - filling weigh hopper
-      setComponentStates(prev => ({ ...prev, waterTankValve: true }));
-      controlRelay('water_tank_valve', true);
-    }
 
-    const weighingInterval = setInterval(() => {
-      // Get current weight
-      let currentWeight;
-      if (raspberryPi?.isConnected) {
-        currentWeight = raspberryPi.actualWeights[material] || 0;
-      } else {
-        // SIMULATION MODE - Realistic weighing simulation
-        if (phase === 1) {
-          // Phase 1: Fast weighing until trigger point
-          // Simulate realistic flow rate: ~50kg/second for aggregate, ~30kg/s for cement, ~20kg/s for water
-          let flowRate = 50; // kg/s
-          if (material === 'semen') flowRate = 30;
-          if (material === 'air') flowRate = 20;
-          
-          const increment = (flowRate / 5); // Divided by 5 because we check every 200ms
-          simulatedWeight = Math.min(simulatedWeight + increment + (Math.random() * 2 - 1), triggerWeight);
-          currentWeight = simulatedWeight;
-          
-          // Animate bin deduction in real-time for aggregates
-          if (material === 'pasir' || material === 'batu') {
-            const binId = material === 'pasir' ? config.selectedBins.pasir : config.selectedBins.batu;
-            onAggregateDeduction(binId, increment);
+      const weighingInterval = setInterval(() => {
+        // Get current weight
+        let currentWeight;
+        if (raspberryPi?.isConnected) {
+          currentWeight = raspberryPi.actualWeights[material] || startingWeight;
+        } else {
+          // SIMULATION MODE - Realistic weighing simulation
+          if (phase === 1) {
+            // Phase 1: Fast weighing until trigger point
+            let flowRate = 50; // kg/s
+            if (material === 'semen') flowRate = 30;
+            if (material === 'air') flowRate = 20;
+            
+            const increment = (flowRate / 5); // Divided by 5 because we check every 200ms
+            simulatedWeight = Math.min(simulatedWeight + increment + (Math.random() * 2 - 1), triggerWeight);
+            currentWeight = simulatedWeight;
+            
+            // Animate bin deduction in real-time for aggregates
+            if (material === 'pasir1' || material === 'pasir2') {
+              const binId = material === 'pasir1' ? config.selectedBins.pasir1 : config.selectedBins.pasir2;
+              onAggregateDeduction(binId, increment);
+            } else if (material === 'batu1' || material === 'batu2') {
+              const binId = material === 'batu1' ? config.selectedBins.batu1 : config.selectedBins.batu2;
+              onAggregateDeduction(binId, increment);
+            }
+          } else if (phase === 2) {
+            // Phase 2: Jogging - slower, controlled increments
+            const now = Date.now();
+            const cycleTime = (jogging.jogingOn + jogging.jogingOff) * 1000;
+            const timeSinceCycleStart = now - joggingCycleStart;
+            const position = timeSinceCycleStart % cycleTime;
+            const shouldBeOn = position < (jogging.jogingOn * 1000);
+            
+            // Only increment when valve is ON
+            if (shouldBeOn && joggingState) {
+              // Slower flow during jogging: ~5-10kg per ON cycle
+              const joggingIncrement = (10 / (jogging.jogingOn * 5)); // Spread over jogging ON duration
+              simulatedWeight = Math.min(simulatedWeight + joggingIncrement + (Math.random() * 0.5), finalWeight);
+              
+              // Animate bin deduction during jogging for aggregates
+              if (material === 'pasir1' || material === 'pasir2') {
+                const binId = material === 'pasir1' ? config.selectedBins.pasir1 : config.selectedBins.pasir2;
+                onAggregateDeduction(binId, joggingIncrement);
+              } else if (material === 'batu1' || material === 'batu2') {
+                const binId = material === 'batu1' ? config.selectedBins.batu1 : config.selectedBins.batu2;
+                onAggregateDeduction(binId, joggingIncrement);
+              }
+            }
+            currentWeight = simulatedWeight;
           }
-        } else if (phase === 2) {
-          // Phase 2: Jogging - slower, controlled increments
+        }
+
+        // Update weight display and hopper fill level (cumulative for aggregates)
+        if (material === 'pasir1' || material === 'pasir2') {
+          const percentage = Math.min(100, (currentWeight / (config.targetWeights.pasir1 + config.targetWeights.pasir2)) * 100);
+          setProductionState(prev => ({
+            ...prev,
+            currentWeights: { ...prev.currentWeights, pasir: currentWeight },
+            hopperFillLevels: { ...prev.hopperFillLevels, pasir: percentage },
+          }));
+        } else if (material === 'batu1' || material === 'batu2') {
+          const percentage = Math.min(100, (currentWeight / (config.targetWeights.batu1 + config.targetWeights.batu2)) * 100);
+          setProductionState(prev => ({
+            ...prev,
+            currentWeights: { ...prev.currentWeights, batu: currentWeight },
+            hopperFillLevels: { ...prev.hopperFillLevels, batu: percentage },
+          }));
+        } else {
+          setProductionState(prev => ({
+            ...prev,
+            currentWeights: { ...prev.currentWeights, [material]: currentWeight },
+            hopperFillLevels: {
+              ...prev.hopperFillLevels,
+              ...(material === 'air' ? { air: Math.min(100, (currentWeight / targetWeight) * 100) } : {})
+            }
+          }));
+        }
+
+        // Phase 1: Normal weighing
+        if (phase === 1 && currentWeight >= triggerWeight) {
+          console.log(`📍 ${material} reached trigger point (${currentWeight.toFixed(1)}kg), starting jogging`);
+          phase = 2;
+          joggingCycleStart = Date.now();
+          
+          // Turn off relay
+          if (material === 'pasir1' || material === 'pasir2') {
+            const binId = material === 'pasir1' ? config.selectedBins.pasir1 : config.selectedBins.pasir2;
+            const relayName = getAggregateRelayName(material, binId);
+            if (relayName) {
+              console.log(`🔴 AGG relay: ${relayName} -> OFF (jogging start, binId=${binId})`);
+              controlRelay(relayName, false);
+            }
+            setComponentStates(prev => ({ ...prev, sandBinValve: false }));
+          } else if (material === 'batu1' || material === 'batu2') {
+            const binId = material === 'batu1' ? config.selectedBins.batu1 : config.selectedBins.batu2;
+            const relayName = getAggregateRelayName(material, binId);
+            if (relayName) {
+              console.log(`🔴 AGG relay: ${relayName} -> OFF (jogging start, binId=${binId})`);
+              controlRelay(relayName, false);
+            }
+            setComponentStates(prev => ({ ...prev, stoneBinValve: false }));
+          } else if (material === 'air') {
+            controlRelay('water_tank_valve', false);
+            setComponentStates(prev => ({ ...prev, waterTankValve: false }));
+          }
+          
+          // Update status to show jogging
+          setProductionState(prev => ({
+            ...prev,
+            currentStep: `jogging-${material}`
+          }));
+        }
+
+        // Phase 2: Jogging
+        if (phase === 2 && currentWeight < finalWeight) {
+          // Toggle relay based on jogging timer
           const now = Date.now();
-          const cycleTime = (jogging.jogingOn + jogging.jogingOff) * 1000;
           const timeSinceCycleStart = now - joggingCycleStart;
+          const cycleTime = (jogging.jogingOn + jogging.jogingOff) * 1000;
           const position = timeSinceCycleStart % cycleTime;
           const shouldBeOn = position < (jogging.jogingOn * 1000);
-          
-          // Only increment when valve is ON
-          if (shouldBeOn && joggingState) {
-            // Slower flow during jogging: ~5-10kg per ON cycle
-            const joggingIncrement = (10 / (jogging.jogingOn * 5)); // Spread over jogging ON duration
-            simulatedWeight = Math.min(simulatedWeight + joggingIncrement + (Math.random() * 0.5), finalWeight);
+
+          if (shouldBeOn !== joggingState) {
+            joggingState = shouldBeOn;
+            console.log(`🔄 ${material} jogging: ${shouldBeOn ? 'ON' : 'OFF'} (${currentWeight.toFixed(1)}kg / ${finalWeight.toFixed(1)}kg)`);
             
-            // Animate bin deduction during jogging for aggregates
-            if (material === 'pasir' || material === 'batu') {
-              const binId = material === 'pasir' ? config.selectedBins.pasir : config.selectedBins.batu;
-              onAggregateDeduction(binId, joggingIncrement);
+            if (material === 'pasir1' || material === 'pasir2') {
+              const binId = material === 'pasir1' ? config.selectedBins.pasir1 : config.selectedBins.pasir2;
+              const relayName = getAggregateRelayName(material, binId);
+              if (relayName) {
+                console.log(`🟡 AGG relay: ${relayName} -> ${shouldBeOn ? 'ON' : 'OFF'} (jogging, binId=${binId})`);
+                setComponentStates(prev => ({ ...prev, sandBinValve: shouldBeOn }));
+                controlRelay(relayName, shouldBeOn);
+              }
+            } else if (material === 'batu1' || material === 'batu2') {
+              const binId = material === 'batu1' ? config.selectedBins.batu1 : config.selectedBins.batu2;
+              const relayName = getAggregateRelayName(material, binId);
+              if (relayName) {
+                console.log(`🟡 AGG relay: ${relayName} -> ${shouldBeOn ? 'ON' : 'OFF'} (jogging, binId=${binId})`);
+                setComponentStates(prev => ({ ...prev, stoneBinValve: shouldBeOn }));
+                controlRelay(relayName, shouldBeOn);
+              }
+            } else if (material === 'air') {
+              // Water tank valve toggled (RED blinking during jogging)
+              setComponentStates(prev => ({ ...prev, waterTankValve: shouldBeOn }));
+              controlRelay('water_tank_valve', shouldBeOn);
             }
           }
-          currentWeight = simulatedWeight;
         }
-      }
 
-      // Update weight display and hopper fill level
-      setProductionState(prev => ({
-        ...prev,
-        currentWeights: { ...prev.currentWeights, [material]: currentWeight },
-        hopperFillLevels: {
-          ...prev.hopperFillLevels,
-          ...(material === 'pasir' || material === 'batu' || material === 'air'
-            ? { [material]: Math.min(100, (currentWeight / targetWeight) * 100) }
-            : {})
-        }
-      }));
-
-      // Phase 1: Normal weighing
-      if (phase === 1 && currentWeight >= triggerWeight) {
-        console.log(`📍 ${material} reached trigger point (${currentWeight.toFixed(1)}kg), starting jogging`);
-        phase = 2;
-        joggingCycleStart = Date.now();
-        
-        // Turn off relay
-        if (material === 'pasir') {
-          const relayName = getAggregateRelayName('pasir', config.selectedBins.pasir);
-          if (relayName) {
-            console.log(`🔴 AGG relay: ${relayName} -> OFF (jogging start, binId=${config.selectedBins.pasir})`);
-            controlRelay(relayName, false);
-          }
-          setComponentStates(prev => ({ ...prev, sandBinValve: false }));
-        } else if (material === 'batu') {
-          const relayName = getAggregateRelayName('batu', config.selectedBins.batu);
-          if (relayName) {
-            console.log(`🔴 AGG relay: ${relayName} -> OFF (jogging start, binId=${config.selectedBins.batu})`);
-            controlRelay(relayName, false);
-          }
-          setComponentStates(prev => ({ ...prev, stoneBinValve: false }));
-        } else if (material === 'air') {
-          controlRelay('water_tank_valve', false);
-          setComponentStates(prev => ({ ...prev, waterTankValve: false }));
-        }
-        
-        // Update status to show jogging
-        setProductionState(prev => ({
-          ...prev,
-          currentStep: `jogging-${material}`
-        }));
-      }
-
-      // Phase 2: Jogging
-      if (phase === 2 && currentWeight < finalWeight) {
-        // Toggle relay based on jogging timer
-        const now = Date.now();
-        const timeSinceCycleStart = now - joggingCycleStart;
-        const cycleTime = (jogging.jogingOn + jogging.jogingOff) * 1000;
-        const position = timeSinceCycleStart % cycleTime;
-        const shouldBeOn = position < (jogging.jogingOn * 1000);
-
-        if (shouldBeOn !== joggingState) {
-          joggingState = shouldBeOn;
-          console.log(`🔄 ${material} jogging: ${shouldBeOn ? 'ON' : 'OFF'} (${currentWeight.toFixed(1)}kg / ${finalWeight.toFixed(1)}kg)`);
+        // Check if target weight reached
+        if (currentWeight >= targetWeight - jogging.toleransi) {
+          clearInterval(weighingInterval);
           
-          if (material === 'pasir') {
-            const relayName = getAggregateRelayName('pasir', config.selectedBins.pasir);
+          // Close relay
+          if (material === 'pasir1' || material === 'pasir2') {
+            const binId = material === 'pasir1' ? config.selectedBins.pasir1 : config.selectedBins.pasir2;
+            const relayName = getAggregateRelayName(material, binId);
             if (relayName) {
-              console.log(`🟡 AGG relay: ${relayName} -> ${shouldBeOn ? 'ON' : 'OFF'} (jogging, binId=${config.selectedBins.pasir})`);
-              setComponentStates(prev => ({ ...prev, sandBinValve: shouldBeOn }));
-              controlRelay(relayName, shouldBeOn);
+              console.log(`🔴 AGG relay: ${relayName} -> OFF`);
+              controlRelay(relayName, false);
+              // ONLY turn off sandBinValve if BOTH pasir1 and pasir2 are done
+              if (material === 'pasir2' || config.targetWeights.pasir2 === 0) {
+                setComponentStates(prev => ({ ...prev, sandBinValve: false }));
+              }
             }
-          } else if (material === 'batu') {
-            const relayName = getAggregateRelayName('batu', config.selectedBins.batu);
+          } else if (material === 'batu1' || material === 'batu2') {
+            const binId = material === 'batu1' ? config.selectedBins.batu1 : config.selectedBins.batu2;
+            const relayName = getAggregateRelayName(material, binId);
             if (relayName) {
-              console.log(`🟡 AGG relay: ${relayName} -> ${shouldBeOn ? 'ON' : 'OFF'} (jogging, binId=${config.selectedBins.batu})`);
-              setComponentStates(prev => ({ ...prev, stoneBinValve: shouldBeOn }));
-              controlRelay(relayName, shouldBeOn);
+              console.log(`🔴 AGG relay: ${relayName} -> OFF`);
+              controlRelay(relayName, false);
+              // ONLY turn off stoneBinValve if BOTH batu1 and batu2 are done
+              if (material === 'batu2' || config.targetWeights.batu2 === 0) {
+                setComponentStates(prev => ({ ...prev, stoneBinValve: false }));
+              }
             }
+          } else if (material === 'semen') {
+            // Semen valves stay open until discharge
           } else if (material === 'air') {
-            // Water tank valve toggled (RED blinking during jogging)
-            setComponentStates(prev => ({ ...prev, waterTankValve: shouldBeOn }));
-            controlRelay('water_tank_valve', shouldBeOn);
-          }
-        }
-      }
-
-      // Check completion
-      if (currentWeight >= finalWeight) {
-        console.log(`✅ ${material} weighing complete (${currentWeight.toFixed(1)}kg)`);
-        clearInterval(weighingInterval);
-        
-        // Turn off relay
-        if (material === 'pasir') {
-          controlRelay('pintu_pasir_1', false);
-          setComponentStates(prev => ({ ...prev, sandBinValve: false }));
-        } else if (material === 'batu') {
-          controlRelay('pintu_batu_1', false);
-          setComponentStates(prev => ({ ...prev, stoneBinValve: false }));
-        } else if (material === 'air') {
-          controlRelay('water_tank_valve', false);
-          setComponentStates(prev => ({ ...prev, waterTankValve: false }));
-        } else if (material === 'semen') {
-          // Turn OFF silo valves and belt immediately when weighing complete
-          console.log('🔴 Cement weighing complete → turning OFF silo valves and belt (immediate)');
-          const config = lastConfigRef.current;
-          if (config) {
-            config.selectedSilos.forEach(id => {
-              controlRelay(`silo_${id}`, false);
-            });
+            setComponentStates(prev => ({ ...prev, waterTankValve: false }));
+            controlRelay('water_tank_valve', false);
           }
           
-          setComponentStates(prev => ({
+          weighingStatus[material] = true;
+          setProductionState(prev => ({
             ...prev,
-            siloValves: prev.siloValves.map((on, idx) =>
-              config?.selectedSilos.includes(idx + 1) ? false : on
-            ),
-            beltAtas: false,
+            weighingComplete: { ...prev.weighingComplete, [material]: true }
           }));
-          
-          controlRelay('konveyor_atas', false);
+          console.log(`✅ ${material} weighing complete: ${currentWeight.toFixed(1)}kg`);
+          resolve();
         }
-        
-        weighingStatus[material] = true;
-        setProductionState(prev => ({
-          ...prev,
-          weighingComplete: { ...prev.weighingComplete, [material]: true },
-          currentStep: 'weighing' // Reset to general weighing status
-        }));
-      }
-    }, 200); // Check every 200ms
-    
-    addInterval(weighingInterval);
+      }, 200);
+      
+      addInterval(weighingInterval);
+    });
   };
 
   const startDischargeSequence = (config: ProductionConfig) => {

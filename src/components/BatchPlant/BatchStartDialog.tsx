@@ -31,12 +31,16 @@ interface BatchStartDialogProps {
   onStart: (config: {
     selectedSilos: number[];
     selectedBins: {
-      pasir: number;
-      batu: number;
+      pasir1: number;
+      pasir2: number;
+      batu1: number;
+      batu2: number;
     };
     targetWeights: {
-      pasir: number;
-      batu: number;
+      pasir1: number;
+      pasir2: number;
+      batu1: number;
+      batu2: number;
       semen: number;
       air: number;
       additive: number;
@@ -117,11 +121,13 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
     const batchVolume = parseFloat(volume);
     const mixingCount = parseInt(jumlahMixing);
     
-    // Calculate total weights
+    // Calculate total weights for 4 aggregate materials
     const totalWeights = {
       semen: (parseFloat(selectedFormula.semen) || 0) * batchVolume,
-      pasir: (parseFloat(selectedFormula.pasir) || 0) * batchVolume,
-      batu: (parseFloat(selectedFormula.batu1) || 0) * batchVolume + (parseFloat(selectedFormula.batu2) || 0) * batchVolume,
+      pasir1: (parseFloat(selectedFormula.pasir1) || 0) * batchVolume,
+      pasir2: (parseFloat(selectedFormula.pasir2) || 0) * batchVolume,
+      batu1: (parseFloat(selectedFormula.batu1) || 0) * batchVolume,
+      batu2: (parseFloat(selectedFormula.batu2) || 0) * batchVolume,
       air: (parseFloat(selectedFormula.air) || 0) * batchVolume,
       additive: (parseFloat(selectedFormula.additive) || 0) * batchVolume,
     };
@@ -129,30 +135,37 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
     // Divide equally per mixing
     const targetWeights = {
       semen: totalWeights.semen / mixingCount,
-      pasir: totalWeights.pasir / mixingCount,
-      batu: totalWeights.batu / mixingCount,
+      pasir1: totalWeights.pasir1 / mixingCount,
+      pasir2: totalWeights.pasir2 / mixingCount,
+      batu1: totalWeights.batu1 / mixingCount,
+      batu2: totalWeights.batu2 / mixingCount,
       air: totalWeights.air / mixingCount,
       additive: totalWeights.additive / mixingCount,
     };
 
-    // Check if selected silo has enough cement (can go negative)
-    const siloId = parseInt(selectedSilo);
-    const silo = silos.find(s => s.id === siloId);
-    const totalCementNeeded = totalWeights.semen;
-    
-    // Note: We allow negative silo values, so no check needed here
+    // Auto-select bins based on which materials are needed
+    const selectedBins = {
+      pasir1: totalWeights.pasir1 > 0 ? 1 : 0,  // Bin 1 if pasir1 needed
+      pasir2: totalWeights.pasir2 > 0 ? 2 : 0,  // Bin 2 if pasir2 needed
+      batu1: totalWeights.batu1 > 0 ? 3 : 0,    // Bin 3 if batu1 needed
+      batu2: totalWeights.batu2 > 0 ? 4 : 0,    // Bin 4 if batu2 needed
+    };
+
+    console.log('📊 Batch Configuration:', {
+      totalWeights,
+      targetWeights,
+      selectedBins,
+      mixingCount
+    });
 
     // Start production
     onStart({
-      selectedSilos: [parseInt(selectedSilo)], // Single silo as array
-      selectedBins: {
-        pasir: 1, // Bin 1 untuk PASIR
-        batu: 2,  // Bin 2 untuk BATU 1
-      },
-      targetWeights, // Already divided per mixing
+      selectedSilos: [parseInt(selectedSilo)],
+      selectedBins,
+      targetWeights,
       mixingTime: parseInt(mixingTime),
       jumlahMixing: mixingCount,
-      currentMixing: 1, // Start with mixing 1
+      currentMixing: 1,
     });
 
     onOpenChange(false);
