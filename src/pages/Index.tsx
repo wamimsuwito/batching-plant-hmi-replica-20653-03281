@@ -234,9 +234,21 @@ const Index = () => {
       const endTime = new Date();
       const startTime = productionStartTime || endTime;
       
+      // Calculate total volume from actual weights
+      const totalPasir = productionState.targetWeights.pasir1 + productionState.targetWeights.pasir2;
+      const totalBatu = productionState.targetWeights.batu1 + productionState.targetWeights.batu2;
+      const totalWeight = totalPasir + totalBatu + productionState.targetWeights.semen + productionState.targetWeights.air;
+      const totalVolumeM3 = (totalWeight / 2400).toFixed(2); // Convert kg to m³ (density ~2400 kg/m³ for concrete)
+
+      // Calculate actual realisasi from current weights
+      const realisasiPasir = Math.round(productionState.currentWeights.pasir);
+      const realisasiBatu = Math.round(productionState.currentWeights.batu);
+      const realisasiSemen = Math.round(productionState.currentWeights.semen);
+      const realisasiAir = Math.round(productionState.currentWeights.air);
+
       const ticket: TicketData = {
         id: `TICKET-${Date.now()}`,
-        jobOrder: "1",
+        jobOrder: `${productionState.currentMixing}`,
         nomorPO: "-",
         tanggal: endTime.toLocaleDateString('id-ID'),
         jamMulai: startTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
@@ -245,32 +257,32 @@ const Index = () => {
         lokasiProyek: "Pabrik Baru Pekanbaru",
         mutuBeton: "K300",
         slump: "12 cm",
-        volume: "5 M³",
+        volume: `${totalVolumeM3} M³`,
         namaSopir: "UMAR",
         nomorMobil: "BM 0978 VOX",
         nomorLambung: "FC98",
-        nomorRitasi: "1",
-        totalVolume: "16 M³",
+        nomorRitasi: `${productionState.currentMixing}`,
+        totalVolume: `${totalVolumeM3} M³`,
         materials: {
           pasir: {
-            target: productionState.targetWeights.pasir1 + productionState.targetWeights.pasir2,
-            realisasi: Math.round((productionState.targetWeights.pasir1 + productionState.targetWeights.pasir2) * 1.01),
-            deviasi: Math.round((productionState.targetWeights.pasir1 + productionState.targetWeights.pasir2) * 0.01)
+            target: Math.round(totalPasir),
+            realisasi: realisasiPasir,
+            deviasi: realisasiPasir - Math.round(totalPasir)
           },
           batu: {
-            target: productionState.targetWeights.batu1 + productionState.targetWeights.batu2,
-            realisasi: Math.round((productionState.targetWeights.batu1 + productionState.targetWeights.batu2) * 0.99),
-            deviasi: Math.round((productionState.targetWeights.batu1 + productionState.targetWeights.batu2) * -0.01)
+            target: Math.round(totalBatu),
+            realisasi: realisasiBatu,
+            deviasi: realisasiBatu - Math.round(totalBatu)
           },
           semen: {
-            target: productionState.targetWeights.semen,
-            realisasi: Math.round(productionState.targetWeights.semen * 1.005),
-            deviasi: Math.round(productionState.targetWeights.semen * 0.005)
+            target: Math.round(productionState.targetWeights.semen),
+            realisasi: realisasiSemen,
+            deviasi: realisasiSemen - Math.round(productionState.targetWeights.semen)
           },
           air: {
-            target: productionState.targetWeights.air,
-            realisasi: Math.round(productionState.targetWeights.air * 1.01),
-            deviasi: Math.round(productionState.targetWeights.air * 0.01)
+            target: Math.round(productionState.targetWeights.air),
+            realisasi: realisasiAir,
+            deviasi: realisasiAir - Math.round(productionState.targetWeights.air)
           }
         }
       };
@@ -280,12 +292,9 @@ const Index = () => {
       const tickets = savedTickets ? JSON.parse(savedTickets) : [];
       tickets.unshift(ticket); // Add to beginning
       localStorage.setItem('production_tickets', JSON.stringify(tickets));
-      console.log('Tiket tersimpan:', ticket);
-      console.log('Total tiket:', tickets.length);
       
       setTicketData(ticket);
       setPrintTicketOpen(true);
-      console.log('Dialog print dibuka');
     }
   );
 
