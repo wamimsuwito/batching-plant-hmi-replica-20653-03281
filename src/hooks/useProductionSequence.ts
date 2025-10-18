@@ -531,6 +531,24 @@ export const useProductionSequence = (
         } else if (material === 'air') {
           controlRelay('water_tank_valve', false);
           setComponentStates(prev => ({ ...prev, waterTankValve: false }));
+        } else if (material === 'semen') {
+          // Turn OFF silo valves dan belt atas saat weighing complete
+          console.log('🔴 Cement weighing complete - turning off silo valves and belt');
+          
+          const config = lastConfigRef.current;
+          if (config) {
+            config.selectedSilos.forEach(id => {
+              controlRelay(`silo_${id}`, false);
+            });
+          }
+          
+          setComponentStates(prev => ({
+            ...prev,
+            siloValves: prev.siloValves.map(() => false),
+            beltAtas: false,
+          }));
+          
+          controlRelay('konveyor_atas', false);
         }
         
         weighingStatus[material] = true;
@@ -791,6 +809,10 @@ export const useProductionSequence = (
           }
         }));
         console.log('✅ Cement discharge animation complete');
+        
+        // Matikan LED valve semen saat hopper kosong
+        console.log('🔴 CEMENT DISCHARGE END (hopper empty) - cementValve = FALSE');
+        setComponentStates(prev => ({ ...prev, cementValve: false }));
         
         // 🆕 INCREMENT COUNTER
         setProductionState(prev => {
@@ -1117,6 +1139,13 @@ export const useProductionSequence = (
       console.log('🔔 Activating klakson for 1 second');
       controlRelay('klakson', true);
       setComponentStates(prev => ({ ...prev, klakson: true }));
+      
+      // Toast notification untuk klakson
+      toast({
+        title: '🔔 Klakson Aktif',
+        description: 'Semua produksi selesai - klakson berbunyi 1 detik',
+        duration: 2000,
+      });
       
       const klaksonTimer = setTimeout(() => {
         controlRelay('klakson', false);
