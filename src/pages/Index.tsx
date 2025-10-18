@@ -372,31 +372,26 @@ const Index = () => {
                 materialType="batu"
               />
               
-              {/* Support structure connecting bins to 2 hoppers */}
-              <line x1="60" y1="252" x2="101" y2="270" className="stroke-hmi-border" strokeWidth="2" />
-              <line x1="140" y1="252" x2="101" y2="270" className="stroke-hmi-border" strokeWidth="2" />
-              <line x1="220" y1="252" x2="261" y2="270" className="stroke-hmi-border" strokeWidth="2" />
-              <line x1="300" y1="252" x2="261" y2="270" className="stroke-hmi-border" strokeWidth="2" />
-              
               {/* 2 Aggregate Hoppers - Cumulative weighing */}
               {/* Hopper 1 - PASIR (Cumulative: Pasir 1 + Pasir 2) */}
               <AggregateHopper 
-                x={66} 
+                x={46} 
                 y={270} 
                 fillLevel={productionState.hopperFillLevels?.pasir || 0} 
                 isActive={componentStates.hopperValvePasir}
                 isFilling={componentStates.sandBinValve}
                 materialType="pasir"
-                width={70}
+                width={110}
               />
               {/* Hopper 2 - BATU (Cumulative: Batu 1 + Batu 2) */}
               <AggregateHopper 
-                x={236} 
+                x={196} 
                 y={270} 
                 fillLevel={productionState.hopperFillLevels?.batu || 0} 
                 isActive={componentStates.hopperValveBatu}
                 isFilling={componentStates.stoneBinValve}
                 materialType="batu"
+                width={130}
               />
 
               {/* Conveyor Belt 1 - Below hoppers (horizontal) */}
