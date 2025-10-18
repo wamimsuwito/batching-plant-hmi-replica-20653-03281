@@ -236,10 +236,12 @@ const Index = () => {
       const startTime = productionStartTime || endTime;
       
       // Get target weights from production state (already per mixing)
-      const targetPasir = Math.round(productionState.targetWeights.pasir1 + productionState.targetWeights.pasir2);
-      const targetBatu = Math.round(productionState.targetWeights.batu1 + productionState.targetWeights.batu2);
-      const targetSemen = Math.round(productionState.targetWeights.semen);
-      const targetAir = Math.round(productionState.targetWeights.air);
+      // Use targetWeights from currentBatchConfig (already saved when batch started)
+      const targetWeights = currentBatchConfig?.targetWeights || productionState.targetWeights;
+      const targetPasir = Math.round((targetWeights.pasir1 || 0) + (targetWeights.pasir2 || 0));
+      const targetBatu = Math.round((targetWeights.batu1 || 0) + (targetWeights.batu2 || 0));
+      const targetSemen = Math.round(targetWeights.semen || 0);
+      const targetAir = Math.round(targetWeights.air || 0);
       
       // Get realisasi from finalWeights parameter (actual scale data)
       const realisasiPasir = Math.round(finalWeights?.pasir || 0);
@@ -248,7 +250,9 @@ const Index = () => {
       const realisasiAir = Math.round(finalWeights?.air || 0);
       
       console.log('🎫 Ticket data:', {
-        targets: { targetPasir, targetBatu, targetSemen, targetAir },
+        source: 'currentBatchConfig',
+        configTargets: currentBatchConfig?.targetWeights,
+        calculatedTargets: { targetPasir, targetBatu, targetSemen, targetAir },
         realisasi: { realisasiPasir, realisasiBatu, realisasiSemen, realisasiAir },
         deviasi: {
           pasir: realisasiPasir - targetPasir,
