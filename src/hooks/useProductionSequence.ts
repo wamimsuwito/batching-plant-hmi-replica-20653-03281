@@ -754,15 +754,27 @@ export const useProductionSequence = (
     // Group materials by mixing number
     const groups: { [key: number]: { material: string, timer: number, targetWeight: number }[] } = {};
     
+    // ✅ FIX: Calculate cumulative weights for pasir and batu
+    const materialTargets = {
+      pasir: (config.targetWeights.pasir1 || 0) + (config.targetWeights.pasir2 || 0),
+      batu: (config.targetWeights.batu1 || 0) + (config.targetWeights.batu2 || 0),
+      semen: config.targetWeights.semen || 0,
+      air: config.targetWeights.air || 0,
+    };
+    
     (['pasir', 'batu', 'semen', 'air'] as const).forEach(material => {
-      if (config.targetWeights[material] > 0) {
+      const targetWeight = materialTargets[material];
+      console.log(`🎯 Discharge check: ${material} = ${targetWeight}kg`);
+      
+      if (targetWeight > 0) {
         const mixingNum = mixingSequence[material].mixing;
         const timer = mixingSequence[material].timer;
         
         if (!groups[mixingNum]) {
           groups[mixingNum] = [];
         }
-        groups[mixingNum].push({ material, timer, targetWeight: config.targetWeights[material] });
+        groups[mixingNum].push({ material, timer, targetWeight });
+        console.log(`✅ Added ${material} to discharge group ${mixingNum}`);
       }
     });
 
