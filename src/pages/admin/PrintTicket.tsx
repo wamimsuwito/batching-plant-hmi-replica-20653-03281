@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -45,6 +45,7 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto print:max-w-none print:max-h-none print:overflow-visible print:p-0">
+        <DialogTitle className="sr-only">Tiket Produksi</DialogTitle>
         <div className="p-6 print:p-8 print:w-full">
           {/* Header */}
           <div className="flex items-start gap-4 border-b-2 border-black pb-4 mb-4">
@@ -241,7 +242,7 @@ export default function PrintTicket() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 print:hidden">
       <Card>
         <CardHeader>
           <CardTitle>Riwayat Print Tiket Produksi</CardTitle>
