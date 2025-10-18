@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
 Batch Plant Controller - Main Entry Point
-Raspberry Pi 5 Controller for Batch Plant HMI
+PC Controller for Batch Plant HMI using Autonics ARM/ARX modules
 
 Features:
-- Reads 4 RS232 weight indicators
-- Controls 16-channel relay module via GPIO
+- Reads 4 RS232 weight indicators (PCI Express Serial Card)
+- Controls 24 relay outputs via Modbus RTU (ARM-DO08P-4S + 2x ARX-DO08P-4S)
 - WebSocket server for web app communication
 - Safety monitoring and watchdog timer
 """
@@ -20,15 +20,14 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 
 from scale_reader import ScaleReader
-from gpio_controller import GPIOController
+from modbus_controller import ModbusController
 from websocket_server import WebSocketServer
-from utils.safety import SafetyMonitor
 from utils.logger import setup_logger
 
 class BatchPlantController:
-    def __init__(self, config_file='config.json'):
+    def __init__(self, config_file='config_autonics.json'):
         print("=" * 60)
-        print("  BATCH PLANT CONTROLLER - Raspberry Pi 5")
+        print("  BATCH PLANT CONTROLLER - Autonics System")
         print("=" * 60)
         
         # Load configuration
@@ -44,12 +43,11 @@ class BatchPlantController:
         print("\\nInitializing modules...")
         
         self.scale_reader = ScaleReader(self.config)
-        self.gpio_controller = GPIOController(self.config)
-        self.safety_monitor = SafetyMonitor(self.config, self.gpio_controller)
+        self.modbus_controller = ModbusController(self.config)
         self.websocket_server = WebSocketServer(
             self.config,
             self.scale_reader,
-            self.gpio_controller
+            self.modbus_controller
         )
         
         # Setup signal handlers for graceful shutdown
@@ -73,9 +71,6 @@ class BatchPlantController:
             self.scale_reader.start()
             time.sleep(1)  # Give scales time to initialize
             
-            # Start safety monitor
-            self.safety_monitor.start()
-            
             # Start WebSocket server (blocking)
             print("\\n" + "=" * 60)
             print("  SYSTEM READY")
@@ -97,29 +92,21 @@ class BatchPlantController:
         
         # Stop all modules
         self.websocket_server.running = False
-        self.safety_monitor.stop()
         self.scale_reader.stop()
         
         # Turn off all relays
         print("🔌 Turning off all relays...")
-        self.gpio_controller.set_all_off()
+        self.modbus_controller.set_all_off()
         
-        # Cleanup GPIO
-        self.gpio_controller.cleanup()
+        # Cleanup Modbus
+        self.modbus_controller.cleanup()
         
         print("✅ Shutdown complete\\n")
 
 def main():
     """Main entry point"""
     
-    # Check if running on Raspberry Pi
-    try:
-        with open('/proc/device-tree/model', 'r') as f:
-            model = f.read()
-            if 'Raspberry Pi' not in model:
-                print("⚠️  Warning: Not running on Raspberry Pi")
-    except:
-        print("⚠️  Warning: Could not detect Raspberry Pi")
+    print("✅ Starting Batch Plant Controller (Autonics System)")
     
     # Create and start controller
     controller = BatchPlantController()

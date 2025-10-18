@@ -70,7 +70,7 @@ export interface ComponentStates {
 interface RelayConfig {
   name: string;
   relayNumber: string;
-  gpioPin: string;
+  modbusCoil: string;
   timer1: string;
   timer2: string;
   timer3: string;
@@ -185,11 +185,11 @@ export const useProductionSequence = (
     
     if (raspberryPi?.isConnected) {
       const relay = relaySettings.find(r => r.name.toLowerCase().replace(/ /g, '_') === relayName.toLowerCase());
-      const gpioPin = relay ? parseInt(relay.gpioPin) : undefined;
-      console.log(`📍 GPIO Pin: ${gpioPin}`);
-      raspberryPi.sendRelayCommand(relayName, state, gpioPin);
+      const modbusCoil = relay ? parseInt(relay.modbusCoil) : undefined;
+      console.log(`📍 Modbus Coil: ${modbusCoil}`);
+      raspberryPi.sendRelayCommand(relayName, state, modbusCoil);
     } else {
-      console.log('⚠️ Raspberry Pi not connected - running in simulation mode');
+      console.log('⚠️ Controller not connected - running in simulation mode');
     }
   };
 

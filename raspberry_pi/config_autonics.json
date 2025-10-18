@@ -1,0 +1,59 @@
+{
+  "serial_ports": {
+    "pasir": "COM1",
+    "batu": "COM2",
+    "semen": "COM3",
+    "air": "COM4"
+  },
+  "serial_config": {
+    "baudrate": 9600,
+    "bytesize": 8,
+    "parity": "N",
+    "stopbits": 1,
+    "timeout": 1
+  },
+  "modbus": {
+    "port": "COM5",
+    "baudrate": 9600,
+    "bytesize": 8,
+    "parity": "N",
+    "stopbits": 1,
+    "timeout": 1,
+    "scm_slave_id": 1,
+    "arm_slave_id": 2
+  },
+  "relay_mapping": {
+    "mixer": 0,
+    "konveyor_atas": 1,
+    "konveyor_bawah": 2,
+    "kompressor": 3,
+    "pintu_pasir_1": 4,
+    "pintu_pasir_2": 5,
+    "pintu_batu_1": 6,
+    "pintu_batu_2": 7,
+    "dump_material": 8,
+    "dump_material_2": 9,
+    "vibrator": 10,
+    "tuang_air": 11,
+    "tuang_additive": 12,
+    "pintu_mixer_buka": 13,
+    "pintu_mixer_tutup": 14,
+    "klakson": 15,
+    "silo_1": 16,
+    "silo_2": 17,
+    "silo_3": 18,
+    "silo_4": 19,
+    "silo_5": 20,
+    "silo_6": 21,
+    "spare_1": 22,
+    "spare_2": 23
+  },
+  "update_frequency_hz": 10,
+  "websocket_port": 8765,
+  "websocket_host": "0.0.0.0",
+  "safety": {
+    "watchdog_timeout_seconds": 5,
+    "max_door_open_seconds": 30,
+    "weight_spike_threshold_kg": 50
+  }
+}

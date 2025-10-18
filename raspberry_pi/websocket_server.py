@@ -11,10 +11,10 @@ import time
 from typing import Set
 
 class WebSocketServer:
-    def __init__(self, config: dict, scale_reader, gpio_controller):
+    def __init__(self, config: dict, scale_reader, modbus_controller):
         self.config = config
         self.scale_reader = scale_reader
-        self.gpio_controller = gpio_controller
+        self.modbus_controller = modbus_controller
         self.host = config['websocket_host']
         self.port = config['websocket_port']
         self.clients: Set[websockets.WebSocketServerProtocol] = set()
@@ -43,17 +43,17 @@ class WebSocketServer:
             msg_type = data.get('type')
             
             if msg_type == 'relay_control':
-                # Control relay
+                # Control relay via Modbus
                 relay = data.get('relay', '').lower()
                 state = data.get('state', False)
-                gpio_pin = data.get('gpio_pin')
+                coil_address = data.get('gpio_pin')  # 'gpio_pin' now contains coil address for compatibility
                 
                 # Try to set relay
                 success = False
-                if gpio_pin:
-                    success = self.gpio_controller.set_relay_by_pin(gpio_pin, state)
+                if coil_address is not None:
+                    success = self.modbus_controller.set_relay_by_coil(coil_address, state)
                 else:
-                    success = self.gpio_controller.set_relay(relay, state)
+                    success = self.modbus_controller.set_relay(relay, state)
                 
                 # Send acknowledgment
                 response = {
@@ -65,8 +65,8 @@ class WebSocketServer:
                 await websocket.send(json.dumps(response))
                 
             elif msg_type == 'get_status':
-                # Send current relay status
-                status = self.gpio_controller.get_status()
+                # Send current relay status from Modbus
+                status = self.modbus_controller.get_status()
                 response = {
                     'type': 'status',
                     'relays': status
@@ -74,8 +74,8 @@ class WebSocketServer:
                 await websocket.send(json.dumps(response))
                 
             elif msg_type == 'emergency_stop':
-                # Emergency stop all
-                self.gpio_controller.set_all_off()
+                # Emergency stop all relays via Modbus
+                self.modbus_controller.set_all_off()
                 response = {
                     'type': 'emergency_ack',
                     'message': 'All relays turned OFF'

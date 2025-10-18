@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 interface RelayConfig {
   name: string;
   relayNumber: string;
-  gpioPin: string;
+  modbusCoil: string;
   timer1: string;
   timer2: string;
   timer3: string;
@@ -16,28 +16,30 @@ interface RelayConfig {
 }
 
 const defaultRelays: RelayConfig[] = [
-  { name: 'Mixer', relayNumber: '1', gpioPin: '17', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Konveyor atas', relayNumber: '2', gpioPin: '18', timer1: '1000', timer2: '', timer3: '', timer4: '' },
-  { name: 'Konveyor bawah', relayNumber: '3', gpioPin: '27', timer1: '1000', timer2: '', timer3: '', timer4: '' },
-  { name: 'Kompressor', relayNumber: '4', gpioPin: '22', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Pintu pasir 1', relayNumber: '5', gpioPin: '23', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Pintu pasir 2', relayNumber: '6', gpioPin: '24', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Pintu batu 1', relayNumber: '7', gpioPin: '25', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Pintu batu 2', relayNumber: '8', gpioPin: '8', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Dump material', relayNumber: '9', gpioPin: '7', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Vibrator', relayNumber: '10', gpioPin: '12', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Tuang air', relayNumber: '11', gpioPin: '16', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Tuang additive', relayNumber: '12', gpioPin: '20', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Pintu mixer buka', relayNumber: '13', gpioPin: '21', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Pintu mixer tutup', relayNumber: '14', gpioPin: '19', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Spare 1', relayNumber: '15', gpioPin: '26', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Spare 2', relayNumber: '16', gpioPin: '13', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Silo 1', relayNumber: '17', gpioPin: '6', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Silo 2', relayNumber: '18', gpioPin: '5', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Silo 3', relayNumber: '19', gpioPin: '11', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Silo 4', relayNumber: '20', gpioPin: '9', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Silo 5', relayNumber: '21', gpioPin: '10', timer1: '0', timer2: '', timer3: '', timer4: '' },
-  { name: 'Silo 6', relayNumber: '22', gpioPin: '14', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Mixer', relayNumber: '1', modbusCoil: '0', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Konveyor atas', relayNumber: '2', modbusCoil: '1', timer1: '1000', timer2: '', timer3: '', timer4: '' },
+  { name: 'Konveyor bawah', relayNumber: '3', modbusCoil: '2', timer1: '1000', timer2: '', timer3: '', timer4: '' },
+  { name: 'Kompressor', relayNumber: '4', modbusCoil: '3', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Pintu pasir 1', relayNumber: '5', modbusCoil: '4', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Pintu pasir 2', relayNumber: '6', modbusCoil: '5', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Pintu batu 1', relayNumber: '7', modbusCoil: '6', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Pintu batu 2', relayNumber: '8', modbusCoil: '7', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Dump material', relayNumber: '9', modbusCoil: '8', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Dump material 2', relayNumber: '10', modbusCoil: '9', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Vibrator', relayNumber: '11', modbusCoil: '10', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Tuang air', relayNumber: '12', modbusCoil: '11', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Tuang additive', relayNumber: '13', modbusCoil: '12', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Pintu mixer buka', relayNumber: '14', modbusCoil: '13', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Pintu mixer tutup', relayNumber: '15', modbusCoil: '14', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Klakson', relayNumber: '16', modbusCoil: '15', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Silo 1', relayNumber: '17', modbusCoil: '16', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Silo 2', relayNumber: '18', modbusCoil: '17', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Silo 3', relayNumber: '19', modbusCoil: '18', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Silo 4', relayNumber: '20', modbusCoil: '19', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Silo 5', relayNumber: '21', modbusCoil: '20', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Silo 6', relayNumber: '22', modbusCoil: '21', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Spare 1', relayNumber: '23', modbusCoil: '22', timer1: '0', timer2: '', timer3: '', timer4: '' },
+  { name: 'Spare 2', relayNumber: '24', modbusCoil: '23', timer1: '0', timer2: '', timer3: '', timer4: '' },
 ];
 
 const STORAGE_KEY = 'relay_settings';
@@ -69,9 +71,9 @@ export default function RelaySettings() {
 
   const handleExportConfig = () => {
     const config = {
-      gpio_pins: relays.reduce((acc, relay) => {
+      relay_mapping: relays.reduce((acc, relay) => {
         const key = relay.name.toLowerCase().replace(/ /g, '_');
-        acc[key] = parseInt(relay.gpioPin) || 0;
+        acc[key] = parseInt(relay.modbusCoil) || 0;
         return acc;
       }, {} as Record<string, number>),
     };
@@ -80,7 +82,7 @@ export default function RelaySettings() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'raspberry_config.json';
+    link.download = 'autonics_config.json';
     link.click();
     URL.revokeObjectURL(url);
     toast({ title: 'Config Exported' });
@@ -90,8 +92,8 @@ export default function RelaySettings() {
     <div className="p-6">
       <Card>
         <CardHeader>
-          <CardTitle>Pengaturan Relay & Pintu Mixer</CardTitle>
-          <CardDescription>Konfigurasi nomor relay dan timer untuk kontrol pintu mixer (dalam milidetik)</CardDescription>
+          <CardTitle>Pengaturan Relay & Timer (Autonics System)</CardTitle>
+          <CardDescription>Konfigurasi Modbus coil address dan timer untuk 24 relay outputs (ARM + 2x ARX)</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-auto">
@@ -100,7 +102,7 @@ export default function RelaySettings() {
                 <TableRow>
                   <TableHead className="w-[200px]">Nama</TableHead>
                   <TableHead className="w-[100px]">Relay</TableHead>
-                  <TableHead className="w-[100px]">GPIO BCM</TableHead>
+                  <TableHead className="w-[120px]">Modbus Coil</TableHead>
                   <TableHead className="w-[120px]">Timer 1 (ms)</TableHead>
                   <TableHead className="w-[120px]">Timer 2 (ms)</TableHead>
                   <TableHead className="w-[120px]">Timer 3 (ms)</TableHead>
@@ -122,9 +124,10 @@ export default function RelaySettings() {
                     <TableCell>
                       <Input
                         type="text"
-                        value={relay.gpioPin}
-                        onChange={(e) => handleInputChange(index, 'gpioPin', e.target.value)}
+                        value={relay.modbusCoil}
+                        onChange={(e) => handleInputChange(index, 'modbusCoil', e.target.value)}
                         className="w-full bg-blue-50"
+                        placeholder="0-23"
                       />
                     </TableCell>
                     <TableCell>

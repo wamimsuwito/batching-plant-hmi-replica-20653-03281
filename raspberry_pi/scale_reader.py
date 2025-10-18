@@ -151,8 +151,13 @@ class ScaleReader:
 
 # Test standalone
 if __name__ == "__main__":
-    with open('config.json', 'r') as f:
-        config = json.load(f)
+    # Try both old and new config files
+    try:
+        with open('config_autonics.json', 'r') as f:
+            config = json.load(f)
+    except FileNotFoundError:
+        with open('config.json', 'r') as f:
+            config = json.load(f)
     
     reader = ScaleReader(config)
     reader.start()

@@ -35,27 +35,26 @@ export const useRaspberryPi = () => {
 
   const connect = useCallback(() => {
     try {
-      // WebSocket ke Raspberry Pi via USB Serial bridge
-      // Raspberry Pi akan muncul sebagai network interface
+      // WebSocket connection to Autonics controller (PC-based)
       // Try multiple possible addresses
       const possibleAddresses = [
-        'ws://raspberrypi.local:8765',
-        'ws://192.168.137.1:8765',
         'ws://localhost:8765',
+        'ws://192.168.1.100:8765',
+        'ws://controller.local:8765',
       ];
 
       // Try first address (can be made configurable)
       const wsUrl = possibleAddresses[0];
       
-      console.log('Connecting to Raspberry Pi at:', wsUrl);
+      console.log('Connecting to Autonics controller at:', wsUrl);
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
-        console.log('✅ Connected to Raspberry Pi');
+        console.log('✅ Connected to Autonics controller');
         setIsConnected(true);
         toast({
-          title: "Raspberry Pi Connected",
-          description: "Real-time weight data aktif",
+          title: "Controller Connected",
+          description: "Real-time weight data aktif (Autonics ARM/ARX)",
         });
       };
 
@@ -80,13 +79,13 @@ export const useRaspberryPi = () => {
       };
 
       ws.onclose = () => {
-        console.log('❌ Disconnected from Raspberry Pi');
+        console.log('❌ Disconnected from Autonics controller');
         setIsConnected(false);
         wsRef.current = null;
 
         // Auto-reconnect after 5 seconds
         reconnectTimeoutRef.current = setTimeout(() => {
-          console.log('🔄 Attempting to reconnect...');
+          console.log('🔄 Attempting to reconnect to controller...');
           connect();
         }, 5000);
       };
@@ -98,19 +97,19 @@ export const useRaspberryPi = () => {
     }
   }, [toast]);
 
-  const sendRelayCommand = useCallback((relay: string, state: boolean, gpioPin?: number) => {
+  const sendRelayCommand = useCallback((relay: string, state: boolean, modbusCoil?: number) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       const command: RelayCommand = {
         type: 'relay_control',
         relay,
         state,
-        gpio_pin: gpioPin,
+        gpio_pin: modbusCoil, // Using 'gpio_pin' field for Modbus coil address (backward compatible)
       };
       
       wsRef.current.send(JSON.stringify(command));
-      console.log(`📤 Relay command sent: ${relay} = ${state ? 'ON' : 'OFF'} (GPIO ${gpioPin})`);
+      console.log(`📤 Relay command sent: ${relay} = ${state ? 'ON' : 'OFF'} (Modbus Coil ${modbusCoil})`);
     } else {
-      console.warn('⚠️ Raspberry Pi not connected, command ignored:', relay, state);
+      console.warn('⚠️ Controller not connected, command ignored:', relay, state);
     }
   }, []);
 
