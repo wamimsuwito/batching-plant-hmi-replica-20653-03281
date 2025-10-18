@@ -241,33 +241,19 @@ const Index = () => {
     <div className="min-h-screen bg-hmi-background flex flex-col">
       {/* Header */}
       <header className="bg-hmi-header text-white py-3 px-6 border-b-2 border-hmi-border flex items-center justify-between relative">
-        {/* Logo - Top Right */}
+        {/* Logo - Top Left */}
         <img 
           src={farikaLogo} 
           alt="PT Farika Riau Perkasa Indonesia" 
-          className="absolute top-2 right-6 w-16 h-16 object-contain"
+          className="absolute top-2 left-6 w-16 h-16 object-contain"
         />
         
-        <div className="flex-1 flex items-center gap-3">
-          {/* Raspberry Pi Connection Status */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-black/20 border border-white/20">
-            {raspberryPi.isConnected ? (
-              <>
-                <Wifi className="w-4 h-4 text-green-400 animate-pulse" />
-                <span className="text-xs font-semibold text-green-400">RPi Connected</span>
-              </>
-            ) : (
-              <>
-                <WifiOff className="w-4 h-4 text-red-400" />
-                <span className="text-xs font-semibold text-red-400">Offline Mode</span>
-              </>
-            )}
-          </div>
+        <div className="flex-1 flex items-center gap-3 pl-20">
         </div>
         <h1 className="text-2xl font-bold text-center tracking-wide flex-1">
           BATCH PLANT CONTROL SYSTEM
         </h1>
-        <div className="flex-1 flex justify-end items-center gap-2 pr-20">
+        <div className="flex-1 flex justify-end items-center gap-2">
           {user ? (
             <>
               <span className="text-sm">
