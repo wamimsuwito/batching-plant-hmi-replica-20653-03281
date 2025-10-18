@@ -160,6 +160,9 @@ const initialComponentStates: ComponentStates = {
   klakson: false,
 };
 
+// Helper function for delays
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export const useProductionSequence = (
   onCementDeduction: (siloId: number, amount: number) => void,
   onAggregateDeduction: (binId: number, amount: number) => void,
@@ -417,6 +420,12 @@ export const useProductionSequence = (
         console.log('📦 GROUP PASIR: Weighing PASIR 1...');
         await weighMaterialWithJogging('pasir1', config.targetWeights.pasir1, config, weighingStatus, 0);
         weighingStatus.pasir1 = true;
+        
+        // ⏱️ JEDA 2 DETIK untuk stabilisasi hopper pasir
+        if (config.targetWeights.pasir2 > 0 && config.selectedBins.pasir2 > 0) {
+          console.log('⏳ Waiting 2 seconds for hopper stabilization...');
+          await delay(2000);
+        }
       } else {
         weighingStatus.pasir1 = true;
         setProductionState(prev => ({ ...prev, weighingComplete: { ...prev.weighingComplete, pasir1: true } }));
@@ -447,6 +456,12 @@ export const useProductionSequence = (
         console.log('📦 GROUP BATU: Weighing BATU 1...');
         await weighMaterialWithJogging('batu1', config.targetWeights.batu1, config, weighingStatus, 0);
         weighingStatus.batu1 = true;
+        
+        // ⏱️ JEDA 2 DETIK untuk stabilisasi hopper batu
+        if (config.targetWeights.batu2 > 0 && config.selectedBins.batu2 > 0) {
+          console.log('⏳ Waiting 2 seconds for hopper stabilization...');
+          await delay(2000);
+        }
       } else {
         weighingStatus.batu1 = true;
         setProductionState(prev => ({ ...prev, weighingComplete: { ...prev.weighingComplete, batu1: true } }));
