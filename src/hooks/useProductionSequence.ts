@@ -74,6 +74,7 @@ export interface ProductionState {
   nextMixingReady: boolean;
   dischargedMaterialsCount: number;
   totalMaterialsToDischarge: number;
+  activityLog: string[]; // Activity log (max 4 entries)
 }
 
 export interface ComponentStates {
@@ -138,6 +139,7 @@ const initialProductionState: ProductionState = {
   nextMixingReady: false,
   dischargedMaterialsCount: 0,
   totalMaterialsToDischarge: 4,
+  activityLog: [],
 };
 
 const initialComponentStates: ComponentStates = {
@@ -179,6 +181,21 @@ export const useProductionSequence = (
   const intervalsRef = useRef<NodeJS.Timeout[]>([]);
   const mixerIdleTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastConfigRef = useRef<ProductionConfig | null>(null);
+
+  // Helper function to add activity log
+  const addActivityLog = (message: string) => {
+    const timestamp = new Date().toLocaleTimeString('id-ID', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit' 
+    });
+    const logMessage = `[${timestamp}] ${message}`;
+    
+    setProductionState(prev => {
+      const newLog = [logMessage, ...prev.activityLog].slice(0, 4); // Keep only last 4
+      return { ...prev, activityLog: newLog };
+    });
+  };
 
   // Load jogging settings
   const getJoggingSettings = (materialName: string): JoggingSettings => {
@@ -382,6 +399,8 @@ export const useProductionSequence = (
     setComponentStates(prev => ({ ...prev, mixer: true, beltAtas: true }));
     controlRelay('mixer', true);
     controlRelay('konveyor_atas', true);
+    addActivityLog('🔄 Mixer ON');
+    addActivityLog('🔄 Belt Atas ON');
 
     // t=1s: Start weighing all materials
     const weighingTimer = setTimeout(() => {
@@ -568,6 +587,7 @@ export const useProductionSequence = (
           console.log(`🟢 AGG relay: ${relayName} -> ON (${material}, binId=${binId})`);
           setComponentStates(prev => ({ ...prev, sandBin1Valve: true }));
           controlRelay(relayName, true);
+          addActivityLog('🟢 Pasir 1 ON');
         }
       } else if (material === 'pasir2') {
         const binId = config.selectedBins.pasir2;
@@ -576,6 +596,7 @@ export const useProductionSequence = (
           console.log(`🟢 AGG relay: ${relayName} -> ON (${material}, binId=${binId})`);
           setComponentStates(prev => ({ ...prev, sandBin2Valve: true }));
           controlRelay(relayName, true);
+          addActivityLog('🟢 Pasir 2 ON');
         }
       } else if (material === 'batu1') {
         const binId = config.selectedBins.batu1;
@@ -584,6 +605,7 @@ export const useProductionSequence = (
           console.log(`🟢 AGG relay: ${relayName} -> ON (${material}, binId=${binId})`);
           setComponentStates(prev => ({ ...prev, stoneBin1Valve: true }));
           controlRelay(relayName, true);
+          addActivityLog('🟢 Batu 1 ON');
         }
       } else if (material === 'batu2') {
         const binId = config.selectedBins.batu2;
@@ -592,6 +614,7 @@ export const useProductionSequence = (
           console.log(`🟢 AGG relay: ${relayName} -> ON (${material}, binId=${binId})`);
           setComponentStates(prev => ({ ...prev, stoneBin2Valve: true }));
           controlRelay(relayName, true);
+          addActivityLog('🟢 Batu 2 ON');
         }
       } else if (material === 'semen') {
         // Semen uses selected silo valve (already opened)
@@ -599,6 +622,7 @@ export const useProductionSequence = (
         // Water tank valve ON (RED blinking) - filling weigh hopper
         setComponentStates(prev => ({ ...prev, waterTankValve: true }));
         controlRelay('water_tank_valve', true);
+        addActivityLog('🟢 Air ON');
       }
 
       const weighingInterval = setInterval(() => {
@@ -795,6 +819,7 @@ export const useProductionSequence = (
               console.log(`🔴 AGG relay: ${relayName} -> OFF`);
               controlRelay(relayName, false);
               setComponentStates(prev => ({ ...prev, sandBin1Valve: false }));
+              addActivityLog('🔴 Pasir 1 OFF');
             }
           } else if (material === 'pasir2') {
             const binId = config.selectedBins.pasir2;
@@ -803,6 +828,7 @@ export const useProductionSequence = (
               console.log(`🔴 AGG relay: ${relayName} -> OFF`);
               controlRelay(relayName, false);
               setComponentStates(prev => ({ ...prev, sandBin2Valve: false }));
+              addActivityLog('🔴 Pasir 2 OFF');
             }
           } else if (material === 'batu1') {
             const binId = config.selectedBins.batu1;
@@ -811,6 +837,7 @@ export const useProductionSequence = (
               console.log(`🔴 AGG relay: ${relayName} -> OFF`);
               controlRelay(relayName, false);
               setComponentStates(prev => ({ ...prev, stoneBin1Valve: false }));
+              addActivityLog('🔴 Batu 1 OFF');
             }
           } else if (material === 'batu2') {
             const binId = config.selectedBins.batu2;
@@ -819,6 +846,7 @@ export const useProductionSequence = (
               console.log(`🔴 AGG relay: ${relayName} -> OFF`);
               controlRelay(relayName, false);
               setComponentStates(prev => ({ ...prev, stoneBin2Valve: false }));
+              addActivityLog('🔴 Batu 2 OFF');
             }
           } else if (material === 'semen') {
             // ✅ FIX: Turn off silo valves after cement weighing complete
@@ -830,9 +858,11 @@ export const useProductionSequence = (
               ...prev,
               siloValves: prev.siloValves.map(() => false)
             }));
+            addActivityLog('🔴 Semen OFF');
           } else if (material === 'air') {
             setComponentStates(prev => ({ ...prev, waterTankValve: false }));
             controlRelay('water_tank_valve', false);
+            addActivityLog('🔴 Air OFF');
           }
           
           weighingStatus[material] = true;
@@ -952,12 +982,14 @@ export const useProductionSequence = (
           hopperValveBatu: false,
         }));
         controlRelay('vibrator', false);
+        addActivityLog('🔴 Vibrator OFF');
         
         // Wait 5 seconds, then turn off BELT-1
         const beltDelayTimer = setTimeout(() => {
           console.log('🛑 Turning off BELT-1');
           setComponentStates(prev => ({ ...prev, beltBawah: false }));
           controlRelay('konveyor_bawah', false);
+          addActivityLog('🔴 Belt Bawah OFF');
         }, 5000);
         addTimer(beltDelayTimer);
         
@@ -995,14 +1027,18 @@ export const useProductionSequence = (
       }));
       controlRelay('vibrator', true);
       controlRelay('konveyor_bawah', true); // ← Turn on BELT-1
+      addActivityLog('🔄 Vibrator ON');
+      addActivityLog('🔄 Belt Bawah ON');
       
       // ✅ FIX: Different relay for each hopper
       if (material === 'pasir') {
         controlRelay('dump_material', true);   // Coil 8 - Pasir hopper
         console.log('🟢 DUMP PASIR: dump_material (Coil 8) -> ON');
+        addActivityLog('🟢 Dump Pasir ON');
       } else if (material === 'batu') {
         controlRelay('dump_material_2', true); // Coil 9 - Batu hopper
         console.log('🟢 DUMP BATU: dump_material_2 (Coil 9) -> ON');
+        addActivityLog('🟢 Dump Batu ON');
       }
       
       // Animate hopper depletion from 100% to 0%
@@ -1052,9 +1088,11 @@ export const useProductionSequence = (
         if (material === 'pasir') {
           controlRelay('dump_material', false);
           console.log('🔴 DUMP PASIR: dump_material (Coil 8) -> OFF');
+          addActivityLog('🔴 Dump Pasir OFF');
         } else if (material === 'batu') {
           controlRelay('dump_material_2', false);
           console.log('🔴 DUMP BATU: dump_material_2 (Coil 9) -> OFF');
+          addActivityLog('🔴 Dump Batu OFF');
         }
         
         setComponentStates(prev => ({ 
@@ -1082,6 +1120,7 @@ export const useProductionSequence = (
     } else if (material === 'semen') {
       console.log('🔴 CEMENT DISCHARGE START - cementValve = TRUE');
       setComponentStates(prev => ({ ...prev, cementValve: true }));
+      addActivityLog('🟢 Dump Semen ON');
       
       // Animate semen weight reduction (150kg → 0kg)
       const dischargeDuration = Math.max(8000, targetWeight * 40);
@@ -1126,6 +1165,7 @@ export const useProductionSequence = (
         // Matikan LED valve semen saat hopper kosong
         console.log('🔴 CEMENT DISCHARGE END (hopper empty) - cementValve = FALSE');
         setComponentStates(prev => ({ ...prev, cementValve: false }));
+        addActivityLog('🔴 Dump Semen OFF');
         
         // 🆕 INCREMENT COUNTER
         setProductionState(prev => {
@@ -1148,6 +1188,7 @@ export const useProductionSequence = (
       // Open weigh hopper discharge valve (GREEN blinking)
       setComponentStates(prev => ({ ...prev, waterHopperValve: true }));
       controlRelay('water_hopper_discharge', true);
+      addActivityLog('🟢 Dump Air ON');
       
       // Animate weigh hopper depletion (fill level 100% → 0%)
       const dischargeDuration = Math.max(3000, targetWeight * 30);
@@ -1191,6 +1232,7 @@ export const useProductionSequence = (
         // Close discharge valve
         controlRelay('water_hopper_discharge', false);
         setComponentStates(prev => ({ ...prev, waterHopperValve: false }));
+        addActivityLog('🔴 Dump Air OFF');
         
         // Deduct water from tank AFTER discharge complete
         onWaterDeduction(targetWeight);
@@ -1276,12 +1318,14 @@ export const useProductionSequence = (
     // First door cycle: Open
     setComponentStates(prev => ({ ...prev, mixerDoor: true }));
     controlRelay('pintu_mixer_buka', true);
+    addActivityLog('🚪 Mixer Door OPEN');
     
     const closeTimer1 = setTimeout(() => {
       // Close
       setComponentStates(prev => ({ ...prev, mixerDoor: false }));
       controlRelay('pintu_mixer_buka', false);
       controlRelay('pintu_mixer_tutup', true);
+      addActivityLog('🚪 Mixer Door CLOSE');
       
       const waitTimer1 = setTimeout(() => {
         controlRelay('pintu_mixer_tutup', false);

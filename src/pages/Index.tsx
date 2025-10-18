@@ -8,6 +8,7 @@ import { ConveyorBelt } from "@/components/BatchPlant/ConveyorBelt";
 import { WeighHopper } from "@/components/BatchPlant/WeighHopper";
 import { Pipe } from "@/components/BatchPlant/Pipe";
 import { StorageBin } from "@/components/BatchPlant/StorageBin";
+import { ActivityLogPanel } from "@/components/BatchPlant/ActivityLogPanel";
 import { Button } from "@/components/ui/button";
 import { LoginDialog } from "@/components/auth/LoginDialog";
 import { BatchStartDialog } from "@/components/BatchPlant/BatchStartDialog";
@@ -325,6 +326,9 @@ const Index = () => {
       {/* Main HMI Panel */}
       <main className="flex-1 p-4">
         <div className="w-full h-[calc(100vh-80px)] border-4 border-hmi-border bg-hmi-panel relative">
+          {/* Activity Log Panel - TOP LEFT */}
+          <ActivityLogPanel logs={productionState.activityLog} />
+          
           <svg
             width="100%"
             height="100%"
