@@ -4,9 +4,30 @@ interface MixerProps {
   isRunning?: boolean;
   doorOpen?: boolean;
   mixingTimeRemaining?: number;
+  totalMixingTime?: number;
+  currentMixing?: number;
+  totalMixing?: number;
 }
 
-export const Mixer = ({ x, y, isRunning = true, doorOpen = false, mixingTimeRemaining = 0 }: MixerProps) => {
+export const Mixer = ({ 
+  x, 
+  y, 
+  isRunning = true, 
+  doorOpen = false, 
+  mixingTimeRemaining = 0,
+  totalMixingTime = 10,
+  currentMixing = 1,
+  totalMixing = 2
+}: MixerProps) => {
+  // Calculate progress percentage for circular timer
+  const progressPercentage = totalMixingTime > 0 
+    ? ((totalMixingTime - mixingTimeRemaining) / totalMixingTime) * 100 
+    : 0;
+  
+  // Circle parameters for progress ring
+  const radius = 35;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (progressPercentage / 100) * circumference;
   return (
     <g transform={`translate(${x}, ${y})`}>
       {/* Main mixer body - horizontal twin shaft design */}
@@ -124,17 +145,82 @@ export const Mixer = ({ x, y, isRunning = true, doorOpen = false, mixingTimeRema
         </>
       )}
       
-      {/* Mixing countdown display */}
+      {/* Circular timer display */}
       {mixingTimeRemaining > 0 && (
-        <text
-          x="75"
-          y="50"
-          className="fill-white text-sm font-bold"
-          textAnchor="middle"
-          style={{ textShadow: '0 0 3px rgba(0,0,0,0.8)' }}
-        >
-          MIXING: {mixingTimeRemaining}s
-        </text>
+        <g transform="translate(165, 20)">
+          {/* Background circle */}
+          <circle
+            cx="0"
+            cy="0"
+            r={radius}
+            className="fill-slate-800/90 stroke-pink-500"
+            strokeWidth="3"
+          />
+          
+          {/* Progress ring background */}
+          <circle
+            cx="0"
+            cy="0"
+            r={radius - 5}
+            className="fill-none stroke-slate-700"
+            strokeWidth="6"
+          />
+          
+          {/* Progress ring */}
+          <circle
+            cx="0"
+            cy="0"
+            r={radius - 5}
+            className="fill-none stroke-pink-500"
+            strokeWidth="6"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            transform="rotate(-90)"
+            style={{ 
+              transition: 'stroke-dashoffset 1s linear',
+            }}
+          />
+          
+          {/* Timer countdown number */}
+          <text
+            x="0"
+            y="8"
+            className="fill-white text-3xl font-bold"
+            textAnchor="middle"
+            style={{ textShadow: '0 0 5px rgba(0,0,0,0.8)' }}
+          >
+            {mixingTimeRemaining}
+          </text>
+          
+          {/* Label above circle */}
+          <text
+            x="0"
+            y="-50"
+            className="fill-white text-[9px] font-semibold"
+            textAnchor="middle"
+          >
+            WAKTU MIXING
+          </text>
+          
+          {/* Mixing count below */}
+          <text
+            x="0"
+            y="55"
+            className="fill-white text-[10px] font-semibold"
+            textAnchor="middle"
+          >
+            ✓ {currentMixing}x{totalMixing}
+          </text>
+          
+          {/* Yellow indicator dot */}
+          <circle
+            cx="25"
+            cy="-5"
+            r="4"
+            className="fill-yellow-400 animate-pulse"
+          />
+        </g>
       )}
     </g>
   );

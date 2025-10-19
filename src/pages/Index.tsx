@@ -722,6 +722,9 @@ const Index = () => {
                 isRunning={componentStates.mixer}
                 doorOpen={componentStates.mixerDoor}
                 mixingTimeRemaining={productionState.mixingTimeRemaining}
+                totalMixingTime={currentBatchConfig?.mixingTime || 10}
+                currentMixing={productionState.currentMixing}
+                totalMixing={productionState.jumlahMixing}
               />
 
               {/* Pipe to mixer from single weigh hopper */}
