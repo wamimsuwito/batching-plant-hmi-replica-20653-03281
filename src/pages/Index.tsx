@@ -646,15 +646,6 @@ const Index = () => {
                     <line x1="5" y1="25" x2="30" y2="25" className="stroke-hmi-border opacity-30" strokeWidth="1" strokeDasharray="2,2" />
                     <line x1="5" y1="35" x2="30" y2="35" className="stroke-hmi-border opacity-30" strokeWidth="1" strokeDasharray="2,2" />
                     
-                    {/* Text "EMPTY" */}
-                    <text
-                      x="17.5"
-                      y="30"
-                      textAnchor="middle"
-                      className="fill-hmi-border text-[8px] font-semibold opacity-40 animate-pulse"
-                    >
-                      EMPTY
-                    </text>
                   </g>
                 )}
                 

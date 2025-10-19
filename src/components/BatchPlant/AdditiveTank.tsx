@@ -135,14 +135,16 @@ export const AdditiveTank = ({
           >
             {label}
           </text>
-          <text
-            x="17.5"
-            y="135"
-            textAnchor="middle"
-            className={`text-[8px] font-semibold ${isValveActive ? 'fill-red-400' : 'fill-green-400'}`}
-          >
-            {isValveActive ? 'FILLING HOPPER' : 'STANDBY'}
-          </text>
+          {isValveActive && (
+            <text
+              x="17.5"
+              y="135"
+              textAnchor="middle"
+              className="text-[8px] font-semibold fill-red-400"
+            >
+              FILLING HOPPER
+            </text>
+          )}
         </>
       )}
     </g>
