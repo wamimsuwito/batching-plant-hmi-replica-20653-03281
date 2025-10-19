@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LISA License Key Generator - PT Farika</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -339,37 +340,50 @@
   </div>
 
   <script>
-    // Encryption functions (same as electron/licensing.js)
+    // Encryption functions (matching electron/licensing.cjs)
     const SECRET_KEY = 'LISA-HMI-SECRET-KEY-2025-FARIKA-INDONESIA-BATCHING-PLANT';
     const LICENSE_PREFIX = 'LISA';
 
-    // Simple AES-like encryption for browser (using Web Crypto API)
+    // AES-256-CBC encryption matching Node.js crypto module
+    function encrypt(text) {
+      // Generate key from SECRET_KEY using SHA-256
+      const key = CryptoJS.SHA256(SECRET_KEY);
+      
+      // Generate random 16-byte IV
+      const iv = CryptoJS.lib.WordArray.random(16);
+      
+      // Encrypt using AES-256-CBC
+      const encrypted = CryptoJS.AES.encrypt(text, key, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+      });
+      
+      // Return format: iv(hex):encrypted(hex)
+      return iv.toString(CryptoJS.enc.Hex) + ':' + encrypted.ciphertext.toString(CryptoJS.enc.Hex);
+    }
+
     async function generateLicenseKey(hardwareId, expiryDate) {
       try {
-        // Create payload
+        // Create payload: hardwareId|expiryDate
         const payload = `${hardwareId}|${expiryDate}`;
         
-        // Create a simple hash-based encryption
-        const encoder = new TextEncoder();
-        const data = encoder.encode(payload + SECRET_KEY);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        // Encrypt payload (matching Node.js crypto)
+        const encrypted = encrypt(payload);
         
-        // Create checksum
-        const checksumData = encoder.encode(payload + SECRET_KEY);
-        const checksumBuffer = await crypto.subtle.digest('SHA-256', checksumData);
-        const checksumArray = Array.from(new Uint8Array(checksumBuffer));
-        const checksum = checksumArray.slice(0, 4).map(b => b.toString(16).padStart(2, '0')).join('');
+        // Create MD5 checksum
+        const checksum = CryptoJS.MD5(payload + SECRET_KEY).toString().substring(0, 8);
         
-        // Combine and encode
-        const combined = `${btoa(payload)}|${hashHex.substring(0, 32)}|${checksum}`;
-        const base64 = btoa(combined)
+        // Format: encrypted|checksum
+        const licenseData = encrypted + '|' + checksum;
+        
+        // Encode to base64 and clean it up
+        const base64 = btoa(licenseData)
           .replace(/\+/g, '')
           .replace(/\//g, '')
           .replace(/=/g, '');
         
-        // Format with dashes
+        // Format: LISA-XXXXX-XXXXX-XXXXX-XXXXX (take first 20 chars, split into 4 groups of 5)
         const formatted = base64.match(/.{1,5}/g).slice(0, 4).join('-');
         
         return `${LICENSE_PREFIX}-${formatted}`;
