@@ -733,8 +733,8 @@ const Index = () => {
 
               {/* Mixer Truck - Below discharge chute */}
               <MixerTruck 
-                x={500} 
-                y={465} 
+                x={520} 
+                y={445} 
                 isReceiving={componentStates.mixerDoor}
                 isMoving={false}
               />
