@@ -4,6 +4,7 @@ import { CementSilo } from "@/components/BatchPlant/CementSilo";
 import { AggregateHopper } from "@/components/BatchPlant/AggregateHopper";
 import { AdditiveTank } from "@/components/BatchPlant/AdditiveTank";
 import { Mixer } from "@/components/BatchPlant/Mixer";
+import { MixerTruck } from "@/components/BatchPlant/MixerTruck";
 import { ConveyorBelt } from "@/components/BatchPlant/ConveyorBelt";
 import { WeighHopper } from "@/components/BatchPlant/WeighHopper";
 import { Pipe } from "@/components/BatchPlant/Pipe";
@@ -729,6 +730,14 @@ const Index = () => {
               totalMixing={productionState.jumlahMixing}
               isTimerActive={productionState.mixingTimeRemaining > 0}
             />
+
+              {/* Mixer Truck - Below discharge chute */}
+              <MixerTruck 
+                x={480} 
+                y={465} 
+                isReceiving={componentStates.mixerDoor}
+                isMoving={false}
+              />
 
               {/* Pipe to mixer from single weigh hopper */}
               <Pipe points="600,326 600,340 530,340 530,360" type="material" isActive={componentStates.cementValve} />

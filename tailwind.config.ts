@@ -104,6 +104,7 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
         "slide": "slide 2s linear infinite",
         "rotate": "rotate 2s linear infinite",
+        "spin-slow": "rotate 3s linear infinite",
       },
     },
   },
