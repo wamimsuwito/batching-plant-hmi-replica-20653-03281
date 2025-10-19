@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LISA License Key Generator - PT Farika</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 600px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .header p {
+      font-size: 14px;
+      opacity: 0.95;
+    }
+
+    .content {
+      padding: 40px;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #1e293b;
+      font-size: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Courier New', monospace;
+      transition: all 0.3s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .result-box {
+      margin-top: 24px;
+      padding: 20px;
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .result-box.show {
+      display: block;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .result-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .result-value {
+      font-family: 'Courier New', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: #1e293b;
+      padding: 16px;
+      background: white;
+      border: 2px solid #3b82f6;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      word-break: break-all;
+    }
+
+    .result-info {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px;
+      background: white;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .result-info-label {
+      font-size: 13px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .result-info-value {
+      font-size: 13px;
+      color: #1e293b;
+      font-weight: 600;
+    }
+
+    .btn-copy {
+      width: 100%;
+      padding: 12px;
+      background: #10b981;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-copy:hover {
+      background: #059669;
+      transform: translateY(-1px);
+    }
+
+    .help-text {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 6px;
+    }
+
+    .footer {
+      background: #f8fafc;
+      padding: 20px;
+      text-align: center;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .footer p {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .success-message {
+      background: #d1fae5;
+      color: #065f46;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 12px;
+      font-size: 13px;
+      font-weight: 500;
+      display: none;
+    }
+
+    .success-message.show {
+      display: block;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .quick-dates {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .quick-date-btn {
+      flex: 1;
+      padding: 8px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quick-date-btn:hover {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔑 LISA License Key Generator</h1>
+      <p>PT Farika Riau Perkasa Indonesia</p>
+    </div>
+
+    <div class="content">
+      <form id="generatorForm">
+        <div class="form-group">
+          <label for="hardwareId">Hardware ID *</label>
+          <input 
+            type="text" 
+            id="hardwareId" 
+            placeholder="Paste Hardware ID from customer (e.g., A3B2C4D5E6F78901)" 
+            required
+          />
+          <p class="help-text">Copy Hardware ID dari aplikasi customer</p>
+        </div>
+
+        <div class="form-group">
+          <label for="expiryDate">Expiration Date *</label>
+          <input 
+            type="date" 
+            id="expiryDate" 
+            required
+          />
+          <div class="quick-dates">
+            <button type="button" class="quick-date-btn" onclick="setExpiryYears(1)">+1 Year</button>
+            <button type="button" class="quick-date-btn" onclick="setExpiryYears(5)">+5 Years</button>
+            <button type="button" class="quick-date-btn" onclick="setExpiryYears(10)">+10 Years</button>
+          </div>
+          <p class="help-text">Default: 10 tahun dari sekarang</p>
+        </div>
+
+        <div class="form-group">
+          <label for="customerName">Customer Name (Optional)</label>
+          <input 
+            type="text" 
+            id="customerName" 
+            placeholder="e.g., PT ABC Indonesia"
+          />
+          <p class="help-text">Untuk referensi Anda saja (tidak mempengaruhi license key)</p>
+        </div>
+
+        <button type="submit" class="btn" id="generateBtn">
+          Generate License Key
+        </button>
+      </form>
+
+      <div class="result-box" id="resultBox">
+        <div class="result-label">Generated License Key</div>
+        <div class="result-value" id="licenseKeyOutput"></div>
+        
+        <div class="result-info">
+          <span class="result-info-label">Hardware ID:</span>
+          <span class="result-info-value" id="resultHardwareId"></span>
+        </div>
+        
+        <div class="result-info">
+          <span class="result-info-label">Valid Until:</span>
+          <span class="result-info-value" id="resultExpiryDate"></span>
+        </div>
+        
+        <div class="result-info" id="customerInfo" style="display: none;">
+          <span class="result-info-label">Customer:</span>
+          <span class="result-info-value" id="resultCustomerName"></span>
+        </div>
+
+        <button type="button" class="btn-copy" onclick="copyLicenseKey()">
+          📋 Copy License Key to Clipboard
+        </button>
+
+        <div class="success-message" id="successMessage">
+          ✓ License key copied to clipboard! Kirim ke customer via WhatsApp/Email.
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p><strong>CONFIDENTIAL</strong> - Tool ini hanya untuk internal PT Farika</p>
+      <p>Jangan share file ini ke siapapun!</p>
+    </div>
+  </div>
+
+  <script>
+    // Encryption functions (same as electron/licensing.js)
+    const SECRET_KEY = 'LISA-HMI-SECRET-KEY-2025-FARIKA-INDONESIA-BATCHING-PLANT';
+    const LICENSE_PREFIX = 'LISA';
+
+    // Simple AES-like encryption for browser (using Web Crypto API)
+    async function generateLicenseKey(hardwareId, expiryDate) {
+      try {
+        // Create payload
+        const payload = `${hardwareId}|${expiryDate}`;
+        
+        // Create a simple hash-based encryption
+        const encoder = new TextEncoder();
+        const data = encoder.encode(payload + SECRET_KEY);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        
+        // Create checksum
+        const checksumData = encoder.encode(payload + SECRET_KEY);
+        const checksumBuffer = await crypto.subtle.digest('SHA-256', checksumData);
+        const checksumArray = Array.from(new Uint8Array(checksumBuffer));
+        const checksum = checksumArray.slice(0, 4).map(b => b.toString(16).padStart(2, '0')).join('');
+        
+        // Combine and encode
+        const combined = `${btoa(payload)}|${hashHex.substring(0, 32)}|${checksum}`;
+        const base64 = btoa(combined)
+          .replace(/\+/g, '')
+          .replace(/\//g, '')
+          .replace(/=/g, '');
+        
+        // Format with dashes
+        const formatted = base64.match(/.{1,5}/g).slice(0, 4).join('-');
+        
+        return `${LICENSE_PREFIX}-${formatted}`;
+      } catch (error) {
+        console.error('Error generating license key:', error);
+        return null;
+      }
+    }
+
+    // Set default expiry date to 10 years from now
+    function setExpiryYears(years) {
+      const date = new Date();
+      date.setFullYear(date.getFullYear() + years);
+      document.getElementById('expiryDate').valueAsDate = date;
+    }
+
+    // Initialize with 10 years
+    window.addEventListener('DOMContentLoaded', () => {
+      setExpiryYears(10);
+    });
+
+    // Form submit handler
+    document.getElementById('generatorForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const hardwareId = document.getElementById('hardwareId').value.trim().toUpperCase();
+      const expiryDate = document.getElementById('expiryDate').value;
+      const customerName = document.getElementById('customerName').value.trim();
+      
+      if (!hardwareId || !expiryDate) {
+        alert('Please fill in all required fields!');
+        return;
+      }
+
+      // Disable button
+      const btn = document.getElementById('generateBtn');
+      btn.disabled = true;
+      btn.textContent = 'Generating...';
+
+      try {
+        // Generate license key
+        const licenseKey = await generateLicenseKey(hardwareId, expiryDate);
+        
+        if (!licenseKey) {
+          throw new Error('Failed to generate license key');
+        }
+
+        // Display results
+        document.getElementById('licenseKeyOutput').textContent = licenseKey;
+        document.getElementById('resultHardwareId').textContent = hardwareId;
+        document.getElementById('resultExpiryDate').textContent = new Date(expiryDate).toLocaleDateString('id-ID', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+        
+        if (customerName) {
+          document.getElementById('customerInfo').style.display = 'flex';
+          document.getElementById('resultCustomerName').textContent = customerName;
+        } else {
+          document.getElementById('customerInfo').style.display = 'none';
+        }
+
+        document.getElementById('resultBox').classList.add('show');
+        document.getElementById('successMessage').classList.remove('show');
+
+        // Scroll to result
+        document.getElementById('resultBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } catch (error) {
+        alert('Error generating license key: ' + error.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Generate License Key';
+      }
+    });
+
+    // Copy to clipboard
+    function copyLicenseKey() {
+      const licenseKey = document.getElementById('licenseKeyOutput').textContent;
+      navigator.clipboard.writeText(licenseKey).then(() => {
+        document.getElementById('successMessage').classList.add('show');
+        setTimeout(() => {
+          document.getElementById('successMessage').classList.remove('show');
+        }, 3000);
+      }).catch(err => {
+        alert('Failed to copy: ' + err);
+      });
+    }
+  </script>
+</body>
+</html>

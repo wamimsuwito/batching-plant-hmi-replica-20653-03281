@@ -1,6 +1,10 @@
-import { app, BrowserWindow, Menu, dialog } from 'electron';
+import { app, BrowserWindow, Menu, dialog, ipcMain } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+const licensing = require('./licensing.js');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -128,6 +132,23 @@ function createWindow() {
   const menu = Menu.buildFromTemplate(menuTemplate);
   Menu.setApplicationMenu(menu);
 }
+
+// Setup licensing IPC handlers
+ipcMain.handle('licensing:getHardwareId', () => {
+  return licensing.getHardwareId();
+});
+
+ipcMain.handle('licensing:validateLicense', (event, licenseKey) => {
+  return licensing.validateLicenseKey(licenseKey);
+});
+
+ipcMain.handle('licensing:saveLicense', (event, licenseKey) => {
+  return licensing.saveLicense(licenseKey);
+});
+
+ipcMain.handle('licensing:checkLicense', () => {
+  return licensing.checkLicense();
+});
 
 app.whenReady().then(createWindow);
 

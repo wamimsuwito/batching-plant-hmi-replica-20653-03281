@@ -12,6 +12,7 @@ import { StorageBin } from "@/components/BatchPlant/StorageBin";
 import { ActivityLogPanel } from "@/components/BatchPlant/ActivityLogPanel";
 import { Button } from "@/components/ui/button";
 import { LoginDialog } from "@/components/auth/LoginDialog";
+import { ActivationDialog } from "@/components/auth/ActivationDialog";
 import { BatchStartDialog } from "@/components/BatchPlant/BatchStartDialog";
 import { SiloFillDialog, SiloData } from "@/components/BatchPlant/SiloFillDialog";
 import {
@@ -35,6 +36,8 @@ const Index = () => {
   const [isAutoMode, setIsAutoMode] = useState(false); // Auto mode toggle
   const [binGates, setBinGates] = useState([false, false, false, false]);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [activationOpen, setActivationOpen] = useState(false);
+  const [isLicenseValid, setIsLicenseValid] = useState(false);
   const [batchStartOpen, setBatchStartOpen] = useState(false);
   const [siloFillOpen, setSiloFillOpen] = useState(false);
   const [printTicketOpen, setPrintTicketOpen] = useState(false);
@@ -133,6 +136,40 @@ const Index = () => {
   useEffect(() => {
     localStorage.setItem('water_tank', JSON.stringify(waterTank));
   }, [waterTank]);
+
+  // Check license on mount (only in Electron)
+  useEffect(() => {
+    if (window.licensing) {
+      window.licensing.checkLicense().then((result: any) => {
+        if (result.valid) {
+          setIsLicenseValid(true);
+          console.log('License valid until:', result.expiryDate);
+        } else {
+          setIsLicenseValid(false);
+          setActivationOpen(true);
+          if (result.expired) {
+            toast({
+              variant: "destructive",
+              title: "⚠️ License Expired",
+              description: "Please contact PT Farika to renew your license.",
+            });
+          }
+        }
+      });
+    } else {
+      // Not in Electron, skip license check
+      setIsLicenseValid(true);
+    }
+  }, []);
+
+  const handleActivationSuccess = () => {
+    setActivationOpen(false);
+    setIsLicenseValid(true);
+    toast({
+      title: "✅ Software Activated",
+      description: "License activated successfully!",
+    });
+  };
 
   // Handle silo filling
   const handleSiloFill = (siloId: number, volume: number) => {
@@ -429,6 +466,11 @@ const Index = () => {
       </header>
 
       <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
+
+      <ActivationDialog
+        open={activationOpen}
+        onActivationSuccess={handleActivationSuccess}
+      />
 
       {/* Help Dialog */}
       <AlertDialog open={helpDialogOpen} onOpenChange={setHelpDialogOpen}>
