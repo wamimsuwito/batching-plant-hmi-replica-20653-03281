@@ -8,8 +8,8 @@ interface MixerTruckProps {
 }
 
 export const MixerTruck = ({ x, y, isReceiving = false, isMoving = false }: MixerTruckProps) => {
-  const truckWidth = 180;
-  const truckHeight = 110;
+  const truckWidth = 130;
+  const truckHeight = 80;
   
   // Drum position for overlay animation (relative to truck image)
   const drumX = truckWidth * 0.55; // 55% from left (center of drum)
