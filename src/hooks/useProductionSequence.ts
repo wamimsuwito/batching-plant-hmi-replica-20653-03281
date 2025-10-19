@@ -344,21 +344,13 @@ export const useProductionSequence = (
     
     setProductionState(initialProductionState);
     setComponentStates(initialComponentStates);
-    toast({
-      title: 'Produksi Dihentikan',
-      description: 'Sistem kembali ke mode idle',
-      variant: 'destructive',
-    });
+    // Toast removed - silent operation
   };
 
   const startProduction = (config: ProductionConfig) => {
     // Check auto mode
     if (!isAutoMode) {
-      toast({
-        title: 'Mode Manual',
-        description: 'Aktifkan AUTO MODE untuk memulai produksi',
-        variant: 'destructive',
-      });
+      // Toast removed - silent operation
       return;
     }
 
@@ -390,10 +382,7 @@ export const useProductionSequence = (
       currentMixing: config.currentMixing,
     });
 
-    toast({
-      title: `Produksi Dimulai - Mixing ${config.currentMixing} of ${config.jumlahMixing}`,
-      description: 'Memulai proses penimbangan material',
-    });
+    // Toast removed - silent operation
 
     // t=0s: Mixer ON, Belt Atas ON (cement conveyor)
     // Belt Bawah (BELT-1) will start only when aggregate discharge begins
@@ -555,6 +544,8 @@ export const useProductionSequence = (
     config.selectedSilos.forEach(siloId => {
       onCementDeduction(siloId, cementPerSilo);
     });
+    
+    // Toast removed - silent operation
     
     // Start discharge sequence
     setTimeout(() => startDischargeSequence(config), 1000);
@@ -1284,10 +1275,7 @@ export const useProductionSequence = (
       mixingTimeRemaining: config.mixingTime,
     }));
 
-    toast({
-      title: 'Mixing Dimulai',
-      description: `Waktu mixing: ${config.mixingTime} detik`,
-    });
+    // Toast removed - silent operation
 
     // Countdown timer
     const countdownInterval = setInterval(() => {
@@ -1321,10 +1309,7 @@ export const useProductionSequence = (
   const startDoorCycle = () => {
     setProductionState(prev => ({ ...prev, currentStep: 'door_cycle', mixerDoorCycle: 1 }));
     
-    toast({
-      title: 'Mixing Selesai',
-      description: 'Memulai siklus pembukaan pintu mixer',
-    });
+    // Toast removed - silent operation
 
     const doorOpen1 = getTimerValue('Pintu mixer buka', 1) || 2000;
     const doorWait1 = getTimerValue('Pintu mixer buka', 2) || 10000;
@@ -1386,10 +1371,7 @@ export const useProductionSequence = (
       if (dischargedMaterialsCount >= totalMaterialsToDischarge && !nextMixingReady && currentStep !== 'complete') {
         console.log(`🔄 All materials discharged! Starting weighing for Mixing ${currentMixing + 1}`);
         
-        toast({
-          title: `Penimbangan Mixing ${currentMixing + 1} of ${jumlahMixing}`,
-          description: 'Material mixing berikutnya sedang ditimbang',
-        });
+        // Toast removed - silent operation
         
         // Refill aggregate bins SEBELUM penimbangan berikutnya
         console.log('🔄 Refilling aggregate bins for next mixing...');
@@ -1440,10 +1422,7 @@ export const useProductionSequence = (
         if (nextMixingReady) {
           console.log(`✅ Mixing ${currentMixing} selesai, material Mixing ${currentMixing + 1} sudah siap di hopper`);
           
-          toast({
-            title: `Mixing ${currentMixing + 1} of ${jumlahMixing}`,
-            description: 'Memulai proses discharge material ke mixer',
-          });
+          // Toast removed - silent operation
           
           // Langsung discharge material yang sudah ditimbang
           setTimeout(() => {
@@ -1465,10 +1444,7 @@ export const useProductionSequence = (
           // Material mixing berikutnya belum siap (edge case: mixing terlalu cepat)
           console.log(`⚠️ Mixing ${currentMixing} selesai, tapi material Mixing ${currentMixing + 1} belum siap. Menunggu...`);
           
-          toast({
-            title: 'Menunggu Material',
-            description: `Penimbangan Mixing ${currentMixing + 1} masih berlangsung`,
-          });
+          // Toast removed - silent operation
           
           // Poll setiap 2 detik sampai material siap
           const waitInterval = setInterval(() => {
@@ -1514,12 +1490,7 @@ export const useProductionSequence = (
         controlRelay('klakson', true);
         setComponentStates(prevComp => ({ ...prevComp, klakson: true }));
         
-        // Toast notification untuk klakson
-        toast({
-          title: '🔔 Klakson Aktif',
-          description: 'Semua produksi selesai - klakson berbunyi 1 detik',
-          duration: 2000,
-        });
+        // Toast removed - silent operation
         
         const klaksonTimer = setTimeout(() => {
           controlRelay('klakson', false);
@@ -1535,16 +1506,10 @@ export const useProductionSequence = (
           onAggregateDeduction(3, -10000); // Bin 3 (BATU 2)
           onAggregateDeduction(4, -10000); // Bin 4
           
-          toast({
-            title: 'Bin Refilled',
-            description: 'Aggregate bins telah diisi ulang ke 10000 kg',
-          });
+          // Toast removed - silent operation
         }, 2000);
 
-        toast({
-          title: 'Produksi Selesai',
-          description: `${jumlahMixing} mixing berhasil diselesaikan`,
-        });
+        // Toast removed - silent operation
         
         // Reset after 2 seconds and call onComplete callback
         const resetTimer = setTimeout(() => {
@@ -1559,16 +1524,10 @@ export const useProductionSequence = (
             controlRelay('mixer', false);
             mixerIdleTimerRef.current = null;
             
-            toast({
-              title: 'Mixer Dimatikan',
-              description: 'Mixer dimatikan setelah 5 menit idle',
-            });
+            // Toast removed - silent operation
           }, 5 * 60 * 1000); // 5 minutes
           
-          toast({
-            title: 'Sistem Siap',
-            description: 'Mixer akan tetap hidup selama 5 menit. Mulai batch baru atau mixer akan mati otomatis.',
-          });
+          // Toast removed - silent operation
           
           // Call completion callback with final weights snapshot
           if (onComplete) {
