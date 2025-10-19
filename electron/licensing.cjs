@@ -1,8 +1,18 @@
-const { machineIdSync } = require('node-machine-id');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const { app } = require('electron');
+
+// Try to load node-machine-id, with fallback if not available
+let machineIdSync;
+try {
+  const nodeMachineId = require('node-machine-id');
+  machineIdSync = nodeMachineId.machineIdSync;
+} catch (error) {
+  console.warn('node-machine-id not available, using fallback hardware ID');
+  machineIdSync = null;
+}
 
 // Secret key for encryption (DO NOT SHARE THIS!)
 const SECRET_KEY = 'LISA-HMI-SECRET-KEY-2025-FARIKA-INDONESIA-BATCHING-PLANT';
@@ -14,8 +24,26 @@ const LICENSE_PREFIX = 'LISA';
  */
 function getHardwareId() {
   try {
-    const machineId = machineIdSync({ original: true });
-    return machineId.toUpperCase();
+    // Try to use node-machine-id if available
+    if (machineIdSync) {
+      const machineId = machineIdSync({ original: true });
+      return machineId.toUpperCase();
+    }
+  } catch (error) {
+    console.warn('node-machine-id failed, using fallback:', error);
+  }
+  
+  // Fallback: Generate stable hardware ID from OS information
+  try {
+    const data = [
+      os.hostname(),
+      os.platform(),
+      os.arch(),
+      os.release()
+    ].join('|');
+    
+    const hash = crypto.createHash('sha256').update(data).digest('hex');
+    return hash.toUpperCase().slice(0, 32);
   } catch (error) {
     console.error('Error getting hardware ID:', error);
     return null;
