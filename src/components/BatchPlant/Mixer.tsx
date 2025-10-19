@@ -101,23 +101,23 @@ export const Mixer = ({
       <g id="discharge-chute">
         {/* Funnel top part connecting to mixer body */}
         <path
-          d="M 65 80 L 60 95 L 60 125 L 90 125 L 90 95 L 85 80 Z"
+          d="M 67 80 L 65 95 L 65 125 L 85 125 L 85 95 L 83 80 Z"
           className="fill-equipment-aggregate stroke-hmi-border"
           strokeWidth="2"
         />
         
         {/* Bottom outlet narrowing */}
         <path
-          d="M 60 125 L 65 140 L 85 140 L 90 125 Z"
+          d="M 65 125 L 68 140 L 82 140 L 85 125 Z"
           className="fill-equipment-aggregate stroke-hmi-border"
           strokeWidth="2"
         />
         
         {/* Chute outlet indicator line */}
         <line
-          x1="65"
+          x1="68"
           y1="140"
-          x2="85"
+          x2="82"
           y2="140"
           className="stroke-hmi-border"
           strokeWidth="3"
@@ -127,9 +127,9 @@ export const Mixer = ({
       
       {/* Door indicator at middle of chute */}
       <rect 
-        x="70" 
+        x="71" 
         y="108" 
-        width="10" 
+        width="8" 
         height="8" 
         className={doorOpen ? "fill-green-500 animate-pulse" : "fill-red-500"} 
         stroke="white" 
