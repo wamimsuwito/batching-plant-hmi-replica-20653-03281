@@ -97,28 +97,18 @@ export const Mixer = ({
         <rect x="125" y="45" width="8" height="30" rx="1" className="fill-equipment-conveyor" transform="rotate(-25 129 60)" />
       </g>
 
-      {/* Extended Chute - Longer discharge funnel */}
+      {/* Discharge Chute - Shortened design */}
       <g id="discharge-chute">
         {/* Funnel top part connecting to mixer body */}
         <path
-          d="M 60 80 L 50 95 L 50 135 L 100 135 L 100 95 L 90 80 Z"
+          d="M 60 80 L 50 95 L 50 125 L 100 125 L 100 95 L 90 80 Z"
           className="fill-equipment-aggregate stroke-hmi-border"
-          strokeWidth="2"
-        />
-        
-        {/* Center vertical chute extension */}
-        <rect
-          x="50"
-          y="135"
-          width="50"
-          height="60"
-          className="fill-equipment-mixer stroke-hmi-border"
           strokeWidth="2"
         />
         
         {/* Bottom outlet narrowing */}
         <path
-          d="M 50 195 L 60 210 L 90 210 L 100 195 Z"
+          d="M 50 125 L 60 140 L 90 140 L 100 125 Z"
           className="fill-equipment-aggregate stroke-hmi-border"
           strokeWidth="2"
         />
@@ -126,9 +116,9 @@ export const Mixer = ({
         {/* Chute outlet indicator line */}
         <line
           x1="60"
-          y1="210"
+          y1="140"
           x2="90"
-          y2="210"
+          y2="140"
           className="stroke-hmi-border"
           strokeWidth="3"
           strokeLinecap="round"
@@ -138,7 +128,7 @@ export const Mixer = ({
       {/* Door indicator at middle of chute */}
       <rect 
         x="68" 
-        y="140" 
+        y="108" 
         width="14" 
         height="8" 
         className={doorOpen ? "fill-green-500 animate-pulse" : "fill-red-500"} 
@@ -149,10 +139,10 @@ export const Mixer = ({
       {/* Door status text and LED */}
       {doorOpen && (
         <>
-          <circle cx="75" cy="144" r="2" className="fill-green-400 animate-pulse" />
+          <circle cx="75" cy="112" r="2" className="fill-green-400 animate-pulse" />
           <text
             x="75"
-            y="160"
+            y="125"
             className="fill-green-400 text-[8px] font-semibold animate-pulse"
             textAnchor="middle"
           >
@@ -164,7 +154,7 @@ export const Mixer = ({
       {!doorOpen && (
         <text
           x="75"
-          y="160"
+          y="125"
           className="fill-red-400 text-[8px] font-semibold"
           textAnchor="middle"
         >
