@@ -25,7 +25,7 @@ export const Mixer = ({
     : 0;
   
   // Circle parameters for progress ring
-  const radius = 35;
+  const radius = 38;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (progressPercentage / 100) * circumference;
   return (
@@ -147,7 +147,18 @@ export const Mixer = ({
       
       {/* Circular timer display */}
       {mixingTimeRemaining > 0 && (
-        <g transform="translate(165, 20)">
+        <g transform="translate(180, -10)">
+          {/* Background box for better visibility */}
+          <rect
+            x="-50"
+            y="-60"
+            width="100"
+            height="130"
+            rx="8"
+            className="fill-slate-900/80 stroke-cyan-500"
+            strokeWidth="2"
+          />
+          
           {/* Background circle */}
           <circle
             cx="0"
