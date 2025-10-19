@@ -101,14 +101,14 @@ export const Mixer = ({
       <g id="discharge-chute">
         {/* Funnel connecting to mixer body */}
         <path
-          d="M 67 80 L 65 90 L 65 105 L 85 105 L 85 90 L 83 80 Z"
+          d="M 67 80 L 65 88 L 65 95 L 85 95 L 85 88 L 83 80 Z"
           className="fill-equipment-aggregate stroke-hmi-border"
           strokeWidth="2"
         />
         
         {/* Bottom outlet */}
         <path
-          d="M 65 105 L 68 115 L 82 115 L 85 105 Z"
+          d="M 65 95 L 68 105 L 82 105 L 85 95 Z"
           className="fill-equipment-aggregate stroke-hmi-border"
           strokeWidth="2"
         />
@@ -116,9 +116,9 @@ export const Mixer = ({
         {/* Chute outlet indicator line */}
         <line
           x1="68"
-          y1="115"
+          y1="105"
           x2="82"
-          y2="115"
+          y2="105"
           className="stroke-hmi-border"
           strokeWidth="3"
           strokeLinecap="round"
@@ -128,9 +128,9 @@ export const Mixer = ({
       {/* Door indicator at middle of chute */}
       <rect 
         x="71" 
-        y="95" 
+        y="90" 
         width="8" 
-        height="6" 
+        height="5" 
         className={doorOpen ? "fill-green-500 animate-pulse" : "fill-red-500"} 
         stroke="white" 
         strokeWidth="2" 
@@ -139,10 +139,10 @@ export const Mixer = ({
       {/* Door status text and LED */}
       {doorOpen && (
         <>
-          <circle cx="75" cy="98" r="2" className="fill-green-400 animate-pulse" />
+          <circle cx="75" cy="92" r="2" className="fill-green-400 animate-pulse" />
           <text
             x="75"
-            y="108"
+            y="101"
             className="fill-green-400 text-[8px] font-semibold animate-pulse"
             textAnchor="middle"
           >
@@ -154,7 +154,7 @@ export const Mixer = ({
       {!doorOpen && (
         <text
           x="75"
-          y="108"
+          y="101"
           className="fill-red-400 text-[8px] font-semibold"
           textAnchor="middle"
         >
