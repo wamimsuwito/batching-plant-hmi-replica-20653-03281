@@ -97,27 +97,27 @@ export const Mixer = ({
         <rect x="125" y="45" width="8" height="30" rx="1" className="fill-equipment-conveyor" transform="rotate(-25 129 60)" />
       </g>
 
-      {/* Discharge Chute - Shortened design */}
+      {/* Discharge Chute - Narrower design */}
       <g id="discharge-chute">
         {/* Funnel top part connecting to mixer body */}
         <path
-          d="M 60 80 L 50 95 L 50 125 L 100 125 L 100 95 L 90 80 Z"
+          d="M 65 80 L 60 95 L 60 125 L 90 125 L 90 95 L 85 80 Z"
           className="fill-equipment-aggregate stroke-hmi-border"
           strokeWidth="2"
         />
         
         {/* Bottom outlet narrowing */}
         <path
-          d="M 50 125 L 60 140 L 90 140 L 100 125 Z"
+          d="M 60 125 L 65 140 L 85 140 L 90 125 Z"
           className="fill-equipment-aggregate stroke-hmi-border"
           strokeWidth="2"
         />
         
         {/* Chute outlet indicator line */}
         <line
-          x1="60"
+          x1="65"
           y1="140"
-          x2="90"
+          x2="85"
           y2="140"
           className="stroke-hmi-border"
           strokeWidth="3"
@@ -127,9 +127,9 @@ export const Mixer = ({
       
       {/* Door indicator at middle of chute */}
       <rect 
-        x="68" 
+        x="70" 
         y="108" 
-        width="14" 
+        width="10" 
         height="8" 
         className={doorOpen ? "fill-green-500 animate-pulse" : "fill-red-500"} 
         stroke="white" 
