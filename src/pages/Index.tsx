@@ -446,7 +446,7 @@ const Index = () => {
           <svg
             width="100%"
             height="100%"
-            viewBox="0 0 1400 650"
+            viewBox="0 0 1200 600"
             preserveAspectRatio="xMidYMid meet"
             className="w-full h-full"
           >

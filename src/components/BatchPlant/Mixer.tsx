@@ -147,7 +147,7 @@ export const Mixer = ({
       
       {/* Circular timer display */}
       {mixingTimeRemaining > 0 && (
-        <g transform="translate(180, -10)">
+        <g transform="translate(120, 50)">
           {/* Background box for better visibility */}
           <rect
             x="-50"
