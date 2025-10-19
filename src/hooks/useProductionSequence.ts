@@ -184,6 +184,12 @@ export const useProductionSequence = (
   const mixerIdleTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastConfigRef = useRef<ProductionConfig | null>(null);
   const finalSnapshotRef = useRef({ pasir: 0, batu: 0, semen: 0, air: 0 });
+  const isPausedRef = useRef(false);
+  const pausedStateSnapshot = useRef<{
+    step: string;
+    weights: any;
+    timers: any;
+  } | null>(null);
 
   // Helper function to add activity log
   const addActivityLog = (message: string) => {
@@ -329,6 +335,98 @@ export const useProductionSequence = (
     intervalsRef.current.push(interval);
   };
 
+  const pauseProduction = () => {
+    console.log('⏸️ PAUSE - Saving current state...');
+    
+    // Simpan snapshot state saat ini
+    pausedStateSnapshot.current = {
+      step: productionState.currentStep,
+      weights: { ...productionState.currentWeights },
+      timers: {
+        mixingTimeRemaining: productionState.mixingTimeRemaining,
+        currentMixing: productionState.currentMixing,
+      }
+    };
+    
+    // Matikan semua relay
+    setComponentStates(initialComponentStates);
+    
+    // Turn off all relays
+    controlRelay('mixer', false);
+    controlRelay('konveyor_atas', false);
+    controlRelay('konveyor_bawah', false);
+    controlRelay('vibrator', false);
+    
+    // Stop semua timer
+    clearAllTimers();
+    
+    isPausedRef.current = true;
+    
+    addActivityLog('⏸️ Produksi di-PAUSE');
+  };
+
+  const resumeProduction = () => {
+    console.log('▶️ RESUME - Continuing from:', pausedStateSnapshot.current);
+    
+    if (!pausedStateSnapshot.current || !lastConfigRef.current) {
+      toast({
+        title: "❌ Error",
+        description: "Tidak ada state untuk di-resume",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    isPausedRef.current = false;
+    
+    const snapshot = pausedStateSnapshot.current;
+    const config = lastConfigRef.current;
+    
+    // Restore state
+    setProductionState(prev => ({
+      ...prev,
+      currentStep: snapshot.step,
+      currentWeights: snapshot.weights,
+      mixingTimeRemaining: snapshot.timers.mixingTimeRemaining,
+      currentMixing: snapshot.timers.currentMixing,
+    }));
+    
+    addActivityLog('▶️ Produksi di-RESUME');
+    
+    // Restart mixer dan belt atas
+    setComponentStates(prev => ({ ...prev, mixer: true, beltAtas: true }));
+    controlRelay('mixer', true);
+    controlRelay('konveyor_atas', true);
+    
+    // Continue dari step terakhir
+    switch (snapshot.step) {
+      case 'weighing':
+        console.log('▶️ Resuming from weighing step');
+        startWeighingWithJogging(config);
+        break;
+      case 'discharging':
+        console.log('▶️ Resuming from discharge step');
+        startDischargeSequence(config);
+        break;
+      case 'mixing':
+        console.log('▶️ Resuming from mixing step');
+        // Set mixing time remaining first, then start mixing
+        setProductionState(prev => ({ 
+          ...prev, 
+          mixingTimeRemaining: snapshot.timers.mixingTimeRemaining 
+        }));
+        startMixing(config);
+        break;
+      case 'door_cycle':
+        console.log('▶️ Resuming from door cycle step');
+        startDoorCycle();
+        break;
+      default:
+        console.log('▶️ Unknown step, restarting from weighing');
+        startWeighingWithJogging(config);
+    }
+  };
+
   const stopProduction = () => {
     clearAllTimers();
     
@@ -337,6 +435,10 @@ export const useProductionSequence = (
       clearTimeout(mixerIdleTimerRef.current);
       mixerIdleTimerRef.current = null;
     }
+    
+    // Reset pause state
+    isPausedRef.current = false;
+    pausedStateSnapshot.current = null;
     
     // Turn off all relays
     controlRelay('mixer', false);
@@ -1593,5 +1695,7 @@ export const useProductionSequence = (
     componentStates,
     startProduction,
     stopProduction,
+    pauseProduction,
+    resumeProduction,
   };
 };

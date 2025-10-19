@@ -24,6 +24,7 @@ import farikaLogo from "@/assets/farika-logo.png";
 
 const Index = () => {
   const [isRunning, setIsRunning] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [isAutoMode, setIsAutoMode] = useState(false); // Auto mode toggle
   const [binGates, setBinGates] = useState([false, false, false, false]);
   const [loginOpen, setLoginOpen] = useState(false);
@@ -223,7 +224,7 @@ const Index = () => {
   const raspberryPi = useRaspberryPi();
 
   // Production sequence hook with Raspberry Pi integration and auto mode
-  const { productionState, componentStates, startProduction, stopProduction } = useProductionSequence(
+  const { productionState, componentStates, startProduction, stopProduction, pauseProduction, resumeProduction } = useProductionSequence(
     handleCementDeduction,
     handleAggregateDeduction,
     handleWaterDeduction,
@@ -334,12 +335,33 @@ const Index = () => {
   );
 
   const handleStart = () => {
-    setIsRunning(true);
-    setProductionStartTime(new Date());
+    if (isPaused) {
+      // Resume dari pause
+      setIsPaused(false);
+      resumeProduction();
+      toast({
+        title: "▶️ Produksi Dilanjutkan",
+        description: "Produksi berjalan kembali",
+      });
+    } else {
+      // Start produksi baru
+      setIsRunning(true);
+      setProductionStartTime(new Date());
+    }
+  };
+
+  const handlePause = () => {
+    setIsPaused(true);
+    pauseProduction();
+    toast({
+      title: "⏸️ Produksi Di-Pause",
+      description: "Klik START untuk melanjutkan",
+    });
   };
   
   const handleStop = () => {
     setIsRunning(false);
+    setIsPaused(false);
     stopProduction();
   };
 
@@ -347,18 +369,7 @@ const Index = () => {
     <div className="min-h-screen bg-hmi-background flex flex-col">
       {/* Header */}
       <header className="bg-hmi-header text-white py-3 px-6 border-b-2 border-hmi-border flex items-center justify-between relative">
-        {/* Logo - Top Left */}
-        <div className="absolute top-2 left-6 flex flex-col items-center">
-          <img 
-            src={farikaLogo} 
-            alt="PT Farika Riau Perkasa Indonesia" 
-            className="w-16 h-16 object-contain"
-          />
-          <p className="text-xs italic text-white/90 mt-1">One Stop Concrete Solution</p>
-        </div>
-        
-        <div className="flex-1 flex items-center gap-3 pl-20">
-        </div>
+        <div className="flex-1"></div>
         <h1 className="text-2xl font-bold text-center tracking-wide flex-1">
           BATCH PLANT CONTROL SYSTEM
         </h1>
@@ -745,13 +756,21 @@ const Index = () => {
           <div className="absolute bottom-4 right-[200px] flex flex-col gap-4 items-center">
             {/* Start and Stop Buttons */}
             <div className="flex gap-4">
-              {/* Start Button */}
+              {/* Start/Pause/Resume Button */}
               <button
-                onClick={() => setBatchStartOpen(true)}
-                disabled={isRunning}
-                className="w-16 h-16 rounded-full bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center border-4 border-green-800 shadow-lg transition-all"
+                onClick={isPaused ? handleStart : (isRunning ? handlePause : () => setBatchStartOpen(true))}
+                disabled={false}
+                className={`w-16 h-16 rounded-full flex items-center justify-center border-4 shadow-lg transition-all ${
+                  isPaused 
+                    ? 'bg-green-600 hover:bg-green-700 border-green-800' 
+                    : isRunning 
+                      ? 'bg-yellow-600 hover:bg-yellow-700 border-yellow-800' 
+                      : 'bg-green-600 hover:bg-green-700 border-green-800'
+                }`}
               >
-                <span className="text-white font-bold text-sm">Start</span>
+                <span className="text-white font-bold text-sm">
+                  {isPaused ? 'RESUME' : (isRunning ? 'PAUSE' : 'Start')}
+                </span>
               </button>
               
               {/* Stop Button */}
@@ -778,6 +797,30 @@ const Index = () => {
                 AUTO: {isAutoMode ? 'ON' : 'OFF'}
               </div>
             </button>
+          </div>
+          {/* Logo Perusahaan - Top Right */}
+          <div className="absolute top-4 right-4 flex flex-col items-center bg-black/20 backdrop-blur-sm border border-white/20 rounded-lg p-2">
+            <img 
+              src={farikaLogo} 
+              alt="PT Farika Riau Perkasa Indonesia" 
+              className="w-12 h-12 object-contain"
+            />
+            <p className="text-[8px] italic text-white/90 mt-1 text-center">One Stop Concrete Solution</p>
+          </div>
+          
+          {/* Raspberry Pi Connection Status - Below Logo */}
+          <div className="absolute top-28 right-4">
+            {raspberryPi.isConnected ? (
+              <div className="flex items-center gap-2 bg-green-900/40 backdrop-blur-sm border border-green-500/50 rounded px-3 py-1">
+                <Wifi className="w-4 h-4 text-green-400" />
+                <span className="text-xs text-green-300 font-semibold">Connected</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 bg-red-900/40 backdrop-blur-sm border border-red-500/50 rounded px-3 py-1">
+                <WifiOff className="w-4 h-4 text-red-400" />
+                <span className="text-xs text-red-300 font-semibold">Disconnected</span>
+              </div>
+            )}
           </div>
           
           {/* Material Weight Indicators - Horizontal on Top Left */}
