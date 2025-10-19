@@ -86,26 +86,29 @@ function decrypt(text) {
  */
 function generateLicenseKey(hardwareId, expiryDate) {
   try {
-    // Create payload: hardwareId|expiryDate
-    const payload = `${hardwareId}|${expiryDate}`;
+    // Normalize date to ISO format (YYYY-MM-DD)
+    const expiryIso = new Date(expiryDate).toISOString().split('T')[0];
     
-    // Encrypt payload
+    // Create payload: hardwareId|expiryDate
+    const payload = `${hardwareId}|${expiryIso}`;
+    
+    // Encrypt payload (returns "ivHex:cipherHex")
     const encrypted = encrypt(payload);
+    
+    // Split iv and cipher
+    const [ivHex, cipherHex] = encrypted.split(':');
     
     // Create checksum
     const checksum = crypto.createHash('md5').update(payload + SECRET_KEY).digest('hex').substring(0, 8);
     
-    // Format: encrypted + checksum
-    const licenseData = encrypted + '|' + checksum;
+    // Format: ivHex|cipherHex|checksum (matching validator expectations)
+    const licenseData = `${ivHex}|${cipherHex}|${checksum}`;
     
-    // Encode to base64 and format with dashes
-    const base64 = Buffer.from(licenseData).toString('base64')
-      .replace(/\+/g, '')
-      .replace(/\//g, '')
-      .replace(/=/g, '');
+    // Encode to base64 WITHOUT modification
+    const base64 = Buffer.from(licenseData).toString('base64');
     
-    // Format: LISA-XXXXX-XXXXX-XXXXX-XXXXX
-    const formatted = base64.match(/.{1,5}/g).slice(0, 4).join('-');
+    // Format with dashes for display only (every 5 characters)
+    const formatted = base64.match(/.{1,5}/g).join('-');
     
     return `${LICENSE_PREFIX}-${formatted}`;
   } catch (error) {
