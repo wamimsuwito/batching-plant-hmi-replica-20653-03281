@@ -122,6 +122,9 @@ function generateLicenseKey(hardwareId, expiryDate) {
  */
 function validateLicenseKey(licenseKey) {
   try {
+    // Normalize input
+    licenseKey = (licenseKey || '').trim();
+
     // Check prefix
     if (!licenseKey.startsWith(LICENSE_PREFIX + '-')) {
       return { valid: false, error: 'Invalid license key format' };
@@ -132,14 +135,24 @@ function validateLicenseKey(licenseKey) {
     
     // Decode from base64
     const licenseData = Buffer.from(base64Part, 'base64').toString('utf8');
+
+    // Support both formats:
+    // - ivHex|cipherHex|checksum  (new)
+    // - ivHex:cipherHex|checksum  (legacy)
+    let ivHex, cipherHex, checksum;
+
     const parts = licenseData.split('|');
-    
-    if (parts.length !== 3) {
+
+    if (parts.length === 3) {
+      [ivHex, cipherHex, checksum] = parts;
+    } else if (parts.length === 2 && parts[0].includes(':')) {
+      [ivHex, cipherHex] = parts[0].split(':');
+      checksum = parts[1];
+    } else {
       return { valid: false, error: 'Invalid license key structure' };
     }
 
-    const encrypted = parts[0] + ':' + parts[1];
-    const checksum = parts[2];
+    const encrypted = `${ivHex}:${cipherHex}`;
     
     // Decrypt payload
     const decrypted = decrypt(encrypted);
