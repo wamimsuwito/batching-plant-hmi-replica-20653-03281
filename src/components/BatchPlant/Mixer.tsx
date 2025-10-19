@@ -162,6 +162,100 @@ export const Mixer = ({
         </text>
       )}
       
+      {/* Concrete dumping animation - when door is open */}
+      {doorOpen && (
+        <g id="concrete-dumping">
+          {/* Top stream - thicker */}
+          <ellipse 
+            cx="75" 
+            cy="110" 
+            rx="10" 
+            ry="15" 
+            className="fill-equipment-aggregate" 
+            opacity="0.8" 
+          >
+            <animate
+              attributeName="opacity"
+              values="0.8;0.5;0.8"
+              dur="0.5s"
+              repeatCount="indefinite"
+            />
+          </ellipse>
+          
+          {/* Middle stream */}
+          <ellipse 
+            cx="75" 
+            cy="125" 
+            rx="8" 
+            ry="13" 
+            className="fill-equipment-aggregate" 
+            opacity="0.7" 
+          >
+            <animate
+              attributeName="opacity"
+              values="0.7;0.4;0.7"
+              dur="0.5s"
+              repeatCount="indefinite"
+              begin="0.15s"
+            />
+          </ellipse>
+          
+          {/* Bottom stream - thinner */}
+          <ellipse 
+            cx="75" 
+            cy="140" 
+            rx="6" 
+            ry="10" 
+            className="fill-equipment-aggregate" 
+            opacity="0.6" 
+          >
+            <animate
+              attributeName="opacity"
+              values="0.6;0.3;0.6"
+              dur="0.5s"
+              repeatCount="indefinite"
+              begin="0.3s"
+            />
+          </ellipse>
+          
+          {/* Left side stream untuk efek lebih realistis */}
+          <ellipse 
+            cx="70" 
+            cy="118" 
+            rx="5" 
+            ry="8" 
+            className="fill-equipment-aggregate" 
+            opacity="0.5" 
+          >
+            <animate
+              attributeName="opacity"
+              values="0.5;0.2;0.5"
+              dur="0.6s"
+              repeatCount="indefinite"
+              begin="0.1s"
+            />
+          </ellipse>
+          
+          {/* Right side stream */}
+          <ellipse 
+            cx="80" 
+            cy="118" 
+            rx="5" 
+            ry="8" 
+            className="fill-equipment-aggregate" 
+            opacity="0.5" 
+          >
+            <animate
+              attributeName="opacity"
+              values="0.5;0.2;0.5"
+              dur="0.6s"
+              repeatCount="indefinite"
+              begin="0.2s"
+            />
+          </ellipse>
+        </g>
+      )}
+      
       {/* Status indicators */}
       {isRunning && (
         <>
