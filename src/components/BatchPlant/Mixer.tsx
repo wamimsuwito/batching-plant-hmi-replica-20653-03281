@@ -25,7 +25,7 @@ export const Mixer = ({
     : 0;
   
   // Circle parameters for progress ring
-  const radius = 38;
+  const radius = 25;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (progressPercentage / 100) * circumference;
   return (
@@ -147,13 +147,13 @@ export const Mixer = ({
       
       {/* Circular timer display - ALWAYS VISIBLE */}
       {(
-        <g transform="translate(120, 50)">
+        <g transform="translate(165, 25)">
           {/* Background box for better visibility */}
           <rect
-            x="-50"
-            y="-60"
-            width="100"
-            height="130"
+            x="-35"
+            y="-40"
+            width="70"
+            height="90"
             rx="8"
             className="fill-slate-900/90 stroke-cyan-500"
             strokeWidth="2"
@@ -177,7 +177,7 @@ export const Mixer = ({
             cy="0"
             r={radius - 5}
             className="fill-none stroke-slate-600"
-            strokeWidth="8"
+            strokeWidth="6"
             opacity="0.3"
           />
           
@@ -187,7 +187,7 @@ export const Mixer = ({
             cy="0"
             r={radius - 5}
             className="fill-none stroke-cyan-500"
-            strokeWidth="8"
+            strokeWidth="6"
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
@@ -202,7 +202,7 @@ export const Mixer = ({
           <text
             x="0"
             y="10"
-            className="fill-white text-4xl font-bold animate-pulse"
+            className="fill-white text-2xl font-bold animate-pulse"
             textAnchor="middle"
             style={{ 
               textShadow: '0 0 10px rgba(0,0,0,0.9)',
@@ -215,8 +215,8 @@ export const Mixer = ({
           {/* Label above circle */}
           <text
             x="0"
-            y="-50"
-            className="fill-white text-[9px] font-semibold"
+            y="-32"
+            className="fill-white text-[7px] font-semibold"
             textAnchor="middle"
           >
             WAKTU MIXING
@@ -225,8 +225,8 @@ export const Mixer = ({
           {/* Mixing count below */}
           <text
             x="0"
-            y="55"
-            className="fill-white text-[10px] font-semibold"
+            y="38"
+            className="fill-white text-[8px] font-semibold"
             textAnchor="middle"
           >
             ✓ {currentMixing}x{totalMixing}
@@ -234,9 +234,9 @@ export const Mixer = ({
           
           {/* Yellow indicator dot */}
           <circle
-            cx="25"
-            cy="-5"
-            r="4"
+            cx="18"
+            cy="-3"
+            r="3"
             className="fill-yellow-400 animate-pulse"
           >
             <animateTransform
