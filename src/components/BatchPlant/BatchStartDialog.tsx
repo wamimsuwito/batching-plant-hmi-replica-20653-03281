@@ -110,6 +110,12 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
         console.error('Error loading relay settings:', error);
       }
     }
+
+    // Load last selected silo
+    const savedSilo = localStorage.getItem('last_selected_silo');
+    if (savedSilo) {
+      setSelectedSilo(savedSilo);
+    }
   }, [open]);
 
   const isFormValid = mutuBeton !== "" && volume !== "" && slump !== "" && selectedSilo !== "" && jumlahMixing !== "";
@@ -197,7 +203,7 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
     setLokasi("");
     setNoKendaraan("");
     setSopir("");
-    setSelectedSilo("");
+    // Don't reset selectedSilo - keep it persistent
     setJumlahMixing("2");
     setMixingTime(defaultMixingTimeRef.current); // Use default from Relay Settings or "10"
   };
@@ -291,7 +297,10 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
               <Label htmlFor="silo-select">
                 Pilih Silo Semen <span className="text-destructive">*</span>
               </Label>
-              <Select value={selectedSilo} onValueChange={setSelectedSilo}>
+              <Select value={selectedSilo} onValueChange={(value) => {
+                setSelectedSilo(value);
+                localStorage.setItem('last_selected_silo', value);
+              }}>
                 <SelectTrigger id="silo-select">
                   <SelectValue placeholder="Pilih silo" />
                 </SelectTrigger>
