@@ -727,6 +727,7 @@ const Index = () => {
               totalMixingTime={currentBatchConfig?.mixingTime || manualTimerDuration}
               currentMixing={productionState.currentMixing}
               totalMixing={productionState.jumlahMixing}
+              isTimerActive={productionState.mixingTimeRemaining > 0}
             />
 
               {/* Pipe to mixer from single weigh hopper */}
@@ -738,57 +739,6 @@ const Index = () => {
 
           </svg>
 
-          {/* Timer Control Panel - ALWAYS VISIBLE */}
-          {showTimerControl && (
-            <div className="absolute top-1/4 right-4 transform -translate-y-1/2 bg-slate-800/95 border-2 border-cyan-500 rounded-lg p-4 shadow-xl backdrop-blur-sm">
-              <div className="flex flex-col gap-3">
-                <div className="text-cyan-400 font-bold text-sm text-center border-b border-cyan-500/30 pb-2">
-                  ⏱️ TIMER CONTROL
-                </div>
-                
-                {/* Input durasi timer */}
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="timer-duration" className="text-white text-xs font-semibold">
-                    Durasi (detik):
-                  </label>
-                  <input
-                    id="timer-duration"
-                    type="number"
-                    min="1"
-                    max="300"
-                    value={manualTimerDuration}
-                    onChange={(e) => setManualTimerDuration(Number(e.target.value))}
-                    className="w-24 px-3 py-2 bg-slate-900 border-2 border-cyan-500/50 rounded text-white text-center font-mono text-lg focus:border-cyan-400 focus:outline-none"
-                  />
-                </div>
-
-                {/* Display current timer value */}
-                <div className="text-center">
-                  <div className="text-xs text-gray-400 mb-1">Preview:</div>
-                  <div className="text-2xl font-bold text-cyan-400 font-mono">
-                    {productionState.mixingTimeRemaining > 0 
-                      ? productionState.mixingTimeRemaining 
-                      : manualTimerDuration}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {productionState.mixingTimeRemaining > 0 ? '(Active)' : '(Standby)'}
-                  </div>
-                </div>
-
-                {/* Status indicator */}
-                <div className="flex items-center justify-center gap-2 mt-2">
-                  <div className={`w-3 h-3 rounded-full ${
-                    productionState.mixingTimeRemaining > 0 
-                      ? 'bg-green-500 animate-pulse' 
-                      : 'bg-gray-500'
-                  }`} />
-                  <span className="text-xs text-gray-400">
-                    {productionState.mixingTimeRemaining > 0 ? 'Mixing' : 'Ready'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
           
           {/* Control Buttons - Right Side */}
           <div className="absolute bottom-4 right-[200px] flex flex-col gap-4 items-center">

@@ -7,6 +7,7 @@ interface MixerProps {
   totalMixingTime?: number;
   currentMixing?: number;
   totalMixing?: number;
+  isTimerActive?: boolean;
 }
 
 export const Mixer = ({ 
@@ -17,7 +18,8 @@ export const Mixer = ({
   mixingTimeRemaining = 0,
   totalMixingTime = 10,
   currentMixing = 1,
-  totalMixing = 2
+  totalMixing = 2,
+  isTimerActive = false
 }: MixerProps) => {
   // Calculate progress percentage for circular timer
   const progressPercentage = totalMixingTime > 0 
@@ -193,8 +195,8 @@ export const Mixer = ({
             strokeDashoffset={strokeDashoffset}
             transform="rotate(-90)"
             style={{ 
-              transition: 'stroke-dashoffset 1s linear',
-              filter: 'drop-shadow(0 0 8px rgba(6, 182, 212, 0.6))'
+              transition: isTimerActive ? 'stroke-dashoffset 1s linear' : 'none',
+              filter: isTimerActive ? 'drop-shadow(0 0 8px rgba(6, 182, 212, 0.6))' : 'none'
             }}
           />
           
@@ -202,7 +204,7 @@ export const Mixer = ({
           <text
             x="0"
             y="10"
-            className="fill-white text-2xl font-bold animate-pulse"
+            className="fill-white text-2xl font-bold"
             textAnchor="middle"
             style={{ 
               textShadow: '0 0 10px rgba(0,0,0,0.9)',
@@ -232,22 +234,24 @@ export const Mixer = ({
             ✓ {currentMixing}x{totalMixing}
           </text>
           
-          {/* Yellow indicator dot */}
-          <circle
-            cx="18"
-            cy="-3"
-            r="3"
-            className="fill-yellow-400 animate-pulse"
-          >
-            <animateTransform
-              attributeName="transform"
-              type="rotate"
-              from="0 0 0"
-              to="360 0 0"
-              dur="2s"
-              repeatCount="indefinite"
-            />
-          </circle>
+          {/* Yellow indicator dot - animate only when active */}
+          {isTimerActive && (
+            <circle
+              cx="18"
+              cy="-3"
+              r="3"
+              className="fill-yellow-400"
+            >
+              <animateTransform
+                attributeName="transform"
+                type="rotate"
+                from="0 0 0"
+                to="360 0 0"
+                dur="2s"
+                repeatCount="indefinite"
+              />
+            </circle>
+          )}
         </g>
       )}
     </g>
