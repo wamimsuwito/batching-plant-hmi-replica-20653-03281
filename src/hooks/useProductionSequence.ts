@@ -302,7 +302,7 @@ export const useProductionSequence = (
   };
 
   // Get relay timing settings
-  const getTimerValue = (relayName: string, timerNum: 1 | 2 | 3 | 4): number => {
+  const getTimerValue = (relayName: string, timerNum: 1 | 2 | 3 | 4 | 5 | 6): number => {
     const relay = relaySettings.find(r => r.name === relayName);
     if (!relay) return 0;
     const value = relay[`timer${timerNum}`];
@@ -1309,50 +1309,78 @@ export const useProductionSequence = (
   const startDoorCycle = () => {
     setProductionState(prev => ({ ...prev, currentStep: 'door_cycle', mixerDoorCycle: 1 }));
     
-    // Toast removed - silent operation
+    // Ambil semua timer values dari localStorage
+    const bukaOn1 = getTimerValue('Pintu mixer buka', 1) || 2000;    // Buka 7cm
+    const bukaDiam1 = getTimerValue('Pintu mixer buka', 2) || 5000;  // Diam di 7cm
+    const bukaOn2 = getTimerValue('Pintu mixer buka', 3) || 2000;    // Buka +17cm = 24cm
+    const bukaDiam2 = getTimerValue('Pintu mixer buka', 4) || 5000;  // Diam di 24cm
+    const bukaOn3 = getTimerValue('Pintu mixer buka', 5) || 2000;    // Buka +6cm = 30cm
+    const bukaDiam3 = getTimerValue('Pintu mixer buka', 6) || 5000;  // Diam di 30cm
+    const tutupDuration = getTimerValue('Pintu mixer tutup', 1) || 4000; // Tutup penuh
 
-    const doorOpen1 = getTimerValue('Pintu mixer buka', 1) || 2000;
-    const doorWait1 = getTimerValue('Pintu mixer buka', 2) || 10000;
-    const doorOpen2 = getTimerValue('Pintu mixer buka', 3) || 2000;
-    const doorWait2 = getTimerValue('Pintu mixer buka', 4) || 10000;
-
-    // First door cycle: Open
+    // ==================== CYCLE 1: Buka 7cm ====================
     setComponentStates(prev => ({ ...prev, mixerDoor: true }));
     controlRelay('pintu_mixer_buka', true);
-    addActivityLog('🚪 Mixer Door OPEN');
+    addActivityLog('🚪 Mixer Door: Opening 7cm (Cycle 1)');
     
-    const closeTimer1 = setTimeout(() => {
-      // Close
-      setComponentStates(prev => ({ ...prev, mixerDoor: false }));
+    const timer1 = setTimeout(() => {
+      // OFF relay BUKA, pintu TETAP TERBUKA di 7cm
       controlRelay('pintu_mixer_buka', false);
-      controlRelay('pintu_mixer_tutup', true);
-      addActivityLog('🚪 Mixer Door CLOSE');
+      addActivityLog('🚪 Mixer Door: Holding at 7cm (DIAM)');
       
-      const waitTimer1 = setTimeout(() => {
-        controlRelay('pintu_mixer_tutup', false);
+      // DIAM 1 - tidak ada relay yang ON, pintu tetap 7cm
+      const timer2 = setTimeout(() => {
         
-        // Second door cycle: Open
+        // ==================== CYCLE 2: Buka +17cm = 24cm ====================
         setProductionState(prev => ({ ...prev, mixerDoorCycle: 2 }));
-        setComponentStates(prev => ({ ...prev, mixerDoor: true }));
         controlRelay('pintu_mixer_buka', true);
+        addActivityLog('🚪 Mixer Door: Opening to 24cm (Cycle 2)');
         
-        const closeTimer2 = setTimeout(() => {
-          // Close
-          setComponentStates(prev => ({ ...prev, mixerDoor: false }));
+        const timer3 = setTimeout(() => {
+          // OFF relay BUKA, pintu TETAP TERBUKA di 24cm
           controlRelay('pintu_mixer_buka', false);
-          controlRelay('pintu_mixer_tutup', true);
+          addActivityLog('🚪 Mixer Door: Holding at 24cm (DIAM)');
           
-          const completeTimer = setTimeout(() => {
-            controlRelay('pintu_mixer_tutup', false);
-            completeProduction();
-          }, doorWait2);
-          addTimer(completeTimer);
-        }, doorOpen2);
-        addTimer(closeTimer2);
-      }, doorWait1);
-      addTimer(waitTimer1);
-    }, doorOpen1);
-    addTimer(closeTimer1);
+          // DIAM 2 - tidak ada relay yang ON, pintu tetap 24cm
+          const timer4 = setTimeout(() => {
+            
+            // ==================== CYCLE 3: Buka +6cm = 30cm FULL ====================
+            setProductionState(prev => ({ ...prev, mixerDoorCycle: 3 }));
+            controlRelay('pintu_mixer_buka', true);
+            addActivityLog('🚪 Mixer Door: Opening FULL 30cm (Cycle 3)');
+            
+            const timer5 = setTimeout(() => {
+              // OFF relay BUKA, pintu TETAP TERBUKA FULL di 30cm
+              controlRelay('pintu_mixer_buka', false);
+              addActivityLog('🚪 Mixer Door: FULL OPEN at 30cm (DIAM)');
+              
+              // DIAM 3 - tidak ada relay yang ON, pintu tetap 30cm
+              const timer6 = setTimeout(() => {
+                
+                // ==================== TUTUP: Tutup dari 30cm ke 0cm ====================
+                setComponentStates(prev => ({ ...prev, mixerDoor: false }));
+                controlRelay('pintu_mixer_tutup', true);
+                addActivityLog('🚪 Mixer Door: CLOSING from 30cm to 0cm');
+                
+                const timer7 = setTimeout(() => {
+                  controlRelay('pintu_mixer_tutup', false);
+                  addActivityLog('🚪 Mixer Door: CLOSED completely');
+                  completeProduction();
+                }, tutupDuration);
+                addTimer(timer7);
+                
+              }, bukaDiam3); // Tunggu Timer 6 (DIAM 3)
+              addTimer(timer6);
+            }, bukaOn3); // Tunggu Timer 5 (Buka 3)
+            addTimer(timer5);
+          }, bukaDiam2); // Tunggu Timer 4 (DIAM 2)
+          addTimer(timer4);
+        }, bukaOn2); // Tunggu Timer 3 (Buka 2)
+        addTimer(timer3);
+      }, bukaDiam1); // Tunggu Timer 2 (DIAM 1)
+      addTimer(timer2);
+    }, bukaOn1); // Tunggu Timer 1 (Buka 1)
+    addTimer(timer1);
   };
 
   const checkAndStartNextMixingWeighing = () => {

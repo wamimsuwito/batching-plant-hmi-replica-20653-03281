@@ -98,9 +98,28 @@ export default function RelaySettings() {
           <CardDescription>
             Konfigurasi Modbus coil address dan timer untuk 24 relay outputs (ARM + 2x ARX).
             <br />
-            <strong>Pintu mixer buka:</strong> Timer 1=Buka1 ON, Timer 2=Buka1 Diam, Timer 3=Buka2 ON, Timer 4=Buka2 Diam, Timer 5=Buka3 ON, Timer 6=Buka3 Diam (dalam ms).
+            <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-md">
+              <strong className="text-yellow-800 dark:text-yellow-200">⚠️ PENTING - Sistem Hidrolik Solenoid Pintu Mixer:</strong>
+              <ul className="list-disc ml-4 mt-2 text-sm space-y-1">
+                <li>
+                  <strong>Pintu Mixer Buka (Relay #14):</strong>
+                  <ul className="list-circle ml-4 mt-1">
+                    <li><strong>Timer 1, 3, 5:</strong> Durasi solenoid BUKA ON (dalam ms) - pintu terbuka bertahap</li>
+                    <li><strong>Timer 2, 4, 6:</strong> Durasi DIAM (solenoid OFF, pintu tetap di posisi terakhir)</li>
+                    <li>Sequence: 7cm → diam → 24cm → diam → 30cm → diam</li>
+                  </ul>
+                </li>
+                <li>
+                  <strong>Pintu Mixer Tutup (Relay #15):</strong>
+                  <ul className="list-circle ml-4 mt-1">
+                    <li><strong>Timer 1:</strong> Durasi solenoid TUTUP ON untuk menutup pintu penuh (dalam ms)</li>
+                    <li>Hanya aktif SETELAH semua siklus buka selesai</li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
             <br />
-            <strong>Pintu mixer tutup:</strong> Timer 1=Durasi relay ON (dalam ms).
+            <strong>Catatan:</strong> Nilai dalam milliseconds (ms). Contoh: 2000 = 2 detik.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -111,12 +130,36 @@ export default function RelaySettings() {
                   <TableHead className="w-[200px]">Nama</TableHead>
                   <TableHead className="w-[100px]">Relay</TableHead>
                   <TableHead className="w-[120px]">Modbus Coil</TableHead>
-                  <TableHead className="w-[120px]">Timer 1 (ms)</TableHead>
-                  <TableHead className="w-[120px]">Timer 2 (ms)</TableHead>
-                  <TableHead className="w-[120px]">Timer 3 (ms)</TableHead>
-                  <TableHead className="w-[120px]">Timer 4 (ms)</TableHead>
-                  <TableHead className="w-[120px]">Timer 5 (ms)</TableHead>
-                  <TableHead className="w-[120px]">Timer 6 (ms)</TableHead>
+                  <TableHead className="w-[120px]">
+                    Timer 1
+                    <br />
+                    <span className="text-xs text-muted-foreground">(Buka 1)</span>
+                  </TableHead>
+                  <TableHead className="w-[120px]">
+                    Timer 2
+                    <br />
+                    <span className="text-xs text-muted-foreground">(Diam 1)</span>
+                  </TableHead>
+                  <TableHead className="w-[120px]">
+                    Timer 3
+                    <br />
+                    <span className="text-xs text-muted-foreground">(Buka 2)</span>
+                  </TableHead>
+                  <TableHead className="w-[120px]">
+                    Timer 4
+                    <br />
+                    <span className="text-xs text-muted-foreground">(Diam 2)</span>
+                  </TableHead>
+                  <TableHead className="w-[120px]">
+                    Timer 5
+                    <br />
+                    <span className="text-xs text-muted-foreground">(Buka 3)</span>
+                  </TableHead>
+                  <TableHead className="w-[120px]">
+                    Timer 6
+                    <br />
+                    <span className="text-xs text-muted-foreground">(Diam 3)</span>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
