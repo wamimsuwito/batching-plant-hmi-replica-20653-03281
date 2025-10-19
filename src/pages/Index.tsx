@@ -780,8 +780,8 @@ const Index = () => {
             </button>
           </div>
           
-          {/* Material Weight Indicators - Stacked on Top Right */}
-          <div className="absolute top-20 right-4 flex flex-col gap-3">
+          {/* Material Weight Indicators - Horizontal on Top Left */}
+          <div className="absolute top-4 left-4 flex flex-row gap-3">
             {/* Pasir */}
             <div className="flex flex-col gap-1">
               {/* Target box */}
