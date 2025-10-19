@@ -779,9 +779,8 @@ const Index = () => {
             </button>
           </div>
           
-          {/* Material Weight Indicators */}
-          <div className="absolute bottom-4 left-4 flex gap-3">
-            {/* Pasir */}
+          {/* Pasir Weight Indicator - Top Right */}
+          <div className="absolute top-20 right-4">
             <div className="flex flex-col gap-1">
               {/* Target box */}
               <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
@@ -802,7 +801,10 @@ const Index = () => {
                 </div>
               </div>
             </div>
-            
+          </div>
+          
+          {/* Material Weight Indicators - Bottom Left */}
+          <div className="absolute bottom-4 left-4 flex gap-3">
             {/* Batu */}
             <div className="flex flex-col gap-1">
               {/* Target box */}
