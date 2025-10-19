@@ -146,11 +146,11 @@ export function ActivationDialog({ open, onActivationSuccess }: ActivationDialog
           <div className="bg-muted/50 border rounded-lg p-4 space-y-2">
             <p className="text-sm font-medium">Need a license key?</p>
             <p className="text-xs text-muted-foreground">
-              Contact PT Farika Riau Perkasa Indonesia:
+              Contact: Wamin Suwito
             </p>
             <div className="text-xs space-y-1 text-muted-foreground">
-              <p>📱 WhatsApp: 081271963847</p>
-              <p>📧 Email: farika@example.com</p>
+              <p>📧 Email: waminsuwito@yahoo.com</p>
+              <p>📱 HP/WhatsApp: 081271963847</p>
             </div>
           </div>
         </div>
