@@ -14,9 +14,16 @@ import { Button } from "@/components/ui/button";
 import { LoginDialog } from "@/components/auth/LoginDialog";
 import { BatchStartDialog } from "@/components/BatchPlant/BatchStartDialog";
 import { SiloFillDialog, SiloData } from "@/components/BatchPlant/SiloFillDialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { PrintTicketDialog, TicketData } from "@/pages/admin/PrintTicket";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogIn, Settings, Package, Wifi, WifiOff } from "lucide-react";
+import { LogIn, Settings, Package, Wifi, WifiOff, HelpCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useProductionSequence } from "@/hooks/useProductionSequence";
 import { useRaspberryPi } from "@/hooks/useRaspberryPi";
@@ -33,6 +40,7 @@ const Index = () => {
   const [printTicketOpen, setPrintTicketOpen] = useState(false);
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
   const [productionStartTime, setProductionStartTime] = useState<Date | null>(null);
+  const [helpDialogOpen, setHelpDialogOpen] = useState(false);
   const [currentBatchConfig, setCurrentBatchConfig] = useState<any>(null);
   const currentBatchConfigRef = useRef<any>(null); // Use ref to persist config in callback
   const [manualTimerDuration, setManualTimerDuration] = useState(10); // Default 10 detik
@@ -421,7 +429,57 @@ const Index = () => {
       </header>
 
       <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
-      <BatchStartDialog 
+
+      {/* Help Dialog */}
+      <AlertDialog open={helpDialogOpen} onOpenChange={setHelpDialogOpen}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-center text-xl">
+              ℹ️ Informasi Developer
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center space-y-3 pt-4">
+              <div className="text-base font-semibold text-foreground">
+                Designed and Created by
+              </div>
+              <div className="text-lg font-bold text-primary">
+                Wamin Suwito
+              </div>
+              <div className="text-sm text-muted-foreground space-y-1">
+                <div className="flex items-center justify-center gap-2">
+                  <span className="font-medium">Email:</span>
+                  <a 
+                    href="mailto:Waminsuwito@yahoo.com" 
+                    className="text-blue-600 hover:underline"
+                  >
+                    Waminsuwito@yahoo.com
+                  </a>
+                </div>
+                <div className="flex items-center justify-center gap-2">
+                  <span className="font-medium">HP/WhatsApp:</span>
+                  <a 
+                    href="https://wa.me/6281271963847" 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-600 hover:underline"
+                  >
+                    081271963847
+                  </a>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex justify-center pt-4">
+            <Button 
+              onClick={() => setHelpDialogOpen(false)}
+              className="w-24"
+            >
+              Tutup
+            </Button>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <BatchStartDialog
         open={batchStartOpen} 
         onOpenChange={setBatchStartOpen}
         onStart={(config) => {
@@ -913,6 +971,15 @@ const Index = () => {
               </div>
             </div>
           </div>
+
+          {/* Help Button - Bottom Right Corner */}
+          <button
+            onClick={() => setHelpDialogOpen(true)}
+            className="absolute bottom-4 right-4 w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center border-2 border-blue-800 shadow-lg transition-all z-50"
+            title="Informasi Developer"
+          >
+            <HelpCircle className="w-6 h-6 text-white" />
+          </button>
           
         </div>
       </main>
