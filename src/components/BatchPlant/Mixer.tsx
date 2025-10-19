@@ -155,8 +155,11 @@ export const Mixer = ({
             width="100"
             height="130"
             rx="8"
-            className="fill-slate-900/80 stroke-cyan-500"
+            className="fill-slate-900/90 stroke-cyan-500"
             strokeWidth="2"
+            style={{
+              filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5))'
+            }}
           />
           
           {/* Background circle */}
@@ -164,7 +167,7 @@ export const Mixer = ({
             cx="0"
             cy="0"
             r={radius}
-            className="fill-slate-800/90 stroke-pink-500"
+            className="fill-slate-800/90 stroke-cyan-500"
             strokeWidth="3"
           />
           
@@ -173,8 +176,9 @@ export const Mixer = ({
             cx="0"
             cy="0"
             r={radius - 5}
-            className="fill-none stroke-slate-700"
-            strokeWidth="6"
+            className="fill-none stroke-slate-600"
+            strokeWidth="8"
+            opacity="0.3"
           />
           
           {/* Progress ring */}
@@ -182,24 +186,28 @@ export const Mixer = ({
             cx="0"
             cy="0"
             r={radius - 5}
-            className="fill-none stroke-pink-500"
-            strokeWidth="6"
+            className="fill-none stroke-cyan-500"
+            strokeWidth="8"
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             transform="rotate(-90)"
             style={{ 
               transition: 'stroke-dashoffset 1s linear',
+              filter: 'drop-shadow(0 0 8px rgba(6, 182, 212, 0.6))'
             }}
           />
           
           {/* Timer countdown number */}
           <text
             x="0"
-            y="8"
-            className="fill-white text-3xl font-bold"
+            y="10"
+            className="fill-white text-4xl font-bold animate-pulse"
             textAnchor="middle"
-            style={{ textShadow: '0 0 5px rgba(0,0,0,0.8)' }}
+            style={{ 
+              textShadow: '0 0 10px rgba(0,0,0,0.9)',
+              fontFamily: 'monospace'
+            }}
           >
             {mixingTimeRemaining}
           </text>
@@ -230,7 +238,16 @@ export const Mixer = ({
             cy="-5"
             r="4"
             className="fill-yellow-400 animate-pulse"
-          />
+          >
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="0 0 0"
+              to="360 0 0"
+              dur="2s"
+              repeatCount="indefinite"
+            />
+          </circle>
         </g>
       )}
     </g>
