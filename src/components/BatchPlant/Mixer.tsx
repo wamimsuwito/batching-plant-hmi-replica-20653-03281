@@ -3,6 +3,7 @@ interface MixerProps {
   y: number;
   isRunning?: boolean;
   doorOpen?: boolean;
+  isDoorMoving?: boolean;
   mixingTimeRemaining?: number;
   totalMixingTime?: number;
   currentMixing?: number;
@@ -14,7 +15,8 @@ export const Mixer = ({
   x, 
   y, 
   isRunning = true, 
-  doorOpen = false, 
+  doorOpen = false,
+  isDoorMoving = false,
   mixingTimeRemaining = 0,
   totalMixingTime = 10,
   currentMixing = 1,
@@ -131,31 +133,62 @@ export const Mixer = ({
         y="90" 
         width="8" 
         height="5" 
-        className={doorOpen ? "fill-green-500 animate-pulse" : "fill-red-500"} 
+        className={isDoorMoving ? "fill-red-500" : "fill-green-500"} 
         stroke="white" 
         strokeWidth="2" 
-      />
+      >
+        {/* Animasi kedip cepat hanya saat bergerak */}
+        {isDoorMoving && (
+          <animate
+            attributeName="opacity"
+            values="1;0.3;1"
+            dur="0.3s"
+            repeatCount="indefinite"
+          />
+        )}
+      </rect>
       
       {/* Door status text and LED */}
-      {doorOpen && (
+      {isDoorMoving && (
         <>
-          <circle cx="75" cy="92" r="2" className="fill-green-400 animate-pulse" />
+          <circle cx="75" cy="92" r="2" className="fill-red-400">
+            <animate
+              attributeName="opacity"
+              values="1;0.3;1"
+              dur="0.3s"
+              repeatCount="indefinite"
+            />
+          </circle>
           <text
             x="75"
             y="101"
-            className="fill-green-400 text-[8px] font-semibold animate-pulse"
+            className="fill-red-400 text-[8px] font-semibold"
             textAnchor="middle"
           >
-            DOOR OPEN
+            {doorOpen ? "OPENING..." : "CLOSING..."}
           </text>
         </>
       )}
       
-      {!doorOpen && (
+      {!isDoorMoving && doorOpen && (
+        <>
+          <circle cx="75" cy="92" r="2" className="fill-green-400" />
+          <text
+            x="75"
+            y="101"
+            className="fill-green-400 text-[8px] font-semibold"
+            textAnchor="middle"
+          >
+            DOOR STANDBY
+          </text>
+        </>
+      )}
+      
+      {!isDoorMoving && !doorOpen && (
         <text
           x="75"
           y="101"
-          className="fill-red-400 text-[8px] font-semibold"
+          className="fill-green-400 text-[8px] font-semibold"
           textAnchor="middle"
         >
           DOOR CLOSED

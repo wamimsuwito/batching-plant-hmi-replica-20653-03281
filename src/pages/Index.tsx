@@ -724,6 +724,7 @@ const Index = () => {
               y={350} 
               isRunning={componentStates.mixer}
               doorOpen={componentStates.mixerDoor}
+              isDoorMoving={productionState.isDoorMoving}
               mixingTimeRemaining={productionState.mixingTimeRemaining || manualTimerDuration}
               totalMixingTime={currentBatchConfig?.mixingTime || manualTimerDuration}
               currentMixing={productionState.currentMixing}
