@@ -47,49 +47,91 @@ export const Mixer = ({
       
       {/* Rotating drum indicator - always visible when running (including during pause) */}
       {isRunning && (
-        <g className="animate-spin-slow" style={{ transformOrigin: '75px 45px' }}>
-          {/* Drum rotation indicator - circular stripes */}
-          <ellipse
-            cx="75"
-            cy="45"
-            rx="50"
-            ry="18"
-            fill="none"
-            stroke="#7f8c8d"
-            strokeWidth="2.5"
-            strokeDasharray="10,6"
-            opacity="0.35"
-          />
+        <>
+          {/* First rotating animation - left side */}
+          <g className="animate-spin-slow" style={{ transformOrigin: '50px 45px' }}>
+            <ellipse
+              cx="50"
+              cy="45"
+              rx="35"
+              ry="15"
+              fill="none"
+              stroke="#7f8c8d"
+              strokeWidth="2"
+              strokeDasharray="8,5"
+              opacity="0.3"
+            />
+            <line 
+              x1="30" 
+              y1="38" 
+              x2="30" 
+              y2="52" 
+              stroke="#7f8c8d" 
+              strokeWidth="1.5" 
+              opacity="0.25" 
+            />
+            <line 
+              x1="50" 
+              y1="33" 
+              x2="50" 
+              y2="57" 
+              stroke="#7f8c8d" 
+              strokeWidth="1.5" 
+              opacity="0.25" 
+            />
+            <line 
+              x1="70" 
+              y1="38" 
+              x2="70" 
+              y2="52" 
+              stroke="#7f8c8d" 
+              strokeWidth="1.5" 
+              opacity="0.25" 
+            />
+          </g>
           
-          {/* Rotation indicator lines - vertical bars */}
-          <line 
-            x1="50" 
-            y1="35" 
-            x2="50" 
-            y2="55" 
-            stroke="#7f8c8d" 
-            strokeWidth="2" 
-            opacity="0.3" 
-          />
-          <line 
-            x1="75" 
-            y1="30" 
-            x2="75" 
-            y2="60" 
-            stroke="#7f8c8d" 
-            strokeWidth="2" 
-            opacity="0.3" 
-          />
-          <line 
-            x1="100" 
-            y1="35" 
-            x2="100" 
-            y2="55" 
-            stroke="#7f8c8d" 
-            strokeWidth="2" 
-            opacity="0.3" 
-          />
-        </g>
+          {/* Second rotating animation - right side */}
+          <g className="animate-spin-slow" style={{ transformOrigin: '100px 45px' }}>
+            <ellipse
+              cx="100"
+              cy="45"
+              rx="35"
+              ry="15"
+              fill="none"
+              stroke="#7f8c8d"
+              strokeWidth="2"
+              strokeDasharray="8,5"
+              opacity="0.3"
+            />
+            <line 
+              x1="80" 
+              y1="38" 
+              x2="80" 
+              y2="52" 
+              stroke="#7f8c8d" 
+              strokeWidth="1.5" 
+              opacity="0.25" 
+            />
+            <line 
+              x1="100" 
+              y1="33" 
+              x2="100" 
+              y2="57" 
+              stroke="#7f8c8d" 
+              strokeWidth="1.5" 
+              opacity="0.25" 
+            />
+            <line 
+              x1="120" 
+              y1="38" 
+              x2="120" 
+              y2="52" 
+              stroke="#7f8c8d" 
+              strokeWidth="1.5" 
+              opacity="0.25" 
+            />
+          </g>
+        </>
       )}
       
       {/* Motor housing left with indicator */}
