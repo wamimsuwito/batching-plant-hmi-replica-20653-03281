@@ -63,25 +63,20 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
           <h2 className="text-center text-base print:text-sm font-bold mb-3 print:mb-2 bg-gray-100 py-1.5 print:py-1">BUKTI TIMBANG (BP-1)</h2>
 
           {/* Info Grid - 2 Columns */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-1 mb-3 print:mb-2 text-xs print:text-[10px]">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1 mb-3 print:mb-2 text-xs print:text-[11px]">
             <div className="space-y-0.5">
-              <div className="flex"><span className="font-semibold w-28">Job Order</span><span>: {ticketData.jobOrder}</span></div>
-              <div className="flex"><span className="font-semibold w-28">Nomor PO</span><span>: {ticketData.nomorPO}</span></div>
               <div className="flex"><span className="font-semibold w-28">Tanggal</span><span>: {ticketData.tanggal}</span></div>
-              <div className="flex"><span className="font-semibold w-28">Nama Pelanggan</span><span>: {ticketData.namaPelanggan}</span></div>
-              <div className="flex"><span className="font-semibold w-28">Lokasi Proyek</span><span>: {ticketData.lokasiProyek}</span></div>
-              <div className="flex"><span className="font-semibold w-28">Mutu Beton</span><span>: {ticketData.mutuBeton}</span></div>
-              <div className="flex"><span className="font-semibold w-28">Slump</span><span>: {ticketData.slump}</span></div>
-              <div className="flex"><span className="font-semibold w-28">Volume</span><span>: {ticketData.volume}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Nama Pelanggan</span><span>: {ticketData.namaPelanggan || '-'}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Lokasi Proyek</span><span>: {ticketData.lokasiProyek || '-'}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Mutu Beton</span><span>: {ticketData.mutuBeton || '-'}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Slump</span><span>: {ticketData.slump || '-'}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Volume</span><span>: {ticketData.volume || '-'}</span></div>
             </div>
             <div className="space-y-0.5">
               <div className="flex"><span className="font-semibold w-28">Jam Mulai</span><span>: {ticketData.jamMulai}</span></div>
               <div className="flex"><span className="font-semibold w-28">Jam Selesai</span><span>: {ticketData.jamSelesai}</span></div>
-              <div className="flex"><span className="font-semibold w-28">Nama Sopir</span><span>: {ticketData.namaSopir}</span></div>
-              <div className="flex"><span className="font-semibold w-28">Nomor Mobil</span><span>: {ticketData.nomorMobil}</span></div>
-              <div className="flex"><span className="font-semibold w-28">Nomor Lambung</span><span>: {ticketData.nomorLambung}</span></div>
-              <div className="flex"><span className="font-semibold w-28">Nomor Ritasi</span><span>: {ticketData.nomorRitasi}</span></div>
-              <div className="flex"><span className="font-semibold w-28">Total Volume</span><span>: {ticketData.totalVolume}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Nama Sopir</span><span>: {ticketData.namaSopir || '-'}</span></div>
+              <div className="flex"><span className="font-semibold w-28">Nomor Mobil</span><span>: {ticketData.nomorMobil || '-'}</span></div>
             </div>
           </div>
 

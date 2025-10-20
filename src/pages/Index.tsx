@@ -334,16 +334,16 @@ const Index = () => {
         tanggal: endTime.toLocaleDateString('id-ID'),
         jamMulai: startTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
         jamSelesai: endTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-        namaPelanggan: batchConfig?.pelanggan || "PT SIDOMUNCUL",
-        lokasiProyek: batchConfig?.lokasi || "Pabrik Baru Pekanbaru",
-        mutuBeton: batchConfig?.mutuBeton || "K300",
-        slump: `${batchConfig?.slump || "12"} cm`,
-        volume: `${volumePerMixing} M³`,
-        namaSopir: batchConfig?.sopir || "UMAR",
-        nomorMobil: batchConfig?.noKendaraan || "BM 0978 VOX",
-        nomorLambung: "FC98",
-        nomorRitasi: `${productionState.currentMixing}`,
-        totalVolume: `${batchConfig?.volume || volumePerMixing} M³`,
+        namaPelanggan: batchConfig?.pelanggan || "",
+        lokasiProyek: batchConfig?.lokasi || "",
+        mutuBeton: batchConfig?.mutuBeton || "",
+        slump: batchConfig?.slump ? `${batchConfig.slump} cm` : "",
+        volume: volumePerMixing ? `${volumePerMixing} M³` : "",
+        namaSopir: batchConfig?.sopir || "",
+        nomorMobil: batchConfig?.noKendaraan || "",
+        nomorLambung: "",
+        nomorRitasi: "",
+        totalVolume: "",
         materials: {
           pasir: {
             target: targetPasir,
@@ -554,8 +554,6 @@ const Index = () => {
       {/* Main HMI Panel */}
       <main className="flex-1 p-4">
         <div className="w-full h-[calc(100vh-80px)] border-4 border-hmi-border bg-hmi-panel relative">
-          {/* Activity Log Panel - TOP LEFT */}
-          <ActivityLogPanel logs={productionState.activityLog} />
           
           <svg
             width="100%"

@@ -188,6 +188,7 @@ export const useProductionSequence = (
   const pausedStateSnapshot = useRef<{
     step: string;
     weights: any;
+    weighingComplete?: any;
     timers: any;
   } | null>(null);
 
@@ -338,15 +339,18 @@ export const useProductionSequence = (
   const pauseProduction = () => {
     console.log('⏸️ PAUSE - Saving current state...');
     
-    // Simpan snapshot state saat ini
+    // Simpan snapshot state saat ini termasuk weighing progress
     pausedStateSnapshot.current = {
       step: productionState.currentStep,
       weights: { ...productionState.currentWeights },
+      weighingComplete: { ...productionState.weighingComplete },
       timers: {
         mixingTimeRemaining: productionState.mixingTimeRemaining,
         currentMixing: productionState.currentMixing,
       }
     };
+    
+    console.log('📸 Saved state on pause:', pausedStateSnapshot.current);
     
     // Matikan semua relay
     setComponentStates(initialComponentStates);
@@ -382,11 +386,12 @@ export const useProductionSequence = (
     const snapshot = pausedStateSnapshot.current;
     const config = lastConfigRef.current;
     
-    // Restore state
+    // Restore state with saved weighing progress
     setProductionState(prev => ({
       ...prev,
       currentStep: snapshot.step,
       currentWeights: snapshot.weights,
+      weighingComplete: snapshot.weighingComplete || prev.weighingComplete,
       mixingTimeRemaining: snapshot.timers.mixingTimeRemaining,
       currentMixing: snapshot.timers.currentMixing,
     }));
@@ -401,7 +406,9 @@ export const useProductionSequence = (
     // Continue dari step terakhir
     switch (snapshot.step) {
       case 'weighing':
-        console.log('▶️ Resuming from weighing step');
+        console.log('▶️ Resuming weighing - weights preserved, continuing');
+        // Just restart weighing - the currentWeights are already restored
+        // Note: This will continue accumulating from current weights
         startWeighingWithJogging(config);
         break;
       case 'discharging':

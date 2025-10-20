@@ -78,28 +78,7 @@ export const Mixer = ({
         </>
       )}
       
-      {/* Twin paddle shafts */}
-      {/* Top shaft with paddles */}
-      <line x1="10" y1="30" x2="140" y2="30" className="stroke-hmi-border" strokeWidth="3" />
-      <g>
-        <rect x="25" y="25" width="8" height="35" rx="1" className="fill-equipment-conveyor" transform="rotate(30 29 42.5)" />
-        <rect x="50" y="20" width="8" height="35" rx="1" className="fill-equipment-conveyor" transform="rotate(-20 54 37.5)" />
-        <rect x="75" y="25" width="8" height="35" rx="1" className="fill-equipment-conveyor" transform="rotate(40 79 42.5)" />
-        <rect x="100" y="20" width="8" height="35" rx="1" className="fill-equipment-conveyor" transform="rotate(-30 104 37.5)" />
-        <rect x="125" y="25" width="8" height="35" rx="1" className="fill-equipment-conveyor" transform="rotate(20 129 42.5)" />
-      </g>
-      
-      {/* Bottom shaft with paddles */}
-      <line x1="10" y1="55" x2="140" y2="55" className="stroke-hmi-border" strokeWidth="3" />
-      <g>
-        <rect x="25" y="45" width="8" height="30" rx="1" className="fill-equipment-conveyor" transform="rotate(-35 29 60)" />
-        <rect x="50" y="48" width="8" height="30" rx="1" className="fill-equipment-conveyor" transform="rotate(25 54 63)" />
-        <rect x="75" y="45" width="8" height="30" rx="1" className="fill-equipment-conveyor" transform="rotate(-40 79 60)" />
-        <rect x="100" y="48" width="8" height="30" rx="1" className="fill-equipment-conveyor" transform="rotate(35 104 63)" />
-        <rect x="125" y="45" width="8" height="30" rx="1" className="fill-equipment-conveyor" transform="rotate(-25 129 60)" />
-      </g>
-
-      {/* Discharge Chute - Compact design */}
+      {/* Discharge Chute - Compact design with animated door */}
       <g id="discharge-chute">
         {/* Funnel connecting to mixer body */}
         <path
@@ -115,16 +94,79 @@ export const Mixer = ({
           strokeWidth="2"
         />
         
-        {/* Chute outlet indicator line */}
-        <line
-          x1="68"
-          y1="105"
-          x2="82"
-          y2="105"
-          className="stroke-hmi-border"
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
+        {/* Door panels - animated when door opens */}
+        {!doorOpen && (
+          <>
+            {/* Left door panel */}
+            <path
+              d="M 65 95 L 68 105 L 75 105 L 75 95 Z"
+              className="fill-equipment-mixer stroke-hmi-border"
+              strokeWidth="1.5"
+            />
+            {/* Right door panel */}
+            <path
+              d="M 75 95 L 75 105 L 82 105 L 85 95 Z"
+              className="fill-equipment-mixer stroke-hmi-border"
+              strokeWidth="1.5"
+            />
+            {/* Center line */}
+            <line
+              x1="75"
+              y1="95"
+              x2="75"
+              y2="105"
+              className="stroke-hmi-border"
+              strokeWidth="2"
+            />
+          </>
+        )}
+        
+        {/* Door opening animation */}
+        {doorOpen && isDoorMoving && (
+          <>
+            {/* Left door panel sliding left */}
+            <path
+              d="M 65 95 L 68 105 L 70 105 L 70 95 Z"
+              className="fill-equipment-mixer stroke-hmi-border"
+              strokeWidth="1.5"
+              opacity="0.5"
+            >
+              <animate
+                attributeName="opacity"
+                values="1;0.3;1"
+                dur="0.4s"
+                repeatCount="indefinite"
+              />
+            </path>
+            {/* Right door panel sliding right */}
+            <path
+              d="M 80 95 L 80 105 L 82 105 L 85 95 Z"
+              className="fill-equipment-mixer stroke-hmi-border"
+              strokeWidth="1.5"
+              opacity="0.5"
+            >
+              <animate
+                attributeName="opacity"
+                values="1;0.3;1"
+                dur="0.4s"
+                repeatCount="indefinite"
+              />
+            </path>
+          </>
+        )}
+        
+        {/* Chute outlet indicator line when fully open */}
+        {doorOpen && !isDoorMoving && (
+          <line
+            x1="68"
+            y1="105"
+            x2="82"
+            y2="105"
+            className="stroke-green-500"
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+        )}
       </g>
       
       {/* Door indicator at middle of chute */}

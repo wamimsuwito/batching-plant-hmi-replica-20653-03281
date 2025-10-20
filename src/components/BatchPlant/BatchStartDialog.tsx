@@ -187,10 +187,10 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
       mutuBeton,
       volume: batchVolume,
       slump,
-      pelanggan: pelanggan || "PT SIDOMUNCUL",
-      lokasi: lokasi || "Pabrik Baru Pekanbaru",
-      noKendaraan: noKendaraan || "BM 0978 VOX",
-      sopir: sopir || "UMAR",
+      pelanggan: pelanggan || "",
+      lokasi: lokasi || "",
+      noKendaraan: noKendaraan || "",
+      sopir: sopir || "",
     });
 
     onOpenChange(false);
