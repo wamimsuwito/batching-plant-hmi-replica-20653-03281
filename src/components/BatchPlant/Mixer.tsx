@@ -56,37 +56,37 @@ export const Mixer = ({
               rx="35"
               ry="15"
               fill="none"
-              stroke="#7f8c8d"
+              stroke="#ef4444"
               strokeWidth="2"
               strokeDasharray="8,5"
-              opacity="0.3"
+              opacity="0.6"
             />
             <line 
               x1="30" 
               y1="38" 
               x2="30" 
               y2="52" 
-              stroke="#7f8c8d" 
+              stroke="#ef4444" 
               strokeWidth="1.5" 
-              opacity="0.25" 
+              opacity="0.5" 
             />
             <line 
               x1="50" 
               y1="33" 
               x2="50" 
               y2="57" 
-              stroke="#7f8c8d" 
+              stroke="#ef4444" 
               strokeWidth="1.5" 
-              opacity="0.25" 
+              opacity="0.5" 
             />
             <line 
               x1="70" 
               y1="38" 
               x2="70" 
               y2="52" 
-              stroke="#7f8c8d" 
+              stroke="#ef4444" 
               strokeWidth="1.5" 
-              opacity="0.25" 
+              opacity="0.5" 
             />
           </g>
           
@@ -98,37 +98,37 @@ export const Mixer = ({
               rx="35"
               ry="15"
               fill="none"
-              stroke="#7f8c8d"
+              stroke="#ef4444"
               strokeWidth="2"
               strokeDasharray="8,5"
-              opacity="0.3"
+              opacity="0.6"
             />
             <line 
               x1="80" 
               y1="38" 
               x2="80" 
               y2="52" 
-              stroke="#7f8c8d" 
+              stroke="#ef4444" 
               strokeWidth="1.5" 
-              opacity="0.25" 
+              opacity="0.5" 
             />
             <line 
               x1="100" 
               y1="33" 
               x2="100" 
               y2="57" 
-              stroke="#7f8c8d" 
+              stroke="#ef4444" 
               strokeWidth="1.5" 
-              opacity="0.25" 
+              opacity="0.5" 
             />
             <line 
               x1="120" 
               y1="38" 
               x2="120" 
               y2="52" 
-              stroke="#7f8c8d" 
+              stroke="#ef4444" 
               strokeWidth="1.5" 
-              opacity="0.25" 
+              opacity="0.5" 
             />
           </g>
         </>
