@@ -127,7 +127,9 @@ export function ActivationDialog({ open, onActivationSuccess }: ActivationDialog
               placeholder="LISA-XXXXX-XXXXX-XXXXX-XXXXX"
               value={licenseKey}
               onChange={(e) => {
-                setLicenseKey(e.target.value.toUpperCase());
+                const raw = e.target.value;
+                const sanitized = raw.replace(/\s/g, '');
+                setLicenseKey(sanitized);
                 setError('');
               }}
               onKeyPress={handleKeyPress}

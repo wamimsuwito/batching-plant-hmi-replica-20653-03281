@@ -132,9 +132,10 @@ function validateLicenseKey(licenseKey) {
 
     // Remove prefix and dashes
     const base64Part = licenseKey.substring(LICENSE_PREFIX.length + 1).replace(/-/g, '');
+    const base64Sanitized = base64Part.replace(/\s/g, '');
     
     // Decode from base64
-    const licenseData = Buffer.from(base64Part, 'base64').toString('utf8');
+    const licenseData = Buffer.from(base64Sanitized, 'base64').toString('utf8');
 
     // Support both formats:
     // - ivHex|cipherHex|checksum  (new)
