@@ -26,8 +26,7 @@ const App = () => {
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
+        {/* Toast notifications disabled for cleaner HMI display */}
         <Router>
           <Routes>
             <Route path="/" element={<Index />} />

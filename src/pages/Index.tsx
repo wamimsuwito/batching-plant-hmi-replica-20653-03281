@@ -554,6 +554,8 @@ const Index = () => {
       {/* Main HMI Panel */}
       <main className="flex-1 p-4">
         <div className="w-full h-[calc(100vh-80px)] border-4 border-hmi-border bg-hmi-panel relative">
+          {/* Activity Log Panel - BOTTOM LEFT (dikembalikan) */}
+          <ActivityLogPanel logs={productionState.activityLog} />
           
           <svg
             width="100%"
