@@ -52,42 +52,42 @@ export const Mixer = ({
           <ellipse
             cx="75"
             cy="45"
-            rx="60"
-            ry="25"
+            rx="50"
+            ry="18"
             fill="none"
             stroke="#7f8c8d"
-            strokeWidth="3"
-            strokeDasharray="12,8"
-            opacity="0.4"
+            strokeWidth="2.5"
+            strokeDasharray="10,6"
+            opacity="0.35"
           />
           
           {/* Rotation indicator lines - vertical bars */}
           <line 
-            x1="40" 
-            y1="30" 
-            x2="40" 
-            y2="60" 
+            x1="50" 
+            y1="35" 
+            x2="50" 
+            y2="55" 
             stroke="#7f8c8d" 
-            strokeWidth="2.5" 
-            opacity="0.35" 
+            strokeWidth="2" 
+            opacity="0.3" 
           />
           <line 
             x1="75" 
-            y1="25" 
-            x2="75" 
-            y2="65" 
-            stroke="#7f8c8d" 
-            strokeWidth="2.5" 
-            opacity="0.35" 
-          />
-          <line 
-            x1="110" 
             y1="30" 
-            x2="110" 
+            x2="75" 
             y2="60" 
             stroke="#7f8c8d" 
-            strokeWidth="2.5" 
-            opacity="0.35" 
+            strokeWidth="2" 
+            opacity="0.3" 
+          />
+          <line 
+            x1="100" 
+            y1="35" 
+            x2="100" 
+            y2="55" 
+            stroke="#7f8c8d" 
+            strokeWidth="2" 
+            opacity="0.3" 
           />
         </g>
       )}
