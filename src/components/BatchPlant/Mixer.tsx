@@ -45,6 +45,53 @@ export const Mixer = ({
         strokeWidth="3"
       />
       
+      {/* Rotating drum indicator - always visible when running (including during pause) */}
+      {isRunning && (
+        <g className="animate-spin-slow" style={{ transformOrigin: '75px 45px' }}>
+          {/* Drum rotation indicator - circular stripes */}
+          <ellipse
+            cx="75"
+            cy="45"
+            rx="60"
+            ry="25"
+            fill="none"
+            stroke="#7f8c8d"
+            strokeWidth="3"
+            strokeDasharray="12,8"
+            opacity="0.4"
+          />
+          
+          {/* Rotation indicator lines - vertical bars */}
+          <line 
+            x1="40" 
+            y1="30" 
+            x2="40" 
+            y2="60" 
+            stroke="#7f8c8d" 
+            strokeWidth="2.5" 
+            opacity="0.35" 
+          />
+          <line 
+            x1="75" 
+            y1="25" 
+            x2="75" 
+            y2="65" 
+            stroke="#7f8c8d" 
+            strokeWidth="2.5" 
+            opacity="0.35" 
+          />
+          <line 
+            x1="110" 
+            y1="30" 
+            x2="110" 
+            y2="60" 
+            stroke="#7f8c8d" 
+            strokeWidth="2.5" 
+            opacity="0.35" 
+          />
+        </g>
+      )}
+      
       {/* Motor housing left with indicator */}
       <rect
         x="-25"

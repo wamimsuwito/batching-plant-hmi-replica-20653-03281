@@ -48,7 +48,7 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
         <DialogTitle className="sr-only">Tiket Produksi</DialogTitle>
         <div className="bg-white text-black p-4 print:p-4">
           {/* Header */}
-          <div className="flex items-center gap-3 border-b-2 border-black pb-2 mb-3 print:pb-2 print:mb-2">
+          <div className="flex items-center gap-3 border-b-[3px] border-black pb-2 mb-3 print:pb-2 print:mb-2">
             <img src={farikaLogo} alt="PT Farika Logo" className="w-16 h-16 print:w-14 print:h-14" />
             <div className="flex-1">
               <h1 className="text-lg print:text-base font-bold">PT. FARIKA RIAU PERKASA</h1>
@@ -83,45 +83,45 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
           {/* Material Table */}
           <div className="mb-3 print:mb-2">
             <h3 className="text-center text-xs print:text-[10px] font-semibold mb-1.5 print:mb-1">Aktual penimbangan (Kg)</h3>
-            <table className="w-full border-2 border-black text-xs print:text-[10px]">
+            <table className="w-full border-[2.5px] border-black text-xs print:text-[11px]">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="border-2 border-black p-1.5 print:p-1 text-left font-bold">Material</th>
-                  <th className="border-2 border-black p-1.5 print:p-1 text-center font-bold">Target</th>
-                  <th className="border-2 border-black p-1.5 print:p-1 text-center font-bold">Realisasi</th>
-                  <th className="border-2 border-black p-1.5 print:p-1 text-center font-bold">Deviasi</th>
+                  <th className="border-[2.5px] border-black p-1.5 print:p-1 text-left font-bold">Material</th>
+                  <th className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold">Target</th>
+                  <th className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold">Realisasi</th>
+                  <th className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold">Deviasi</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td className="border-2 border-black p-1.5 print:p-1 font-semibold">Pasir</td>
-                  <td className="border-2 border-black p-1.5 print:p-1 text-center">{ticketData.materials.pasir.target}</td>
-                  <td className="border-2 border-black p-1.5 print:p-1 text-center">{ticketData.materials.pasir.realisasi}</td>
-                  <td className={`border-2 border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.pasir.deviasi < 0 ? 'text-red-600' : ''}`}>
+                  <td className="border-[2.5px] border-black p-1.5 print:p-1 font-semibold">Pasir</td>
+                  <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.pasir.target}</td>
+                  <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.pasir.realisasi}</td>
+                  <td className={`border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.pasir.deviasi < 0 ? 'text-red-600' : ''}`}>
                     {ticketData.materials.pasir.deviasi > 0 ? '+' : ''}{ticketData.materials.pasir.deviasi}
                   </td>
                 </tr>
                 <tr>
-                  <td className="border-2 border-black p-1.5 print:p-1 font-semibold">Batu</td>
-                  <td className="border-2 border-black p-1.5 print:p-1 text-center">{ticketData.materials.batu.target}</td>
-                  <td className="border-2 border-black p-1.5 print:p-1 text-center">{ticketData.materials.batu.realisasi}</td>
-                  <td className={`border-2 border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.batu.deviasi < 0 ? 'text-red-600' : ''}`}>
+                  <td className="border-[2.5px] border-black p-1.5 print:p-1 font-semibold">Batu</td>
+                  <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.batu.target}</td>
+                  <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.batu.realisasi}</td>
+                  <td className={`border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.batu.deviasi < 0 ? 'text-red-600' : ''}`}>
                     {ticketData.materials.batu.deviasi > 0 ? '+' : ''}{ticketData.materials.batu.deviasi}
                   </td>
                 </tr>
                 <tr>
-                  <td className="border-2 border-black p-1.5 print:p-1 font-semibold">Semen</td>
-                  <td className="border-2 border-black p-1.5 print:p-1 text-center">{ticketData.materials.semen.target}</td>
-                  <td className="border-2 border-black p-1.5 print:p-1 text-center">{ticketData.materials.semen.realisasi}</td>
-                  <td className={`border-2 border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.semen.deviasi < 0 ? 'text-red-600' : ''}`}>
+                  <td className="border-[2.5px] border-black p-1.5 print:p-1 font-semibold">Semen</td>
+                  <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.semen.target}</td>
+                  <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.semen.realisasi}</td>
+                  <td className={`border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.semen.deviasi < 0 ? 'text-red-600' : ''}`}>
                     {ticketData.materials.semen.deviasi > 0 ? '+' : ''}{ticketData.materials.semen.deviasi}
                   </td>
                 </tr>
                 <tr>
-                  <td className="border-2 border-black p-1.5 print:p-1 font-semibold">Air</td>
-                  <td className="border-2 border-black p-1.5 print:p-1 text-center">{ticketData.materials.air.target}</td>
-                  <td className="border-2 border-black p-1.5 print:p-1 text-center">{ticketData.materials.air.realisasi}</td>
-                  <td className={`border-2 border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.air.deviasi < 0 ? 'text-red-600' : ''}`}>
+                  <td className="border-[2.5px] border-black p-1.5 print:p-1 font-semibold">Air</td>
+                  <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.air.target}</td>
+                  <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.air.realisasi}</td>
+                  <td className={`border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.air.deviasi < 0 ? 'text-red-600' : ''}`}>
                     {ticketData.materials.air.deviasi > 0 ? '+' : ''}{ticketData.materials.air.deviasi}
                   </td>
                 </tr>
