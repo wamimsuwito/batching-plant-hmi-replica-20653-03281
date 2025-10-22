@@ -49,85 +49,127 @@ export const Mixer = ({
       {isRunning && (
         <>
           {/* First rotating animation - left side */}
-          <g className="animate-spin-slow" style={{ transformOrigin: '50px 45px' }}>
+          <g className="animate-spin-slow" style={{ transformOrigin: '40px 45px' }}>
             <ellipse
-              cx="50"
+              cx="40"
               cy="45"
-              rx="35"
-              ry="15"
+              rx="28"
+              ry="12"
               fill="none"
               stroke="#ef4444"
-              strokeWidth="2"
+              strokeWidth="2.5"
               strokeDasharray="8,5"
               opacity="0.6"
             />
             <line 
-              x1="30" 
-              y1="38" 
-              x2="30" 
-              y2="52" 
+              x1="25" 
+              y1="40" 
+              x2="25" 
+              y2="50" 
               stroke="#ef4444" 
-              strokeWidth="1.5" 
+              strokeWidth="2.5" 
               opacity="0.5" 
             />
             <line 
-              x1="50" 
-              y1="33" 
-              x2="50" 
-              y2="57" 
+              x1="40" 
+              y1="36" 
+              x2="40" 
+              y2="54" 
               stroke="#ef4444" 
-              strokeWidth="1.5" 
+              strokeWidth="2.5" 
               opacity="0.5" 
             />
             <line 
-              x1="70" 
-              y1="38" 
-              x2="70" 
-              y2="52" 
+              x1="55" 
+              y1="40" 
+              x2="55" 
+              y2="50" 
               stroke="#ef4444" 
-              strokeWidth="1.5" 
+              strokeWidth="2.5" 
               opacity="0.5" 
             />
           </g>
           
-          {/* Second rotating animation - right side */}
-          <g className="animate-spin-slow" style={{ transformOrigin: '100px 45px' }}>
+          {/* Second rotating animation - center */}
+          <g className="animate-spin-slow" style={{ transformOrigin: '75px 45px' }}>
             <ellipse
-              cx="100"
+              cx="75"
               cy="45"
-              rx="35"
-              ry="15"
+              rx="28"
+              ry="12"
               fill="none"
               stroke="#ef4444"
-              strokeWidth="2"
+              strokeWidth="2.5"
               strokeDasharray="8,5"
               opacity="0.6"
             />
             <line 
-              x1="80" 
-              y1="38" 
-              x2="80" 
-              y2="52" 
+              x1="60" 
+              y1="40" 
+              x2="60" 
+              y2="50" 
               stroke="#ef4444" 
-              strokeWidth="1.5" 
+              strokeWidth="2.5" 
               opacity="0.5" 
             />
             <line 
-              x1="100" 
-              y1="33" 
-              x2="100" 
-              y2="57" 
+              x1="75" 
+              y1="36" 
+              x2="75" 
+              y2="54" 
               stroke="#ef4444" 
-              strokeWidth="1.5" 
+              strokeWidth="2.5" 
               opacity="0.5" 
             />
             <line 
-              x1="120" 
-              y1="38" 
-              x2="120" 
-              y2="52" 
+              x1="90" 
+              y1="40" 
+              x2="90" 
+              y2="50" 
               stroke="#ef4444" 
-              strokeWidth="1.5" 
+              strokeWidth="2.5" 
+              opacity="0.5" 
+            />
+          </g>
+          
+          {/* Third rotating animation - right side */}
+          <g className="animate-spin-slow" style={{ transformOrigin: '110px 45px' }}>
+            <ellipse
+              cx="110"
+              cy="45"
+              rx="28"
+              ry="12"
+              fill="none"
+              stroke="#ef4444"
+              strokeWidth="2.5"
+              strokeDasharray="8,5"
+              opacity="0.6"
+            />
+            <line 
+              x1="95" 
+              y1="40" 
+              x2="95" 
+              y2="50" 
+              stroke="#ef4444" 
+              strokeWidth="2.5" 
+              opacity="0.5" 
+            />
+            <line 
+              x1="110" 
+              y1="36" 
+              x2="110" 
+              y2="54" 
+              stroke="#ef4444" 
+              strokeWidth="2.5" 
+              opacity="0.5" 
+            />
+            <line 
+              x1="125" 
+              y1="40" 
+              x2="125" 
+              y2="50" 
+              stroke="#ef4444" 
+              strokeWidth="2.5" 
               opacity="0.5" 
             />
           </g>
@@ -326,8 +368,8 @@ export const Mixer = ({
         </text>
       )}
       
-      {/* Concrete dumping animation - when door is open */}
-      {doorOpen && (
+      {/* Concrete dumping animation - when door is open or moving */}
+      {(doorOpen || isDoorMoving) && (
         <g id="concrete-dumping">
           {/* Top stream - thicker */}
           <ellipse 

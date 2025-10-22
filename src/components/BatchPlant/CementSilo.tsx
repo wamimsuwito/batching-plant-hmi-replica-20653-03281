@@ -87,10 +87,10 @@ export const CementSilo = ({
         x="20"
         y="80"
         textAnchor="middle"
-        className="fill-white text-xl font-bold"
+        className="fill-white text-base font-bold"
         style={{ textShadow: '0 0 3px rgba(0,0,0,0.8)' }}
       >
-        {(currentVolume / 1000).toFixed(0)} T
+        {(currentVolume / 1000).toFixed(2)} T
       </text>
       
       {/* Label */}

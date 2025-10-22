@@ -130,7 +130,7 @@ export const StorageBin = ({
         className="fill-hmi-border text-[10px]"
         textAnchor="middle"
       >
-        {fillLevel}%
+        {fillLevel.toFixed(2)}%
       </text>
     </g>
   );

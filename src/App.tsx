@@ -12,6 +12,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import JobMixFormula from "./pages/admin/JobMixFormula";
 import MixingSequence from "./pages/admin/MixingSequence";
 import RelaySettings from "./pages/admin/RelaySettings";
+import Settings from "./pages/admin/Settings";
 import UserManagement from "./pages/admin/UserManagement";
 import MaterialJogging from "./pages/admin/MaterialJogging";
 import ProductionDatabase from "./pages/admin/ProductionDatabase";
@@ -41,6 +42,7 @@ const App = () => {
               <Route path="job-mix-formula" element={<JobMixFormula />} />
               <Route path="mixing-sequence" element={<MixingSequence />} />
               <Route path="relay-settings" element={<RelaySettings />} />
+              <Route path="settings" element={<Settings />} />
               <Route path="user-management" element={<UserManagement />} />
               <Route path="material-jogging" element={<MaterialJogging />} />
               <Route path="production-database" element={<ProductionDatabase />} />

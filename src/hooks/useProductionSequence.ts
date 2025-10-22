@@ -1250,8 +1250,7 @@ export const useProductionSequence = (
           };
         });
         
-        // ✅ Check if all materials discharged, then start weighing for next mixing
-        checkAndStartNextMixingWeighing();
+        // ✅ REMOVED: checkAndStartNextMixingWeighing() - weighing now starts in completeProduction()
       }, dischargeDuration);
       addTimer(clearTimer);
     } else if (material === 'semen') {
@@ -1314,8 +1313,7 @@ export const useProductionSequence = (
           };
         });
         
-        // ✅ Check if all materials discharged, then start weighing for next mixing
-        checkAndStartNextMixingWeighing();
+        // ✅ REMOVED: checkAndStartNextMixingWeighing() - weighing now starts in completeProduction()
       }, dischargeDuration);
       addTimer(clearTimer);
       
@@ -1382,8 +1380,7 @@ export const useProductionSequence = (
           };
         });
         
-        // ✅ Check if all materials discharged, then start weighing for next mixing
-        checkAndStartNextMixingWeighing();
+        // ✅ REMOVED: checkAndStartNextMixingWeighing() - weighing now starts in completeProduction()
       }, dischargeDuration);
       addTimer(clearTimer);
     }
@@ -1514,37 +1511,31 @@ export const useProductionSequence = (
     addTimer(timer1);
   };
 
-  // ⚠️ DEPRECATED: Function no longer used - weighing for next cycle now starts in completeProduction()
+  // ⚠️ DEPRECATED & COMMENTED OUT: Function no longer used - weighing for next cycle now starts in completeProduction()
   // after mixer door is fully closed, ensuring proper sequential operation
-  // ✅ NEW: Check if all materials discharged, then start weighing for next mixing
-  // But do NOT discharge yet - wait for mixer door to close
+  /*
   const checkAndStartNextMixingWeighing = () => {
     setProductionState(prev => {
       const { dischargedMaterialsCount, totalMaterialsToDischarge, currentMixing, jumlahMixing, nextMixingReady, currentStep } = prev;
       
-      // Cek apakah semua material sudah discharge DAN penimbangan berikutnya belum jalan
       if (dischargedMaterialsCount >= totalMaterialsToDischarge && !nextMixingReady && currentStep !== 'complete') {
         if (currentMixing < jumlahMixing) {
           console.log(`🔄 All materials discharged! Starting WEIGHING (NOT discharge) for Mixing ${currentMixing + 1}`);
           console.log(`⏸️  Material will wait to discharge until mixer door closes`);
           
-          // Refill aggregate bins SEBELUM penimbangan berikutnya
           console.log('🔄 Refilling aggregate bins for next mixing...');
           onAggregateDeduction(1, -10000);
           onAggregateDeduction(2, -10000);
           onAggregateDeduction(3, -10000);
           onAggregateDeduction(4, -10000);
           
-          // Mulai penimbangan mixing berikutnya
           setTimeout(() => {
             if (lastConfigRef.current) {
               console.log(`✅ Starting Weighing Cycle ${currentMixing + 1} (discharge will wait)`);
               
-              // Turn on belt atas (cement conveyor)
               setComponentStates(prevStates => ({ ...prevStates, beltAtas: true }));
               controlRelay('konveyor_atas', true);
 
-              // Turn on selected silos
               setComponentStates(prevStates => ({
                 ...prevStates,
                 siloValves: prevStates.siloValves.map((_, idx) => 
@@ -1553,16 +1544,14 @@ export const useProductionSequence = (
               }));
               lastConfigRef.current.selectedSilos.forEach(id => controlRelay(`silo_${id}`, true));
 
-              // Start weighing with jogging
               startWeighingWithJogging(lastConfigRef.current);
             }
           }, 1000);
           
-          // Update state dengan nextMixingReady = true dan isWaitingForMixer = true
           return {
             ...prev,
             nextMixingReady: true,
-            isWaitingForMixer: true, // Block discharge until mixer ready
+            isWaitingForMixer: true,
           };
         }
       }
@@ -1570,6 +1559,7 @@ export const useProductionSequence = (
       return prev;
     });
   };
+  */
 
   const completeProduction = () => {
     // ✅ NEW FIX: Use setState callback to get latest state
@@ -1666,6 +1656,44 @@ export const useProductionSequence = (
       } else {
         // All mixing cycles complete
         console.log(`✅ Semua mixing selesai (${jumlahMixing} mixing)`);
+        
+        // 📝 SAVE PRODUCTION RECORD TO DATABASE
+        try {
+          const today = new Date().toISOString().split('T')[0];
+          const storageKey = `productionHistory_${today}`;
+          
+          // Load existing records for today
+          const existingData = localStorage.getItem(storageKey);
+          const existingRecords = existingData ? JSON.parse(existingData) : [];
+          
+          // Create production record
+          const productionRecord = {
+            id: `prod_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            timestamp: new Date().toISOString(),
+            mixingNumber: jumlahMixing,
+            totalMixings: jumlahMixing,
+            materials: {
+              pasir1: prev.targetWeights.pasir1,
+              pasir2: prev.targetWeights.pasir2,
+              batu1: prev.targetWeights.batu1,
+              batu2: prev.targetWeights.batu2,
+              semen: prev.targetWeights.semen,
+              air: prev.targetWeights.air,
+              additive: prev.targetWeights.additive,
+            },
+            mixingTime: lastConfigRef.current?.mixingTime || 0,
+            status: 'completed' as const,
+          };
+          
+          // Add new record
+          existingRecords.push(productionRecord);
+          
+          // Save back to localStorage
+          localStorage.setItem(storageKey, JSON.stringify(existingRecords));
+          console.log('📝 Production record saved:', productionRecord);
+        } catch (error) {
+          console.error('❌ Error saving production record:', error);
+        }
         
         // AKTIVASI KLAKSON - 1 detik
         console.log('🔔 Activating klakson for 1 second');
