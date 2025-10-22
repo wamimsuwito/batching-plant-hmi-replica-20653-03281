@@ -16,7 +16,7 @@ interface SettingsConfig {
 
 const defaultSettings: SettingsConfig = {
   wetMixKumulatif1Hopper: false,
-  wetMix2Hopper: false,
+  wetMix2Hopper: true,
   wetMixKumulatifMinus: false,
   waitingHopper: false,
   printPreview: false,
