@@ -84,6 +84,16 @@ export default function ProductionDatabase() {
       return;
     }
 
+    // Helper function to escape CSV values properly
+    const escapeCSV = (value: any): string => {
+      const str = String(value);
+      // If value contains comma, newline, or double quotes, wrap in quotes and escape internal quotes
+      if (str.includes(',') || str.includes('\n') || str.includes('"')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
     const headers = [
       'Timestamp',
       'Mixing',
@@ -99,25 +109,34 @@ export default function ProductionDatabase() {
       'Status'
     ];
 
-    const csvContent = [
-      headers.join(','),
-      ...filteredRecords.map(record => [
-        record.timestamp,
-        record.mixingNumber,
-        record.totalMixings,
-        record.materials.pasir1,
-        record.materials.pasir2,
-        record.materials.batu1,
-        record.materials.batu2,
-        record.materials.semen,
-        record.materials.air,
-        record.materials.additive,
-        record.mixingTime,
-        record.status
-      ].join(','))
-    ].join('\n');
+    const csvRows = [
+      headers.join(','), // Header row
+      ...filteredRecords.map(record => {
+        // Create array of values in exact order as headers
+        const row = [
+          escapeCSV(record.timestamp),
+          escapeCSV(record.mixingNumber),
+          escapeCSV(record.totalMixings),
+          escapeCSV(record.materials.pasir1 || 0),
+          escapeCSV(record.materials.pasir2 || 0),
+          escapeCSV(record.materials.batu1 || 0),
+          escapeCSV(record.materials.batu2 || 0),
+          escapeCSV(record.materials.semen || 0),
+          escapeCSV(record.materials.air || 0),
+          escapeCSV(record.materials.additive || 0),
+          escapeCSV(record.mixingTime),
+          escapeCSV(record.status)
+        ];
+        return row.join(',');
+      })
+    ];
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const csvContent = csvRows.join('\n');
+
+    // Add BOM (Byte Order Mark) for Excel UTF-8 recognition
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);

@@ -1240,17 +1240,22 @@ export const useProductionSequence = (
           hopperValveBatu: material === 'batu' ? false : prev.hopperValveBatu,
         }));
         
-        // 🆕 INCREMENT COUNTER
+        // 🆕 INCREMENT COUNTER AND CHECK IF ALL DISCHARGED
         setProductionState(prev => {
           const newCount = prev.dischargedMaterialsCount + 1;
           console.log(`✅ Material ${material} discharged (${newCount}/${prev.totalMaterialsToDischarge})`);
+          
+          // 🚀 If all materials discharged, start weighing for next mixing (PARALLEL)
+          if (newCount >= prev.totalMaterialsToDischarge) {
+            console.log(`🎯 All materials discharged! Starting weighing for next mixing in parallel`);
+            setTimeout(() => checkAndStartNextMixingWeighing(), 500);
+          }
+          
           return {
             ...prev,
             dischargedMaterialsCount: newCount,
           };
         });
-        
-        // ✅ REMOVED: checkAndStartNextMixingWeighing() - weighing now starts in completeProduction()
       }, dischargeDuration);
       addTimer(clearTimer);
     } else if (material === 'semen') {
@@ -1303,17 +1308,22 @@ export const useProductionSequence = (
         setComponentStates(prev => ({ ...prev, cementValve: false }));
         addActivityLog('🔴 Dump Semen OFF');
         
-        // 🆕 INCREMENT COUNTER
+        // 🆕 INCREMENT COUNTER AND CHECK IF ALL DISCHARGED
         setProductionState(prev => {
           const newCount = prev.dischargedMaterialsCount + 1;
           console.log(`✅ Material semen discharged (${newCount}/${prev.totalMaterialsToDischarge})`);
+          
+          // 🚀 If all materials discharged, start weighing for next mixing (PARALLEL)
+          if (newCount >= prev.totalMaterialsToDischarge) {
+            console.log(`🎯 All materials discharged! Starting weighing for next mixing in parallel`);
+            setTimeout(() => checkAndStartNextMixingWeighing(), 500);
+          }
+          
           return {
             ...prev,
             dischargedMaterialsCount: newCount,
           };
         });
-        
-        // ✅ REMOVED: checkAndStartNextMixingWeighing() - weighing now starts in completeProduction()
       }, dischargeDuration);
       addTimer(clearTimer);
       
@@ -1370,17 +1380,22 @@ export const useProductionSequence = (
         // Deduct water from tank AFTER discharge complete
         onWaterDeduction(targetWeight);
         
-        // 🆕 INCREMENT COUNTER
+        // 🆕 INCREMENT COUNTER AND CHECK IF ALL DISCHARGED
         setProductionState(prev => {
           const newCount = prev.dischargedMaterialsCount + 1;
           console.log(`✅ Material air discharged (${newCount}/${prev.totalMaterialsToDischarge})`);
+          
+          // 🚀 If all materials discharged, start weighing for next mixing (PARALLEL)
+          if (newCount >= prev.totalMaterialsToDischarge) {
+            console.log(`🎯 All materials discharged! Starting weighing for next mixing in parallel`);
+            setTimeout(() => checkAndStartNextMixingWeighing(), 500);
+          }
+          
           return {
             ...prev,
             dischargedMaterialsCount: newCount,
           };
         });
-        
-        // ✅ REMOVED: checkAndStartNextMixingWeighing() - weighing now starts in completeProduction()
       }, dischargeDuration);
       addTimer(clearTimer);
     }
@@ -1511,31 +1526,40 @@ export const useProductionSequence = (
     addTimer(timer1);
   };
 
-  // ⚠️ DEPRECATED & COMMENTED OUT: Function no longer used - weighing for next cycle now starts in completeProduction()
-  // after mixer door is fully closed, ensuring proper sequential operation
-  /*
+  // ✅ RESTORED & MODIFIED: Start weighing for next mixing while current mixing is still in progress
+  // This improves efficiency by running weighing in parallel with mixing process
   const checkAndStartNextMixingWeighing = () => {
     setProductionState(prev => {
       const { dischargedMaterialsCount, totalMaterialsToDischarge, currentMixing, jumlahMixing, nextMixingReady, currentStep } = prev;
       
+      // Only start next weighing if:
+      // 1. All materials for current mixing are discharged
+      // 2. Not already started weighing for next mixing
+      // 3. There's a next mixing to do
+      // 4. We're not in complete state
       if (dischargedMaterialsCount >= totalMaterialsToDischarge && !nextMixingReady && currentStep !== 'complete') {
         if (currentMixing < jumlahMixing) {
-          console.log(`🔄 All materials discharged! Starting WEIGHING (NOT discharge) for Mixing ${currentMixing + 1}`);
-          console.log(`⏸️  Material will wait to discharge until mixer door closes`);
+          console.log(`🔄 All materials discharged for Mixing ${currentMixing}!`);
+          console.log(`🚀 Starting PARALLEL WEIGHING for Mixing ${currentMixing + 1}`);
+          console.log(`⏸️  Discharge will wait until Mixing ${currentMixing} completes and door closes`);
           
+          // Refill aggregate bins for next mixing
           console.log('🔄 Refilling aggregate bins for next mixing...');
           onAggregateDeduction(1, -10000);
           onAggregateDeduction(2, -10000);
           onAggregateDeduction(3, -10000);
           onAggregateDeduction(4, -10000);
           
+          // Start weighing after a short delay
           setTimeout(() => {
             if (lastConfigRef.current) {
-              console.log(`✅ Starting Weighing Cycle ${currentMixing + 1} (discharge will wait)`);
+              console.log(`✅ Starting Parallel Weighing Cycle ${currentMixing + 1}`);
               
+              // Turn on belt atas (cement conveyor)
               setComponentStates(prevStates => ({ ...prevStates, beltAtas: true }));
               controlRelay('konveyor_atas', true);
 
+              // Turn on selected silos
               setComponentStates(prevStates => ({
                 ...prevStates,
                 siloValves: prevStates.siloValves.map((_, idx) => 
@@ -1544,6 +1568,7 @@ export const useProductionSequence = (
               }));
               lastConfigRef.current.selectedSilos.forEach(id => controlRelay(`silo_${id}`, true));
 
+              // Start weighing - it will set nextMixingWeighingComplete when done
               startWeighingWithJogging(lastConfigRef.current);
             }
           }, 1000);
@@ -1551,7 +1576,7 @@ export const useProductionSequence = (
           return {
             ...prev,
             nextMixingReady: true,
-            isWaitingForMixer: true,
+            isWaitingForMixer: true, // Flag that we're waiting for mixer to finish
           };
         }
       }
@@ -1559,7 +1584,6 @@ export const useProductionSequence = (
       return prev;
     });
   };
-  */
 
   const completeProduction = () => {
     // ✅ NEW FIX: Use setState callback to get latest state
