@@ -44,6 +44,10 @@ const Index = () => {
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
   const [productionStartTime, setProductionStartTime] = useState<Date | null>(null);
   const [helpDialogOpen, setHelpDialogOpen] = useState(false);
+  const [autoPrintEnabled, setAutoPrintEnabled] = useState(() => {
+    const saved = localStorage.getItem('auto_print_enabled');
+    return saved !== null ? JSON.parse(saved) : true; // Default: true (dicentang)
+  });
   const [currentBatchConfig, setCurrentBatchConfig] = useState<any>(null);
   const currentBatchConfigRef = useRef<any>(null); // Use ref to persist config in callback
   const [manualTimerDuration, setManualTimerDuration] = useState(10); // Default 10 detik
@@ -136,6 +140,11 @@ const Index = () => {
   useEffect(() => {
     localStorage.setItem('water_tank', JSON.stringify(waterTank));
   }, [waterTank]);
+
+  // Save auto print setting to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('auto_print_enabled', JSON.stringify(autoPrintEnabled));
+  }, [autoPrintEnabled]);
 
   // Check license on mount (only in Electron)
   useEffect(() => {
@@ -375,7 +384,9 @@ const Index = () => {
       localStorage.setItem('production_tickets', JSON.stringify(tickets));
       
       setTicketData(ticket);
-      setPrintTicketOpen(true);
+      if (autoPrintEnabled) {
+        setPrintTicketOpen(true);
+      }
     }
   );
 
@@ -998,14 +1009,37 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Help Button - Bottom Right Corner */}
-          <button
-            onClick={() => setHelpDialogOpen(true)}
-            className="absolute bottom-4 right-4 w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center border-2 border-blue-800 shadow-lg transition-all z-50"
-            title="Informasi Developer"
-          >
-            <HelpCircle className="w-6 h-6 text-white" />
-          </button>
+          {/* Print Auto Toggle & Help Button - Bottom Right Corner */}
+          <div className="absolute bottom-4 right-4 flex items-center gap-3 z-50">
+            {/* Print Auto Checkbox */}
+            <div 
+              onClick={() => setAutoPrintEnabled(!autoPrintEnabled)}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-900/60 hover:bg-blue-800/70 border-2 border-blue-600/50 shadow-lg transition-all cursor-pointer backdrop-blur-sm"
+              title="Auto print tiket setelah produksi selesai"
+            >
+              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                autoPrintEnabled 
+                  ? 'bg-blue-600 border-blue-400' 
+                  : 'bg-gray-700 border-gray-500'
+              }`}>
+                {autoPrintEnabled && (
+                  <svg className="w-3 h-3 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" viewBox="0 0 24 24" stroke="currentColor">
+                    <path d="M5 13l4 4L19 7"></path>
+                  </svg>
+                )}
+              </div>
+              <span className="text-white text-sm font-medium">Print</span>
+            </div>
+
+            {/* Help Button */}
+            <button
+              onClick={() => setHelpDialogOpen(true)}
+              className="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center border-2 border-blue-800 shadow-lg transition-all"
+              title="Informasi Developer"
+            >
+              <HelpCircle className="w-6 h-6 text-white" />
+            </button>
+          </div>
           
         </div>
       </main>
