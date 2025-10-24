@@ -29,6 +29,8 @@ export const useRaspberryPi = () => {
     semen: 0,
     air: 0,
   });
+  const [lastWeightUpdate, setLastWeightUpdate] = useState<number>(0);
+  const [currentWsUrl, setCurrentWsUrl] = useState<string>('');
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
@@ -36,16 +38,11 @@ export const useRaspberryPi = () => {
   const connect = useCallback(() => {
     try {
       // WebSocket connection to Autonics controller (PC-based)
-      // Try multiple possible addresses
-      const possibleAddresses = [
-        'ws://localhost:8765',
-        'ws://192.168.1.100:8765',
-        'ws://controller.local:8765',
-      ];
-
-      // Try first address (can be made configurable)
-      const wsUrl = possibleAddresses[0];
+      // Read URL from localStorage or use default
+      const savedUrl = localStorage.getItem('controller_ws_url');
+      const wsUrl = savedUrl || 'ws://localhost:8765';
       
+      setCurrentWsUrl(wsUrl);
       console.log('Connecting to Autonics controller at:', wsUrl);
       const ws = new WebSocket(wsUrl);
 
@@ -65,6 +62,7 @@ export const useRaspberryPi = () => {
           if (data.type === 'weight_update') {
             const msg = data as WeightUpdateMessage;
             setActualWeights(msg.weights);
+            setLastWeightUpdate(Date.now());
           } else if (data.type === 'error') {
             console.error('Raspberry Pi error:', data.message);
           }
@@ -141,5 +139,7 @@ export const useRaspberryPi = () => {
     sendRelayCommand,
     disconnect,
     reconnect: connect,
+    lastWeightUpdate,
+    currentWsUrl,
   };
 };

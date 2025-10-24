@@ -8,7 +8,8 @@ import {
   Printer,
   LogOut,
   LayoutDashboard,
-  ListOrdered
+  ListOrdered,
+  Cable
 } from 'lucide-react';
 import {
   Sidebar,
@@ -30,6 +31,7 @@ const menuItems = [
   { title: 'Job Mix Formula', url: '/admin/job-mix-formula', icon: FlaskConical },
   { title: 'Urutan Mixing', url: '/admin/mixing-sequence', icon: ListOrdered },
   { title: 'Pengaturan Relay & Pintu Mixer', url: '/admin/relay-settings', icon: Settings },
+  { title: 'Setting Com dan Port', url: '/admin/com-port-settings', icon: Cable },
   { title: 'Setting', url: '/admin/settings', icon: Settings },
   { title: 'Manajemen User', url: '/admin/user-management', icon: Users },
   { title: 'Joging Material', url: '/admin/material-jogging', icon: PackageSearch },

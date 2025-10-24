@@ -1008,7 +1008,14 @@ export const useProductionSequence = (
     });
   };
 
-  const startDischargeSequence = (config: ProductionConfig) => {
+  const startDischargeSequence = (config: ProductionConfig, opts?: { force?: boolean }) => {
+    // ⛔ GUARD: Block discharge if waiting for mixer (unless forced)
+    if (!opts?.force && productionState.isWaitingForMixer) {
+      console.log('⛔ Discharge diblokir: menunggu mixer door tertutup');
+      addActivityLog('⛔ Discharge tertunda: menunggu pintu mixer');
+      return;
+    }
+    
     // Capture final weights BEFORE discharge starts
     setProductionState(prev => {
       finalSnapshotRef.current = {
@@ -1019,11 +1026,21 @@ export const useProductionSequence = (
       };
       console.log('📸 Final weights snapshot:', finalSnapshotRef.current);
       
+      // ✅ Calculate total materials dynamically based on targets
+      const materialTargets = {
+        pasir: (config.targetWeights.pasir1 || 0) + (config.targetWeights.pasir2 || 0),
+        batu: (config.targetWeights.batu1 || 0) + (config.targetWeights.batu2 || 0),
+        semen: config.targetWeights.semen || 0,
+        air: config.targetWeights.air || 0,
+      };
+      const totalMaterials = Object.values(materialTargets).filter(val => val > 0).length;
+      console.log(`🎯 Total materials to discharge: ${totalMaterials}`);
+      
       return {
         ...prev,
         currentStep: 'discharging',
         dischargedMaterialsCount: 0,
-        totalMaterialsToDischarge: 4, // pasir, batu, semen, air
+        totalMaterialsToDischarge: totalMaterials, // Dynamic count
       };
     });
     
@@ -1601,10 +1618,11 @@ export const useProductionSequence = (
         if (nextMixingWeighingComplete) {
           console.log(`✅ Next mixing weighing ALREADY COMPLETE! Starting discharge now`);
           
-          // Trigger discharge sequence
+          // Trigger discharge sequence with FORCE=true (bypassing guard)
           setTimeout(() => {
             if (lastConfigRef.current) {
-              startDischargeSequence(lastConfigRef.current);
+              console.log('🚀 FORCING discharge after door closed');
+              startDischargeSequence(lastConfigRef.current, { force: true });
             }
           }, 1000);
           
