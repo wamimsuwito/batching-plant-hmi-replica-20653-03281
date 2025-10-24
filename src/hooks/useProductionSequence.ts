@@ -187,6 +187,8 @@ export const useProductionSequence = (
   const lastConfigRef = useRef<ProductionConfig | null>(null);
   const finalSnapshotRef = useRef({ pasir: 0, batu: 0, semen: 0, air: 0 });
   const isPausedRef = useRef(false);
+  // Ref to avoid stale reads in async callbacks (race-safe gate)
+  const isWaitingForMixerRef = useRef(false);
   const pausedStateSnapshot = useRef<{
     step: string;
     weights: any;
@@ -661,25 +663,16 @@ export const useProductionSequence = (
     // Toast removed - silent operation
     
     // ✅ Check if we're waiting for mixer to finish before discharging
-    let shouldStartDischarge = true;
-    setProductionState(prev => {
-      if (prev.isWaitingForMixer) {
-        console.log('⏸️  Weighing complete, but WAITING for mixer door to close before discharge');
-        shouldStartDischarge = false;
-        return {
-          ...prev,
-          nextMixingWeighingComplete: true,
-        };
-      }
-      return prev;
-    });
-    
-    // ✅ Only start discharge if NOT waiting for mixer
-    if (shouldStartDischarge) {
+    if (isWaitingForMixerRef.current) {
+      console.log('⏸️  Weighing complete, but WAITING for mixer door to close before discharge');
+      setProductionState(prev => ({
+        ...prev,
+        nextMixingWeighingComplete: true,
+      }));
+      console.log('⏸️  Discharge blocked - waiting for mixer to complete');
+    } else {
       console.log('✅ Starting discharge sequence');
       setTimeout(() => startDischargeSequence(config), 1000);
-    } else {
-      console.log('⏸️  Discharge blocked - waiting for mixer to complete');
     }
   };
 
@@ -1010,7 +1003,7 @@ export const useProductionSequence = (
 
   const startDischargeSequence = (config: ProductionConfig, opts?: { force?: boolean }) => {
     // ⛔ GUARD: Block discharge if waiting for mixer (unless forced)
-    if (!opts?.force && productionState.isWaitingForMixer) {
+    if (!opts?.force && isWaitingForMixerRef.current) {
       console.log('⛔ Discharge diblokir: menunggu mixer door tertutup');
       addActivityLog('⛔ Discharge tertunda: menunggu pintu mixer');
       return;
@@ -1794,6 +1787,11 @@ export const useProductionSequence = (
       }
     });
   };
+
+  // Keep race-safe ref in sync with state
+  useEffect(() => {
+    isWaitingForMixerRef.current = productionState.isWaitingForMixer;
+  }, [productionState.isWaitingForMixer]);
 
   // Cleanup on unmount
   useEffect(() => {
