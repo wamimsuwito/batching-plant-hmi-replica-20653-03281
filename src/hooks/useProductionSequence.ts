@@ -189,6 +189,8 @@ export const useProductionSequence = (
   const isPausedRef = useRef(false);
   // Ref to avoid stale reads in async callbacks (race-safe gate)
   const isWaitingForMixerRef = useRef(false);
+  // ✅ Cumulative weights tracker across all mixings
+  const cumulativeActualWeights = useRef({ pasir: 0, batu: 0, semen: 0, air: 0 });
   const pausedStateSnapshot = useRef<{
     step: string;
     weights: any;
@@ -477,6 +479,10 @@ export const useProductionSequence = (
       clearTimeout(mixerIdleTimerRef.current);
       mixerIdleTimerRef.current = null;
     }
+    
+    // ✅ RESET cumulative weights tracker for new batch
+    cumulativeActualWeights.current = { pasir: 0, batu: 0, semen: 0, air: 0 };
+    console.log('🔄 Cumulative weights reset for new batch');
     
     // Save config for sequential mixing
     lastConfigRef.current = config;
@@ -1017,7 +1023,14 @@ export const useProductionSequence = (
         semen: Math.round(prev.currentWeights.semen),
         air: Math.round(prev.currentWeights.air),
       };
-      console.log('📸 Final weights snapshot:', finalSnapshotRef.current);
+      console.log('📸 Final weights snapshot (this mixing):', finalSnapshotRef.current);
+      
+      // ✅ ACCUMULATE actual weights across all mixings
+      cumulativeActualWeights.current.pasir += finalSnapshotRef.current.pasir;
+      cumulativeActualWeights.current.batu += finalSnapshotRef.current.batu;
+      cumulativeActualWeights.current.semen += finalSnapshotRef.current.semen;
+      cumulativeActualWeights.current.air += finalSnapshotRef.current.air;
+      console.log('📊 Cumulative weights (all mixings):', cumulativeActualWeights.current);
       
       // ✅ Calculate total materials dynamically based on targets
       const materialTargets = {
@@ -1774,10 +1787,10 @@ export const useProductionSequence = (
           
           // Toast removed - silent operation
           
-          // Call completion callback with final weights snapshot
+          // Call completion callback with CUMULATIVE weights (all mixings)
           if (onComplete) {
-            console.log('✅ Calling onComplete with snapshot:', finalSnapshotRef.current);
-            onComplete(finalSnapshotRef.current);
+            console.log('✅ Calling onComplete with CUMULATIVE weights:', cumulativeActualWeights.current);
+            onComplete(cumulativeActualWeights.current);
           }
         }, 2000);
         addTimer(resetTimer);

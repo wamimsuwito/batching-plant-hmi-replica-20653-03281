@@ -31,9 +31,23 @@ export const useRaspberryPi = () => {
   });
   const [lastWeightUpdate, setLastWeightUpdate] = useState<number>(0);
   const [currentWsUrl, setCurrentWsUrl] = useState<string>('');
+  
+  // Production mode: "production" or "simulation" (default)
+  const [productionMode, setProductionModeState] = useState<'production' | 'simulation'>(() => {
+    const saved = localStorage.getItem('production_mode');
+    return (saved === 'production' || saved === 'simulation') ? saved : 'simulation';
+  });
+  
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
+  
+  // Update localStorage when production mode changes
+  const setProductionMode = useCallback((mode: 'production' | 'simulation') => {
+    setProductionModeState(mode);
+    localStorage.setItem('production_mode', mode);
+    console.log(`🔄 Mode operasi diubah ke: ${mode.toUpperCase()}`);
+  }, []);
 
   const connect = useCallback(() => {
     try {
@@ -141,5 +155,7 @@ export const useRaspberryPi = () => {
     reconnect: connect,
     lastWeightUpdate,
     currentWsUrl,
+    productionMode,
+    setProductionMode,
   };
 };

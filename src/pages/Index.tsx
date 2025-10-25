@@ -304,15 +304,21 @@ const Index = () => {
         finalWeights
       });
       
-      // Get target weights from production state (already per mixing)
-      // Use targetWeights from currentBatchConfig (already saved when batch started)
+      // ✅ FIX: Calculate CUMULATIVE target weights (per mixing × jumlahMixing)
       const targetWeights = batchConfig?.targetWeights || productionState.targetWeights;
-      const targetPasir = Math.round((targetWeights.pasir1 || 0) + (targetWeights.pasir2 || 0));
-      const targetBatu = Math.round((targetWeights.batu1 || 0) + (targetWeights.batu2 || 0));
-      const targetSemen = Math.round(targetWeights.semen || 0);
-      const targetAir = Math.round(targetWeights.air || 0);
+      const targetPasirPerMixing = (targetWeights.pasir1 || 0) + (targetWeights.pasir2 || 0);
+      const targetBatuPerMixing = (targetWeights.batu1 || 0) + (targetWeights.batu2 || 0);
+      const targetSemenPerMixing = targetWeights.semen || 0;
+      const targetAirPerMixing = targetWeights.air || 0;
       
-      // Get realisasi from finalWeights parameter (actual scale data)
+      // MULTIPLY by jumlahMixing to get TOTAL target
+      const jumlahMixing = productionState.jumlahMixing || 1;
+      const targetPasir = Math.round(targetPasirPerMixing * jumlahMixing);
+      const targetBatu = Math.round(targetBatuPerMixing * jumlahMixing);
+      const targetSemen = Math.round(targetSemenPerMixing * jumlahMixing);
+      const targetAir = Math.round(targetAirPerMixing * jumlahMixing);
+      
+      // ✅ Get realisasi from finalWeights (already CUMULATIVE from all mixings)
       const realisasiPasir = Math.round(finalWeights?.pasir || 0);
       const realisasiBatu = Math.round(finalWeights?.batu || 0);
       const realisasiSemen = Math.round(finalWeights?.semen || 0);
