@@ -300,7 +300,9 @@ const Index = () => {
       console.log('🔍 DEBUG - Checking available data:', {
         hasBatchConfig: !!batchConfig,
         batchConfigTargets: batchConfig?.targetWeights,
+        batchConfigJumlahMixing: batchConfig?.jumlahMixing,
         productionStateTargets: productionState.targetWeights,
+        productionStateJumlahMixing: productionState.jumlahMixing,
         finalWeights
       });
       
@@ -311,8 +313,9 @@ const Index = () => {
       const targetSemenPerMixing = targetWeights.semen || 0;
       const targetAirPerMixing = targetWeights.air || 0;
       
-      // MULTIPLY by jumlahMixing to get TOTAL target
-      const jumlahMixing = productionState.jumlahMixing || 1;
+      // ✅ CRITICAL FIX: MULTIPLY by jumlahMixing to get TOTAL CUMULATIVE target
+      // Ambil dari batchConfig DULU (lebih akurat), baru fallback ke productionState
+      const jumlahMixing = batchConfig?.jumlahMixing || productionState.jumlahMixing || 1;
       const targetPasir = Math.round(targetPasirPerMixing * jumlahMixing);
       const targetBatu = Math.round(targetBatuPerMixing * jumlahMixing);
       const targetSemen = Math.round(targetSemenPerMixing * jumlahMixing);
