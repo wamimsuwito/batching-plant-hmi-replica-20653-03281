@@ -78,7 +78,7 @@ export default function ProductionDatabase() {
     setFilteredRecords(allRecords);
   };
 
-  const exportToCSV = () => {
+  const exportToCSV = (delimiter: ',' | ';' = ',') => {
     if (filteredRecords.length === 0) {
       alert('Tidak ada data untuk diekspor');
       return;
@@ -87,8 +87,8 @@ export default function ProductionDatabase() {
     // Helper function to escape CSV values properly
     const escapeCSV = (value: any): string => {
       const str = String(value);
-      // If value contains comma, newline, or double quotes, wrap in quotes and escape internal quotes
-      if (str.includes(',') || str.includes('\n') || str.includes('"')) {
+      // If value contains delimiter, newline, or double quotes, wrap in quotes and escape internal quotes
+      if (str.includes(delimiter) || str.includes('\n') || str.includes('"')) {
         return `"${str.replace(/"/g, '""')}"`;
       }
       return str;
@@ -110,7 +110,7 @@ export default function ProductionDatabase() {
     ];
 
     const csvRows = [
-      headers.join(','), // Header row
+      headers.join(delimiter), // Use selected delimiter
       ...filteredRecords.map(record => {
         // Create array of values in exact order as headers
         const row = [
@@ -127,7 +127,7 @@ export default function ProductionDatabase() {
           escapeCSV(record.mixingTime),
           escapeCSV(record.status)
         ];
-        return row.join(',');
+        return row.join(delimiter); // Use selected delimiter
       })
     ];
 
@@ -137,10 +137,11 @@ export default function ProductionDatabase() {
     const BOM = '\uFEFF';
     const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
     
+    const delimiterName = delimiter === ';' ? 'excel-id' : 'standard';
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', `production_data_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `production_data_${delimiterName}_${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -185,9 +186,13 @@ export default function ProductionDatabase() {
                 className="pl-10"
               />
             </div>
-            <Button onClick={exportToCSV} variant="outline" className="gap-2">
+            <Button onClick={() => exportToCSV(';')} variant="default" className="gap-2">
               <Download className="h-4 w-4" />
-              Export CSV
+              Export CSV (Excel Indonesia)
+            </Button>
+            <Button onClick={() => exportToCSV(',')} variant="outline" className="gap-2">
+              <Download className="h-4 w-4" />
+              Export CSV (Standard)
             </Button>
             <Button onClick={loadRecords} variant="outline" className="gap-2">
               Refresh

@@ -277,8 +277,30 @@ const Index = () => {
   // Raspberry Pi connection
   const raspberryPi = useRaspberryPi();
 
+  // ✅ CRITICAL: Klakson bunyi saat print ticket muncul (alert driver)
+  useEffect(() => {
+    if (printTicketOpen && raspberryPi?.isConnected) {
+      console.log('🔔 Print ticket opened - Activating klakson for driver alert');
+      
+      // Find klakson relay settings
+      const klaksonRelay = relaySettings.find(r => r.name.toLowerCase() === 'klakson');
+      const modbusCoil = klaksonRelay ? parseInt(klaksonRelay.modbusCoil) : 15; // Default coil 15
+      
+      // Klakson ON
+      raspberryPi.sendRelayCommand('klakson', true, modbusCoil);
+      
+      // OFF setelah 2 detik
+      const timer = setTimeout(() => {
+        raspberryPi.sendRelayCommand('klakson', false, modbusCoil);
+        console.log('🔕 Klakson OFF');
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [printTicketOpen, raspberryPi, relaySettings]);
+
   // Production sequence hook with Raspberry Pi integration and auto mode
-  const { productionState, componentStates, startProduction, stopProduction, pauseProduction, resumeProduction } = useProductionSequence(
+  const { productionState, componentStates, productionStartTimestamp, startProduction, stopProduction, pauseProduction, resumeProduction } = useProductionSequence(
     handleCementDeduction,
     handleAggregateDeduction,
     handleWaterDeduction,
@@ -290,9 +312,10 @@ const Index = () => {
       setIsRunning(false);
       console.log('✅ Production complete - Start button ready for next batch');
       
-      // Generate ticket data
+      // ✅ CRITICAL: Use productionStartTimestamp from hook (accurate timestamp)
       const endTime = new Date();
-      const startTime = productionStartTime || endTime;
+      const startTime = productionStartTimestamp || endTime;
+      console.log('⏱️ Using production start timestamp:', startTime.toISOString());
       
       // Use ref to access latest batch config (avoid closure issue)
       const batchConfig = currentBatchConfigRef.current;
@@ -545,6 +568,16 @@ const Index = () => {
         open={batchStartOpen} 
         onOpenChange={setBatchStartOpen}
         onStart={(config) => {
+          // ✅ CRITICAL: Safety check - Block production if mode is "production" but controller not connected
+          if (raspberryPi?.productionMode === 'production' && !raspberryPi?.isConnected) {
+            toast({
+              title: "❌ Tidak Dapat Memulai Produksi",
+              description: "Mode Produksi memerlukan koneksi Autonics. Hubungkan controller atau switch ke Mode Simulasi di COM & Port Settings.",
+              variant: "destructive",
+            });
+            return; // BLOCK production start
+          }
+          
           console.log('📝 Batch Config Saved:', {
             targetWeights: config.targetWeights,
             mutuBeton: config.mutuBeton,

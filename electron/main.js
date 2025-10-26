@@ -150,7 +150,20 @@ ipcMain.handle('licensing:checkLicense', () => {
   return licensing.checkLicense();
 });
 
-app.whenReady().then(createWindow);
+// ✅ CRITICAL: Enable auto-start on Windows login (for production deployment)
+app.whenReady().then(() => {
+  createWindow();
+  
+  // Enable auto-start (only works in packaged app, not dev mode)
+  if (!isDev) {
+    app.setLoginItemSettings({
+      openAtLogin: true,
+      path: process.execPath,
+      args: [],
+    });
+    console.log('✅ Auto-start enabled - App will launch on computer startup');
+  }
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

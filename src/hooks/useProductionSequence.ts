@@ -174,12 +174,13 @@ export const useProductionSequence = (
   onAggregateDeduction: (binId: number, amount: number) => void,
   onWaterDeduction: (amount: number) => void,
   relaySettings: RelayConfig[],
-  raspberryPi?: { isConnected: boolean; actualWeights: any; sendRelayCommand: any },
+  raspberryPi?: { isConnected: boolean; actualWeights: any; sendRelayCommand: any; productionMode: 'production' | 'simulation' },
   isAutoMode: boolean = false,
   onComplete?: (finalWeights?: { pasir: number; batu: number; semen: number; air: number }) => void
 ) => {
   const [productionState, setProductionState] = useState<ProductionState>(initialProductionState);
   const [componentStates, setComponentStates] = useState<ComponentStates>(initialComponentStates);
+  const [productionStartTimestamp, setProductionStartTimestamp] = useState<Date | null>(null);
   const { toast } = useToast();
   const timersRef = useRef<NodeJS.Timeout[]>([]);
   const intervalsRef = useRef<NodeJS.Timeout[]>([]);
@@ -473,6 +474,10 @@ export const useProductionSequence = (
 
     clearAllTimers();
     
+    // ✅ CRITICAL: Set accurate production start timestamp
+    setProductionStartTimestamp(new Date());
+    console.log('⏱️ Production start timestamp recorded:', new Date().toISOString());
+    
     // Clear mixer idle timer - production started again
     if (mixerIdleTimerRef.current) {
       console.log('🔄 New batch started - cancelling mixer idle timer');
@@ -751,15 +756,17 @@ export const useProductionSequence = (
       const weighingInterval = setInterval(() => {
         // Get current weight
         let currentWeight;
-        if (raspberryPi?.isConnected) {
-          // Map material names to actualWeights channels
+        // ✅ CRITICAL: Check production mode FIRST before using real load cell data
+        if (raspberryPi?.productionMode === 'production' && raspberryPi?.isConnected) {
+          // ✅ PRODUCTION MODE: Use REAL data from load cell
           const channel = material.startsWith('pasir') ? 'pasir' : 
                          material.startsWith('batu') ? 'batu' : 
                          material === 'semen' ? 'semen' : 
                          material === 'air' ? 'air' : material;
           currentWeight = raspberryPi.actualWeights[channel] || startingWeight;
+          console.log(`📊 PRODUCTION MODE: Reading load cell ${channel} = ${currentWeight}kg`);
         } else {
-          // SIMULATION MODE - Realistic weighing simulation
+          // ✅ SIMULATION MODE: Auto-increment simulation
           if (phase === 1) {
             // Phase 1: Fast weighing until trigger point
             let flowRate = 50; // kg/s
@@ -1819,6 +1826,7 @@ export const useProductionSequence = (
   return {
     productionState,
     componentStates,
+    productionStartTimestamp,
     startProduction,
     stopProduction,
     pauseProduction,
