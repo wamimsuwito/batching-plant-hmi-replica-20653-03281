@@ -181,6 +181,11 @@ export const useProductionSequence = (
   const [productionState, setProductionState] = useState<ProductionState>(initialProductionState);
   const [componentStates, setComponentStates] = useState<ComponentStates>(initialComponentStates);
   const [productionStartTimestamp, setProductionStartTimestamp] = useState<Date | null>(null);
+  const [productionEndTimestamp, setProductionEndTimestamp] = useState<Date | null>(null);
+  const [systemConfig, setSystemConfig] = useState(() => {
+    const saved = localStorage.getItem('batch_plant_system');
+    return saved ? parseInt(saved) : 2; // Default: System 2
+  });
   const { toast } = useToast();
   const timersRef = useRef<NodeJS.Timeout[]>([]);
   const intervalsRef = useRef<NodeJS.Timeout[]>([]);
@@ -550,75 +555,135 @@ export const useProductionSequence = (
 
     // Create parallel weighing groups
     const weighPasirSequence = async () => {
-      // Pasir 1
-      if (config.targetWeights.pasir1 > 0 && config.selectedBins.pasir1 > 0) {
-        console.log('📦 GROUP PASIR: Weighing PASIR 1...');
-        await weighMaterialWithJogging('pasir1', config.targetWeights.pasir1, config, weighingStatus, 0);
-        weighingStatus.pasir1 = true;
+      // ✅ System 1: Sequential cumulative weighing in 1 hopper
+      if (systemConfig === 1) {
+        let cumulativeWeight = 0;
         
-        // ⏱️ JEDA 2 DETIK untuk stabilisasi hopper pasir
-        if (config.targetWeights.pasir2 > 0 && config.selectedBins.pasir2 > 0) {
-          console.log('⏳ Waiting 2 seconds for hopper stabilization...');
-          await delay(2000);
+        // Pasir 1
+        if (config.targetWeights.pasir1 > 0 && config.selectedBins.pasir1 > 0) {
+          console.log('📦 SYSTEM 1 - GROUP AGGREGATE: Weighing PASIR 1...');
+          await weighMaterialWithJogging('pasir1', config.targetWeights.pasir1, config, weighingStatus, 0);
+          weighingStatus.pasir1 = true;
+          cumulativeWeight += config.targetWeights.pasir1;
+          await delay(2000); // Stabilization
+        } else {
+          weighingStatus.pasir1 = true;
         }
+        
+        // Pasir 2 (cumulative)
+        if (config.targetWeights.pasir2 > 0 && config.selectedBins.pasir2 > 0) {
+          console.log(`📦 SYSTEM 1 - Weighing PASIR 2 (cumulative from ${cumulativeWeight}kg)...`);
+          await weighMaterialWithJogging('pasir2', config.targetWeights.pasir2, config, weighingStatus, cumulativeWeight);
+          weighingStatus.pasir2 = true;
+          cumulativeWeight += config.targetWeights.pasir2;
+          await delay(2000); // Stabilization
+        } else {
+          weighingStatus.pasir2 = true;
+        }
+        
+        // Batu 1 (cumulative)
+        if (config.targetWeights.batu1 > 0 && config.selectedBins.batu1 > 0) {
+          console.log(`📦 SYSTEM 1 - Weighing BATU 1 (cumulative from ${cumulativeWeight}kg)...`);
+          await weighMaterialWithJogging('batu1', config.targetWeights.batu1, config, weighingStatus, cumulativeWeight);
+          weighingStatus.batu1 = true;
+          cumulativeWeight += config.targetWeights.batu1;
+          await delay(2000); // Stabilization
+        } else {
+          weighingStatus.batu1 = true;
+        }
+        
+        // Batu 2 (cumulative)
+        if (config.targetWeights.batu2 > 0 && config.selectedBins.batu2 > 0) {
+          console.log(`📦 SYSTEM 1 - Weighing BATU 2 (cumulative from ${cumulativeWeight}kg)...`);
+          await weighMaterialWithJogging('batu2', config.targetWeights.batu2, config, weighingStatus, cumulativeWeight);
+          weighingStatus.batu2 = true;
+          cumulativeWeight += config.targetWeights.batu2;
+        } else {
+          weighingStatus.batu2 = true;
+        }
+        
+        console.log(`✅ SYSTEM 1 - Aggregate sequence complete. Total: ${cumulativeWeight}kg`);
       } else {
-        weighingStatus.pasir1 = true;
-        setProductionState(prev => ({ ...prev, weighingComplete: { ...prev.weighingComplete, pasir1: true } }));
+        // ✅ System 2: Separate 2-hopper weighing (original logic)
+        // Pasir 1
+        if (config.targetWeights.pasir1 > 0 && config.selectedBins.pasir1 > 0) {
+          console.log('📦 GROUP PASIR: Weighing PASIR 1...');
+          await weighMaterialWithJogging('pasir1', config.targetWeights.pasir1, config, weighingStatus, 0);
+          weighingStatus.pasir1 = true;
+          
+          // ⏱️ JEDA 2 DETIK untuk stabilisasi hopper pasir
+          if (config.targetWeights.pasir2 > 0 && config.selectedBins.pasir2 > 0) {
+            console.log('⏳ Waiting 2 seconds for hopper stabilization...');
+            await delay(2000);
+          }
+        } else {
+          weighingStatus.pasir1 = true;
+          setProductionState(prev => ({ ...prev, weighingComplete: { ...prev.weighingComplete, pasir1: true } }));
+        }
+        
+        // Pasir 2 (cumulative in same hopper)
+        if (config.targetWeights.pasir2 > 0 && config.selectedBins.pasir2 > 0) {
+          console.log('📦 GROUP PASIR: Weighing PASIR 2 (cumulative)...');
+          const pasir1Weight = config.targetWeights.pasir1 || 0;
+          await weighMaterialWithJogging(
+            'pasir2',
+            config.targetWeights.pasir1 + config.targetWeights.pasir2,
+            config,
+            weighingStatus,
+            pasir1Weight
+          );
+          weighingStatus.pasir2 = true;
+        } else {
+          weighingStatus.pasir2 = true;
+          setProductionState(prev => ({ ...prev, weighingComplete: { ...prev.weighingComplete, pasir2: true } }));
+        }
+        console.log('✅ Pasir sequence complete');
       }
-      
-      // Pasir 2 (cumulative)
-      if (config.targetWeights.pasir2 > 0 && config.selectedBins.pasir2 > 0) {
-        console.log('📦 GROUP PASIR: Weighing PASIR 2 (cumulative)...');
-        const pasir1Weight = config.targetWeights.pasir1 || 0;
-        await weighMaterialWithJogging(
-          'pasir2',
-          config.targetWeights.pasir1 + config.targetWeights.pasir2,
-          config,
-          weighingStatus,
-          pasir1Weight
-        );
-        weighingStatus.pasir2 = true;
-      } else {
-        weighingStatus.pasir2 = true;
-        setProductionState(prev => ({ ...prev, weighingComplete: { ...prev.weighingComplete, pasir2: true } }));
-      }
-      console.log('✅ Pasir sequence complete');
     };
 
     const weighBatuSequence = async () => {
-      // Batu 1
-      if (config.targetWeights.batu1 > 0 && config.selectedBins.batu1 > 0) {
-        console.log('📦 GROUP BATU: Weighing BATU 1...');
-        await weighMaterialWithJogging('batu1', config.targetWeights.batu1, config, weighingStatus, 0);
+      // ✅ System 1: Batu weighing handled in pasir sequence (all in 1 hopper)
+      if (systemConfig === 1) {
+        // Already weighed in pasir sequence - just mark as complete
         weighingStatus.batu1 = true;
-        
-        // ⏱️ JEDA 2 DETIK untuk stabilisasi hopper batu
-        if (config.targetWeights.batu2 > 0 && config.selectedBins.batu2 > 0) {
-          console.log('⏳ Waiting 2 seconds for hopper stabilization...');
-          await delay(2000);
+        weighingStatus.batu2 = true;
+        console.log('✅ Batu sequence skipped (System 1 - already weighed with pasir)');
+      } else {
+        // ✅ System 2: Separate batu hopper
+        // Batu 1
+        if (config.targetWeights.batu1 > 0 && config.selectedBins.batu1 > 0) {
+          console.log('📦 GROUP BATU: Weighing BATU 1...');
+          await weighMaterialWithJogging('batu1', config.targetWeights.batu1, config, weighingStatus, 0);
+          weighingStatus.batu1 = true;
+          
+          // ⏱️ JEDA 2 DETIK untuk stabilisasi hopper batu
+          if (config.targetWeights.batu2 > 0 && config.selectedBins.batu2 > 0) {
+            console.log('⏳ Waiting 2 seconds for hopper stabilization...');
+            await delay(2000);
+          }
+        } else {
+          weighingStatus.batu1 = true;
+          setProductionState(prev => ({ ...prev, weighingComplete: { ...prev.weighingComplete, batu1: true } }));
         }
-      } else {
-        weighingStatus.batu1 = true;
-        setProductionState(prev => ({ ...prev, weighingComplete: { ...prev.weighingComplete, batu1: true } }));
+        
+        // Batu 2 (cumulative)
+        if (config.targetWeights.batu2 > 0 && config.selectedBins.batu2 > 0) {
+          console.log('📦 GROUP BATU: Weighing BATU 2 (cumulative)...');
+          const batu1Weight = config.targetWeights.batu1 || 0;
+          await weighMaterialWithJogging(
+            'batu2',
+            config.targetWeights.batu1 + config.targetWeights.batu2,
+            config,
+            weighingStatus,
+            batu1Weight
+          );
+          weighingStatus.batu2 = true;
+        } else {
+          weighingStatus.batu2 = true;
+          setProductionState(prev => ({ ...prev, weighingComplete: { ...prev.weighingComplete, batu2: true } }));
+        }
+        console.log('✅ Batu sequence complete');
       }
-      
-      // Batu 2 (cumulative)
-      if (config.targetWeights.batu2 > 0 && config.selectedBins.batu2 > 0) {
-        console.log('📦 GROUP BATU: Weighing BATU 2 (cumulative)...');
-        const batu1Weight = config.targetWeights.batu1 || 0;
-        await weighMaterialWithJogging(
-          'batu2',
-          config.targetWeights.batu1 + config.targetWeights.batu2,
-          config,
-          weighingStatus,
-          batu1Weight
-        );
-        weighingStatus.batu2 = true;
-      } else {
-        weighingStatus.batu2 = true;
-        setProductionState(prev => ({ ...prev, weighingComplete: { ...prev.weighingComplete, batu2: true } }));
-      }
-      console.log('✅ Batu sequence complete');
     };
 
     const weighSemen = async () => {
@@ -695,17 +760,38 @@ export const useProductionSequence = (
     startingWeight: number = 0 // NEW: for cumulative weighing
   ) => {
     return new Promise<void>((resolve) => {
-      console.log(`⚖️ Weighing ${material}: target=${targetWeight.toFixed(1)}kg, starting=${startingWeight.toFixed(1)}kg`);
+      // ✅ SYSTEM 1: Cumulative weighing logic
+      let adjustedTarget = targetWeight;
+      let adjustedStarting = startingWeight;
+      
+      if (systemConfig === 1 && ['pasir1', 'pasir2', 'batu1', 'batu2'].includes(material)) {
+        // System 1: Cumulative 1 hopper - adjust target and starting weight
+        if (material === 'pasir2') {
+          // Start from pasir1 result, target = starting + pasir2 target
+          adjustedStarting = startingWeight; // Will be passed from caller
+          adjustedTarget = adjustedStarting + targetWeight;
+        } else if (material === 'batu1') {
+          // Start from pasir total (pasir1 + pasir2)
+          adjustedStarting = startingWeight;
+          adjustedTarget = adjustedStarting + targetWeight;
+        } else if (material === 'batu2') {
+          // Start from batu1 result
+          adjustedStarting = startingWeight;
+          adjustedTarget = adjustedStarting + targetWeight;
+        }
+      }
+      
+      console.log(`⚖️ Weighing ${material}: target=${adjustedTarget.toFixed(1)}kg, starting=${adjustedStarting.toFixed(1)}kg (System ${systemConfig})`);
       
       const jogging = getJoggingSettings(material);
-      const triggerWeight = targetWeight * (jogging.trigger / 100);
-      const finalWeight = targetWeight - jogging.toleransi;
+      const triggerWeight = adjustedTarget * (jogging.trigger / 100);
+      const finalWeight = adjustedTarget - jogging.toleransi;
 
       // Phase 1: Normal weighing until trigger %
       let phase = 1;
       let joggingState = false;
       let joggingCycleStart = 0;
-      let simulatedWeight = startingWeight; // Start from startingWeight (not 0)
+      let simulatedWeight = adjustedStarting; // Use adjusted starting weight
 
       // Open material relay
       if (material === 'pasir1') {
@@ -1185,6 +1271,56 @@ export const useProductionSequence = (
   };
 
   const dischargeMaterial = (material: string, targetWeight: number) => {
+    // ✅ SYSTEM 1: Discharge using horizontal conveyor
+    if (systemConfig === 1 && (material === 'pasir' || material === 'batu')) {
+      console.log(`🚚 SYSTEM 1: Discharging ${material} via horizontal conveyor`);
+      
+      // Turn ON horizontal conveyor
+      setComponentStates(prev => ({ 
+        ...prev, 
+        beltBawah: true, // Use beltBawah for horizontal conveyor
+      }));
+      controlRelay('konveyor_horizontal', true); // Assuming relay name
+      addActivityLog(`🚚 Conveyor Horizontal ON (${material})`);
+      
+      const dischargeDuration = 10000; // 10 seconds for horizontal conveyor
+      
+      const clearTimer = setTimeout(() => {
+        // Turn OFF horizontal conveyor
+        setComponentStates(prev => ({ 
+          ...prev, 
+          beltBawah: false,
+        }));
+        controlRelay('konveyor_horizontal', false);
+        addActivityLog(`🚚 Conveyor Horizontal OFF (${material})`);
+        
+        // Reset hopper fill level
+        setProductionState(prev => ({
+          ...prev,
+          hopperFillLevels: { 
+            ...prev.hopperFillLevels, 
+            [material === 'pasir' ? 'pasir' : 'batu']: 0 
+          },
+          dischargedMaterialsCount: prev.dischargedMaterialsCount + 1,
+        }));
+        
+        console.log(`✅ ${material} discharged via conveyor (System 1)`);
+        
+        // Check if all materials discharged
+        setProductionState(prev => {
+          if (prev.dischargedMaterialsCount >= prev.totalMaterialsToDischarge) {
+            console.log(`🎯 All materials discharged! Starting weighing for next mixing in parallel`);
+            setTimeout(() => checkAndStartNextMixingWeighing(), 500);
+          }
+          return prev;
+        });
+      }, dischargeDuration);
+      addTimer(clearTimer);
+      
+      return; // Skip normal discharge logic
+    }
+    
+    // ✅ SYSTEM 2: Normal discharge logic (vibrator + hoppers)
     // Turn on vibrator and BELT-1 for aggregate discharge
     if (material === 'pasir' || material === 'batu') {
       setComponentStates(prev => ({ 
@@ -1538,6 +1674,11 @@ export const useProductionSequence = (
                   controlRelay('pintu_mixer_tutup', false);
                   setProductionState(prev => ({ ...prev, isDoorMoving: false }));
                   addActivityLog('🚪 Mixer Door: CLOSED completely');
+                  
+                  // ✅ CRITICAL: Set production end timestamp AFTER door closes
+                  setProductionEndTimestamp(new Date());
+                  console.log('⏱️ Production end timestamp recorded:', new Date().toISOString());
+                  
                   completeProduction();
                 }, tutupDuration);
                 addTimer(timer7);
@@ -1827,6 +1968,8 @@ export const useProductionSequence = (
     productionState,
     componentStates,
     productionStartTimestamp,
+    productionEndTimestamp,
+    systemConfig,
     startProduction,
     stopProduction,
     pauseProduction,

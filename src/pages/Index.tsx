@@ -7,6 +7,7 @@ import { Mixer } from "@/components/BatchPlant/Mixer";
 import { MixerTruck } from "@/components/BatchPlant/MixerTruck";
 import { ConveyorBelt } from "@/components/BatchPlant/ConveyorBelt";
 import { WeighHopper } from "@/components/BatchPlant/WeighHopper";
+import { WaitingHopper } from "@/components/BatchPlant/WaitingHopper";
 import { Pipe } from "@/components/BatchPlant/Pipe";
 import { StorageBin } from "@/components/BatchPlant/StorageBin";
 import { ActivityLogPanel } from "@/components/BatchPlant/ActivityLogPanel";
@@ -300,7 +301,7 @@ const Index = () => {
   }, [printTicketOpen, raspberryPi, relaySettings]);
 
   // Production sequence hook with Raspberry Pi integration and auto mode
-  const { productionState, componentStates, productionStartTimestamp, startProduction, stopProduction, pauseProduction, resumeProduction } = useProductionSequence(
+  const { productionState, componentStates, productionStartTimestamp, productionEndTimestamp, systemConfig, startProduction, stopProduction, pauseProduction, resumeProduction } = useProductionSequence(
     handleCementDeduction,
     handleAggregateDeduction,
     handleWaterDeduction,
@@ -312,10 +313,13 @@ const Index = () => {
       setIsRunning(false);
       console.log('✅ Production complete - Start button ready for next batch');
       
-      // ✅ CRITICAL: Use productionStartTimestamp from hook (accurate timestamp)
-      const endTime = new Date();
+      // ✅ CRITICAL: Calculate duration using accurate timestamps
+      const endTime = productionEndTimestamp || new Date();
       const startTime = productionStartTimestamp || endTime;
-      console.log('⏱️ Using production start timestamp:', startTime.toISOString());
+      const durationMs = endTime.getTime() - startTime.getTime();
+      const durationMinutes = Math.floor(durationMs / 60000);
+      const durationSeconds = Math.floor((durationMs % 60000) / 1000);
+      console.log(`⏱️ Production duration: ${durationMinutes}m ${durationSeconds}s (from ${startTime.toISOString()} to ${endTime.toISOString()})`);
       
       // Use ref to access latest batch config (avoid closure issue)
       const batchConfig = currentBatchConfigRef.current;

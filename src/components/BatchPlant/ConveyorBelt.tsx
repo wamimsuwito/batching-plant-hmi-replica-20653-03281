@@ -4,10 +4,13 @@ interface ConveyorBeltProps {
   width?: number;
   angle?: number;
   isRunning?: boolean;
+  horizontal?: boolean; // NEW: for horizontal conveyor mode
 }
 
-export const ConveyorBelt = ({ x, y, width = 250, angle = 35, isRunning = true }: ConveyorBeltProps) => {
-  const radians = (angle * Math.PI) / 180;
+export const ConveyorBelt = ({ x, y, width = 250, angle = 35, isRunning = true, horizontal = false }: ConveyorBeltProps) => {
+  // Force horizontal angle if horizontal mode
+  const effectiveAngle = horizontal ? 0 : angle;
+  const radians = (effectiveAngle * Math.PI) / 180;
   const endX = width * Math.cos(radians);
   const endY = -width * Math.sin(radians);
   

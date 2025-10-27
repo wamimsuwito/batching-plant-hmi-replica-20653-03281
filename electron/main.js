@@ -46,6 +46,11 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+  
+  // ✅ Ensure production continues in background when minimized
+  mainWindow.on('minimize', () => {
+    console.log('⚙️ Window minimized - Production continues in background');
+  });
 
   const menuTemplate = [
     {
