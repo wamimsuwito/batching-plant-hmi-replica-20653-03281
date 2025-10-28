@@ -301,7 +301,7 @@ const Index = () => {
   }, [printTicketOpen, raspberryPi, relaySettings]);
 
   // Production sequence hook with Raspberry Pi integration and auto mode
-  const { productionState, componentStates, productionStartTimestamp, productionEndTimestamp, systemConfig, startProduction, stopProduction, pauseProduction, resumeProduction } = useProductionSequence(
+  const { productionState, componentStates, productionStartTimestamp, productionEndTimestamp, systemConfig, accessories, startProduction, stopProduction, pauseProduction, resumeProduction } = useProductionSequence(
     handleCementDeduction,
     handleAggregateDeduction,
     handleWaterDeduction,
@@ -623,71 +623,202 @@ const Index = () => {
           >
             {/* Aggregate Section - Left Side */}
             <g id="aggregate-section">
-              {/* 4 Storage Bins - Dynamic fill level based on bin state */}
-              {/* Bin 1 - Pasir 1 */}
-              <StorageBin 
-                x={25} 
-                y={250}
-                fillLevel={(aggregateBins[0].currentVolume / aggregateBins[0].capacity) * 100} 
-                gateOpen={componentStates.sandBin1Valve} 
-                label="PASIR 1"
-                materialType="pasir"
-              />
-              {/* Bin 2 - Pasir 2 */}
-              <StorageBin 
-                x={105} 
-                y={250}
-                fillLevel={(aggregateBins[1].currentVolume / aggregateBins[1].capacity) * 100} 
-                gateOpen={componentStates.sandBin2Valve} 
-                label="PASIR 2"
-                materialType="pasir"
-              />
-              {/* Bin 3 - Batu 1 */}
-              <StorageBin 
-                x={185} 
-                y={250}
-                fillLevel={(aggregateBins[2].currentVolume / aggregateBins[2].capacity) * 100} 
-                gateOpen={componentStates.stoneBin1Valve} 
-                label="BATU 1"
-                materialType="batu"
-              />
-              {/* Bin 4 - Batu 2 */}
-              <StorageBin 
-                x={265} 
-                y={250}
-                fillLevel={(aggregateBins[3].currentVolume / aggregateBins[3].capacity) * 100} 
-                gateOpen={componentStates.stoneBin2Valve} 
-                label="BATU 2"
-                materialType="batu"
-              />
+              {/* System 1: 1 Elongated Hopper + Horizontal Conveyor */}
+              {systemConfig === 1 && (
+                <>
+                  {/* 4 Storage Bins */}
+                  <StorageBin 
+                    x={25} 
+                    y={250}
+                    fillLevel={(aggregateBins[0].currentVolume / aggregateBins[0].capacity) * 100} 
+                    gateOpen={componentStates.sandBin1Valve} 
+                    label="PASIR 1"
+                    materialType="pasir"
+                  />
+                  <StorageBin 
+                    x={105} 
+                    y={250}
+                    fillLevel={(aggregateBins[1].currentVolume / aggregateBins[1].capacity) * 100} 
+                    gateOpen={componentStates.sandBin2Valve} 
+                    label="PASIR 2"
+                    materialType="pasir"
+                  />
+                  <StorageBin 
+                    x={185} 
+                    y={250}
+                    fillLevel={(aggregateBins[2].currentVolume / aggregateBins[2].capacity) * 100} 
+                    gateOpen={componentStates.stoneBin1Valve} 
+                    label="BATU 1"
+                    materialType="batu"
+                  />
+                  <StorageBin 
+                    x={265} 
+                    y={250}
+                    fillLevel={(aggregateBins[3].currentVolume / aggregateBins[3].capacity) * 100} 
+                    gateOpen={componentStates.stoneBin2Valve} 
+                    label="BATU 2"
+                    materialType="batu"
+                  />
+                  
+                  {/* Single Elongated WeighHopper for ALL aggregate */}
+                  <WeighHopper 
+                    x={20} 
+                    y={390}
+                    fillLevel={productionState.hopperFillLevels?.pasir || 0}
+                    currentWeight={productionState.currentWeights.pasir + productionState.currentWeights.batu}
+                    targetWeight={productionState.cumulativeTargets.pasir + productionState.cumulativeTargets.batu}
+                    isWeighing={componentStates.sandBin1Valve || componentStates.sandBin2Valve || componentStates.stoneBin1Valve || componentStates.stoneBin2Valve}
+                    isDischargingActive={false}
+                    materialType="aggregate"
+                    label="AGGREGATE HOPPER"
+                    width={330}
+                  />
+                  
+                  {/* Horizontal Conveyor below hopper (integrated) */}
+                  <ConveyorBelt 
+                    x={50} 
+                    y={496} 
+                    width={260} 
+                    horizontal={true}
+                    isRunning={componentStates.beltBawah} 
+                  />
+                  
+                  {/* Angled Conveyor to mixer */}
+                  <ConveyorBelt x={320} y={540} width={180} angle={32} isRunning={isRunning} />
+                </>
+              )}
               
-              {/* 2 Aggregate Hoppers - Cumulative weighing */}
-              {/* Hopper 1 - PASIR (Cumulative: Pasir 1 + Pasir 2) */}
-              <AggregateHopper 
-                x={31} 
-                y={390}
-                fillLevel={productionState.hopperFillLevels?.pasir || 0} 
-                isActive={componentStates.hopperValvePasir}
-                isFilling={componentStates.sandBin1Valve || componentStates.sandBin2Valve}
-                materialType="pasir"
-                width={140}
-              />
-              {/* Hopper 2 - BATU (Cumulative: Batu 1 + Batu 2) */}
-              <AggregateHopper 
-                x={196} 
-                y={390}
-                fillLevel={productionState.hopperFillLevels?.batu || 0} 
-                isActive={componentStates.hopperValveBatu}
-                isFilling={componentStates.stoneBin1Valve || componentStates.stoneBin2Valve}
-                materialType="batu"
-                width={130}
-              />
+              {/* System 2: 2 Separate Hoppers (Default - Current System) */}
+              {systemConfig === 2 && (
+                <>
+                  {/* 4 Storage Bins */}
+                  <StorageBin 
+                    x={25} 
+                    y={250}
+                    fillLevel={(aggregateBins[0].currentVolume / aggregateBins[0].capacity) * 100} 
+                    gateOpen={componentStates.sandBin1Valve} 
+                    label="PASIR 1"
+                    materialType="pasir"
+                  />
+                  <StorageBin 
+                    x={105} 
+                    y={250}
+                    fillLevel={(aggregateBins[1].currentVolume / aggregateBins[1].capacity) * 100} 
+                    gateOpen={componentStates.sandBin2Valve} 
+                    label="PASIR 2"
+                    materialType="pasir"
+                  />
+                  <StorageBin 
+                    x={185} 
+                    y={250}
+                    fillLevel={(aggregateBins[2].currentVolume / aggregateBins[2].capacity) * 100} 
+                    gateOpen={componentStates.stoneBin1Valve} 
+                    label="BATU 1"
+                    materialType="batu"
+                  />
+                  <StorageBin 
+                    x={265} 
+                    y={250}
+                    fillLevel={(aggregateBins[3].currentVolume / aggregateBins[3].capacity) * 100} 
+                    gateOpen={componentStates.stoneBin2Valve} 
+                    label="BATU 2"
+                    materialType="batu"
+                  />
+                  
+                  {/* 2 Aggregate Hoppers - Cumulative weighing */}
+                  <AggregateHopper 
+                    x={31} 
+                    y={390}
+                    fillLevel={productionState.hopperFillLevels?.pasir || 0} 
+                    isActive={componentStates.hopperValvePasir}
+                    isFilling={componentStates.sandBin1Valve || componentStates.sandBin2Valve}
+                    materialType="pasir"
+                    width={140}
+                  />
+                  <AggregateHopper 
+                    x={196} 
+                    y={390}
+                    fillLevel={productionState.hopperFillLevels?.batu || 0} 
+                    isActive={componentStates.hopperValveBatu}
+                    isFilling={componentStates.stoneBin1Valve || componentStates.stoneBin2Valve}
+                    materialType="batu"
+                    width={130}
+                  />
 
-              {/* Conveyor Belt 1 - Below hoppers (horizontal) */}
-              <ConveyorBelt x={50} y={496} width={260} angle={0} isRunning={componentStates.beltBawah} />
+                  {/* Conveyor Belt 1 - Below hoppers (horizontal) */}
+                  <ConveyorBelt x={50} y={496} width={260} angle={0} isRunning={componentStates.beltBawah} />
 
-              {/* Conveyor Belt 2 - From bottom left, angled upward to mixer */}
-              <ConveyorBelt x={320} y={540} width={180} angle={32} isRunning={isRunning} />
+                  {/* Conveyor Belt 2 - From bottom left, angled upward to mixer */}
+                  <ConveyorBelt x={320} y={540} width={180} angle={32} isRunning={isRunning} />
+                </>
+              )}
+              
+              {/* System 3: Storage Bin Weighing (No Weigh Hopper) */}
+              {systemConfig === 3 && (
+                <>
+                  {/* 4 Storage Bins with weight display */}
+                  <StorageBin 
+                    x={25} 
+                    y={250}
+                    fillLevel={(aggregateBins[0].currentVolume / aggregateBins[0].capacity) * 100} 
+                    gateOpen={componentStates.sandBin1Valve} 
+                    label="PASIR 1"
+                    materialType="pasir"
+                    currentWeight={aggregateBins[0].currentVolume}
+                  />
+                  <StorageBin 
+                    x={105} 
+                    y={250}
+                    fillLevel={(aggregateBins[1].currentVolume / aggregateBins[1].capacity) * 100} 
+                    gateOpen={componentStates.sandBin2Valve} 
+                    label="PASIR 2"
+                    materialType="pasir"
+                    currentWeight={aggregateBins[1].currentVolume}
+                  />
+                  <StorageBin 
+                    x={185} 
+                    y={250}
+                    fillLevel={(aggregateBins[2].currentVolume / aggregateBins[2].capacity) * 100} 
+                    gateOpen={componentStates.stoneBin1Valve} 
+                    label="BATU 1"
+                    materialType="batu"
+                    currentWeight={aggregateBins[2].currentVolume}
+                  />
+                  <StorageBin 
+                    x={265} 
+                    y={250}
+                    fillLevel={(aggregateBins[3].currentVolume / aggregateBins[3].capacity) * 100} 
+                    gateOpen={componentStates.stoneBin2Valve} 
+                    label="BATU 2"
+                    materialType="batu"
+                    currentWeight={aggregateBins[3].currentVolume}
+                  />
+                  
+                  {/* NO Weigh Hopper - material goes directly to horizontal conveyor */}
+                  
+                  {/* Horizontal Conveyor below storage bins */}
+                  <ConveyorBelt 
+                    x={50} 
+                    y={420} 
+                    width={260} 
+                    horizontal={true}
+                    isRunning={componentStates.beltBawah} 
+                  />
+                  
+                  {/* Angled Conveyor to mixer */}
+                  <ConveyorBelt x={320} y={470} width={180} angle={32} isRunning={isRunning} />
+                </>
+              )}
+              
+              {/* Accessory 4: Waiting Hopper (if enabled) */}
+              {accessories.includes('4') && (
+                <WaitingHopper 
+                  x={500} 
+                  y={450} 
+                  fillLevel={componentStates.waitingHopperFillLevel || 0}
+                  isActive={componentStates.isWaitingHopperActive || false}
+                />
+              )}
             </g>
 
             {/* Cement Silos Section - Center */}

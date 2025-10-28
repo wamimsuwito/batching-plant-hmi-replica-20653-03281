@@ -97,6 +97,8 @@ export interface ComponentStates {
   mixerDoor: boolean;
   vibrator: boolean;
   klakson: boolean; // Klakson relay (Modbus Coil 15)
+  waitingHopperFillLevel?: number; // Fill level for waiting hopper (0-100%)
+  isWaitingHopperActive?: boolean; // Active status for waiting hopper
 }
 
 interface RelayConfig {
@@ -185,6 +187,10 @@ export const useProductionSequence = (
   const [systemConfig, setSystemConfig] = useState(() => {
     const saved = localStorage.getItem('batch_plant_system');
     return saved ? parseInt(saved) : 2; // Default: System 2
+  });
+  const [accessories, setAccessories] = useState<string[]>(() => {
+    const saved = localStorage.getItem('batch_plant_accessories');
+    return saved ? JSON.parse(saved) : [];
   });
   const { toast } = useToast();
   const timersRef = useRef<NodeJS.Timeout[]>([]);
@@ -1970,6 +1976,7 @@ export const useProductionSequence = (
     productionStartTimestamp,
     productionEndTimestamp,
     systemConfig,
+    accessories,
     startProduction,
     stopProduction,
     pauseProduction,

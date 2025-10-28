@@ -5,6 +5,7 @@ interface StorageBinProps {
   gateOpen?: boolean;
   label?: string;
   materialType?: 'pasir' | 'batu';
+  currentWeight?: number; // New prop for displaying actual weight
 }
 
 export const StorageBin = ({ 
@@ -13,7 +14,8 @@ export const StorageBin = ({
   fillLevel = 80, 
   gateOpen = false, 
   label = "BIN",
-  materialType = 'pasir'
+  materialType = 'pasir',
+  currentWeight
 }: StorageBinProps) => {
   const binWidth = 70;
   const binHeight = 90;
@@ -123,14 +125,14 @@ export const StorageBin = ({
         {label}
       </text>
       
-      {/* Fill level percentage */}
+      {/* Display weight if provided, otherwise fill level percentage */}
       <text
         x={binWidth / 2}
         y="35"
         className="fill-hmi-border text-[10px]"
         textAnchor="middle"
       >
-        {fillLevel.toFixed(2)}%
+        {currentWeight !== undefined ? `${currentWeight.toFixed(0)} kg` : `${fillLevel.toFixed(0)}%`}
       </text>
     </g>
   );
