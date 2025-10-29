@@ -48,6 +48,7 @@ export interface ProductionState {
     semen: number;
     air: number;
     additive: number;
+    aggregate?: number; // System 1: Cumulative aggregate (pasir + batu)
   };
   weighingComplete: {
     pasir1: boolean;
@@ -63,6 +64,7 @@ export interface ProductionState {
     pasir: number; // Cumulative fill level (pasir1 + pasir2)
     batu: number;  // Cumulative fill level (batu1 + batu2)
     air: number;
+    aggregate?: number; // System 1: Aggregate hopper fill level
   };
   cumulativeTargets: {
     pasir: number; // pasir1 + pasir2 for display
@@ -90,6 +92,7 @@ export interface ComponentStates {
   stoneBin2Valve: boolean; // Bin Batu 2 gate
   hopperValvePasir: boolean; // HOPPER discharge valve (A1) - only during discharge
   hopperValveBatu: boolean; // HOPPER discharge valve (A2) - only during discharge
+  hopperValveAggregate?: boolean; // System 1: Aggregate hopper door (opens when conveyor ON)
   waterTankValve: boolean; // Tank AIR valve to weigh hopper (RED blinking during weighing)
   waterHopperValve: boolean; // Weigh hopper AIR discharge valve to mixer (GREEN during discharge)
   cementValve: boolean; // Discharge valve for SEMEN from weigh hopper
@@ -97,6 +100,7 @@ export interface ComponentStates {
   mixerDoor: boolean;
   vibrator: boolean;
   klakson: boolean; // Klakson relay (Modbus Coil 15)
+  isAggregateWeighing?: boolean; // System 1: Aggregate weighing indicator
   waitingHopperFillLevel?: number; // Fill level for waiting hopper (0-100%)
   isWaitingHopperActive?: boolean; // Active status for waiting hopper
 }
@@ -909,16 +913,44 @@ export const useProductionSequence = (
           const percentage = Math.min(100, (currentWeight / (config.targetWeights.pasir1 + config.targetWeights.pasir2)) * 100);
           setProductionState(prev => ({
             ...prev,
-            currentWeights: { ...prev.currentWeights, pasir: currentWeight },
-            hopperFillLevels: { ...prev.hopperFillLevels, pasir: percentage },
+            currentWeights: { 
+              ...prev.currentWeights, 
+              pasir: currentWeight,
+              // System 1: Update aggregate cumulative weight
+              ...(systemConfig === 1 ? { aggregate: currentWeight } : {})
+            },
+            hopperFillLevels: { 
+              ...prev.hopperFillLevels, 
+              pasir: percentage,
+              // System 1: Update aggregate hopper fill level
+              ...(systemConfig === 1 ? { aggregate: percentage } : {})
+            },
           }));
+          // System 1: Set aggregate weighing indicator
+          if (systemConfig === 1) {
+            setComponentStates(prev => ({ ...prev, isAggregateWeighing: true }));
+          }
         } else if (material === 'batu1' || material === 'batu2') {
           const percentage = Math.min(100, (currentWeight / (config.targetWeights.batu1 + config.targetWeights.batu2)) * 100);
           setProductionState(prev => ({
             ...prev,
-            currentWeights: { ...prev.currentWeights, batu: currentWeight },
-            hopperFillLevels: { ...prev.hopperFillLevels, batu: percentage },
+            currentWeights: { 
+              ...prev.currentWeights, 
+              batu: currentWeight,
+              // System 1: Update aggregate cumulative weight
+              ...(systemConfig === 1 ? { aggregate: currentWeight } : {})
+            },
+            hopperFillLevels: { 
+              ...prev.hopperFillLevels, 
+              batu: percentage,
+              // System 1: Update aggregate hopper fill level
+              ...(systemConfig === 1 ? { aggregate: percentage } : {})
+            },
           }));
+          // System 1: Set aggregate weighing indicator
+          if (systemConfig === 1) {
+            setComponentStates(prev => ({ ...prev, isAggregateWeighing: true }));
+          }
         } else {
           setProductionState(prev => ({
             ...prev,
@@ -1277,35 +1309,64 @@ export const useProductionSequence = (
   };
 
   const dischargeMaterial = (material: string, targetWeight: number) => {
-    // ✅ SYSTEM 1: Discharge using horizontal conveyor
+    // ✅ SYSTEM 1: Discharge using horizontal conveyor with smooth animation
     if (systemConfig === 1 && (material === 'pasir' || material === 'batu')) {
       console.log(`🚚 SYSTEM 1: Discharging ${material} via horizontal conveyor`);
       
-      // Turn ON horizontal conveyor
+      // Turn ON horizontal conveyor + open aggregate hopper door
       setComponentStates(prev => ({ 
         ...prev, 
-        beltBawah: true, // Use beltBawah for horizontal conveyor
+        beltBawah: true,
+        hopperValveAggregate: true, // Pintu buka - LED berkedip
+        isAggregateWeighing: false, // Stop weighing indicator
       }));
-      controlRelay('konveyor_horizontal', true); // Assuming relay name
-      addActivityLog(`🚚 Conveyor Horizontal ON (${material})`);
+      controlRelay('konveyor_horizontal', true);
+      addActivityLog('🚚 Conveyor Horizontal ON + Pintu Aggregate BUKA');
       
-      const dischargeDuration = 10000; // 10 seconds for horizontal conveyor
+      // Animate fillLevel reduction (10 seconds smooth animation)
+      const dischargeDuration = 10000; // 10 detik
+      const steps = 50; // 50 steps untuk animasi smooth
+      const interval = dischargeDuration / steps;
+      let currentStep = 0;
       
+      const animationInterval = setInterval(() => {
+        currentStep++;
+        const progress = currentStep / steps;
+        
+        setProductionState(prev => ({
+          ...prev,
+          hopperFillLevels: {
+            ...prev.hopperFillLevels,
+            aggregate: Math.max(0, 100 - (progress * 100)) // 100% → 0%
+          }
+        }));
+        
+        if (currentStep >= steps) {
+          clearInterval(animationInterval);
+        }
+      }, interval);
+      
+      // Turn OFF after 10 seconds
       const clearTimer = setTimeout(() => {
-        // Turn OFF horizontal conveyor
         setComponentStates(prev => ({ 
           ...prev, 
           beltBawah: false,
+          hopperValveAggregate: false, // Pintu tutup - LED mati
         }));
         controlRelay('konveyor_horizontal', false);
-        addActivityLog(`🚚 Conveyor Horizontal OFF (${material})`);
+        addActivityLog('🔴 Conveyor Horizontal OFF + Pintu Aggregate TUTUP');
         
-        // Reset hopper fill level
+        // Reset hopper fill level and weight
         setProductionState(prev => ({
           ...prev,
           hopperFillLevels: { 
             ...prev.hopperFillLevels, 
+            aggregate: 0,
             [material === 'pasir' ? 'pasir' : 'batu']: 0 
+          },
+          currentWeights: {
+            ...prev.currentWeights,
+            aggregate: 0
           },
           dischargedMaterialsCount: prev.dischargedMaterialsCount + 1,
         }));

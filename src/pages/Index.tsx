@@ -664,11 +664,11 @@ const Index = () => {
                   <WeighHopper 
                     x={20} 
                     y={390}
-                    fillLevel={productionState.hopperFillLevels?.pasir || 0}
-                    currentWeight={productionState.currentWeights.pasir + productionState.currentWeights.batu}
+                    fillLevel={productionState.hopperFillLevels?.aggregate || 0}
+                    currentWeight={productionState.currentWeights.aggregate || 0}
                     targetWeight={productionState.cumulativeTargets.pasir + productionState.cumulativeTargets.batu}
-                    isWeighing={componentStates.sandBin1Valve || componentStates.sandBin2Valve || componentStates.stoneBin1Valve || componentStates.stoneBin2Valve}
-                    isDischargingActive={false}
+                    isWeighing={componentStates.isAggregateWeighing}
+                    isDischargingActive={componentStates.hopperValveAggregate}
                     materialType="aggregate"
                     label="AGGREGATE HOPPER"
                     width={330}
@@ -1097,93 +1097,171 @@ const Index = () => {
           
           {/* Material Weight Indicators - Horizontal on Top Left */}
           <div className="absolute top-4 left-4 flex flex-row gap-3">
-            {/* Pasir */}
-            <div className="flex flex-col gap-1">
-              {/* Target box */}
-              <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
-                <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
-                <div className="text-xs font-bold text-blue-200 tabular-nums">
-                  {productionState.cumulativeTargets.pasir.toFixed(0)} kg
+            {systemConfig === 1 ? (
+              <>
+                {/* SYSTEM 1: 3 Indikator - Aggregate (komulatif), Semen, Air */}
+                {/* Aggregate */}
+                <div className="flex flex-col gap-1">
+                  {/* Target box */}
+                  <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
+                    <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
+                    <div className="text-xs font-bold text-blue-200 tabular-nums">
+                      {(productionState.cumulativeTargets.pasir + productionState.cumulativeTargets.batu).toFixed(0)} kg
+                    </div>
+                    {/* Detail target pasir & batu */}
+                    <div className="text-[8px] text-blue-400/60 mt-0.5">
+                      Pasir: {productionState.cumulativeTargets.pasir.toFixed(0)} | Batu: {productionState.cumulativeTargets.batu.toFixed(0)}
+                    </div>
+                  </div>
+                  {/* Current weight indicator */}
+                  <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
+                    (productionState.cumulativeTargets.pasir + productionState.cumulativeTargets.batu) > 0
+                      ? 'bg-green-900/40 border-green-500/50' 
+                      : 'bg-gray-800/40 border-gray-600'
+                  }`}>
+                    <div className="text-xs text-muted-foreground font-semibold">AGGREGATE</div>
+                    <div className="text-lg font-bold text-green-300 tabular-nums">
+                      {(productionState.currentWeights.aggregate || 0).toFixed(0)} kg
+                    </div>
+                  </div>
                 </div>
-              </div>
-              {/* Current weight indicator */}
-              <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
-                productionState.cumulativeTargets.pasir > 0
-                  ? 'bg-green-900/40 border-green-500/50' 
-                  : 'bg-gray-800/40 border-gray-600'
-              }`}>
-                <div className="text-xs text-muted-foreground font-semibold">PASIR</div>
-                <div className="text-lg font-bold text-green-300 tabular-nums">
-                  {productionState.currentWeights.pasir.toFixed(0)} kg
+                
+                {/* Semen */}
+                <div className="flex flex-col gap-1">
+                  {/* Target box */}
+                  <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
+                    <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
+                    <div className="text-xs font-bold text-blue-200 tabular-nums">
+                      {productionState.targetWeights.semen.toFixed(0)} kg
+                    </div>
+                  </div>
+                  {/* Current weight indicator */}
+                  <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
+                    productionState.targetWeights.semen > 0 
+                      ? 'bg-green-900/40 border-green-500/50' 
+                      : 'bg-gray-800/40 border-gray-600'
+                  }`}>
+                    <div className="text-xs text-muted-foreground font-semibold">SEMEN</div>
+                    <div className="text-lg font-bold text-green-300 tabular-nums">
+                      {productionState.currentWeights.semen.toFixed(0)} kg
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            
-            {/* Batu */}
-            <div className="flex flex-col gap-1">
-              {/* Target box */}
-              <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
-                <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
-                <div className="text-xs font-bold text-blue-200 tabular-nums">
-                  {productionState.cumulativeTargets.batu.toFixed(0)} kg
+                
+                {/* Air */}
+                <div className="flex flex-col gap-1">
+                  {/* Target box */}
+                  <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
+                    <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
+                    <div className="text-xs font-bold text-blue-200 tabular-nums">
+                      {productionState.targetWeights.air.toFixed(0)} kg
+                    </div>
+                  </div>
+                  {/* Current weight indicator */}
+                  <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
+                    productionState.targetWeights.air > 0 
+                      ? 'bg-green-900/40 border-green-500/50' 
+                      : 'bg-gray-800/40 border-gray-600'
+                  }`}>
+                    <div className="text-xs text-muted-foreground font-semibold">AIR</div>
+                    <div className="text-lg font-bold text-green-300 tabular-nums">
+                      {productionState.currentWeights.air.toFixed(0)} kg
+                    </div>
+                  </div>
                 </div>
-              </div>
-              {/* Current weight indicator */}
-              <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
-                productionState.cumulativeTargets.batu > 0
-                  ? 'bg-green-900/40 border-green-500/50' 
-                  : 'bg-gray-800/40 border-gray-600'
-              }`}>
-                <div className="text-xs text-muted-foreground font-semibold">BATU</div>
-                <div className="text-lg font-bold text-green-300 tabular-nums">
-                  {productionState.currentWeights.batu.toFixed(0)} kg
+              </>
+            ) : (
+              <>
+                {/* SYSTEM 2: 4 Indikator - Pasir, Batu, Semen, Air */}
+                {/* Pasir */}
+                <div className="flex flex-col gap-1">
+                  {/* Target box */}
+                  <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
+                    <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
+                    <div className="text-xs font-bold text-blue-200 tabular-nums">
+                      {productionState.cumulativeTargets.pasir.toFixed(0)} kg
+                    </div>
+                  </div>
+                  {/* Current weight indicator */}
+                  <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
+                    productionState.cumulativeTargets.pasir > 0
+                      ? 'bg-green-900/40 border-green-500/50' 
+                      : 'bg-gray-800/40 border-gray-600'
+                  }`}>
+                    <div className="text-xs text-muted-foreground font-semibold">PASIR</div>
+                    <div className="text-lg font-bold text-green-300 tabular-nums">
+                      {productionState.currentWeights.pasir.toFixed(0)} kg
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            
-            {/* Semen */}
-            <div className="flex flex-col gap-1">
-              {/* Target box */}
-              <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
-                <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
-                <div className="text-xs font-bold text-blue-200 tabular-nums">
-                  {productionState.targetWeights.semen.toFixed(0)} kg
+                
+                {/* Batu */}
+                <div className="flex flex-col gap-1">
+                  {/* Target box */}
+                  <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
+                    <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
+                    <div className="text-xs font-bold text-blue-200 tabular-nums">
+                      {productionState.cumulativeTargets.batu.toFixed(0)} kg
+                    </div>
+                  </div>
+                  {/* Current weight indicator */}
+                  <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
+                    productionState.cumulativeTargets.batu > 0
+                      ? 'bg-green-900/40 border-green-500/50' 
+                      : 'bg-gray-800/40 border-gray-600'
+                  }`}>
+                    <div className="text-xs text-muted-foreground font-semibold">BATU</div>
+                    <div className="text-lg font-bold text-green-300 tabular-nums">
+                      {productionState.currentWeights.batu.toFixed(0)} kg
+                    </div>
+                  </div>
                 </div>
-              </div>
-              {/* Current weight indicator */}
-              <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
-                productionState.targetWeights.semen > 0 
-                  ? 'bg-green-900/40 border-green-500/50' 
-                  : 'bg-gray-800/40 border-gray-600'
-              }`}>
-                <div className="text-xs text-muted-foreground font-semibold">SEMEN</div>
-                <div className="text-lg font-bold text-green-300 tabular-nums">
-                  {productionState.currentWeights.semen.toFixed(0)} kg
+                
+                {/* Semen */}
+                <div className="flex flex-col gap-1">
+                  {/* Target box */}
+                  <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
+                    <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
+                    <div className="text-xs font-bold text-blue-200 tabular-nums">
+                      {productionState.targetWeights.semen.toFixed(0)} kg
+                    </div>
+                  </div>
+                  {/* Current weight indicator */}
+                  <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
+                    productionState.targetWeights.semen > 0 
+                      ? 'bg-green-900/40 border-green-500/50' 
+                      : 'bg-gray-800/40 border-gray-600'
+                  }`}>
+                    <div className="text-xs text-muted-foreground font-semibold">SEMEN</div>
+                    <div className="text-lg font-bold text-green-300 tabular-nums">
+                      {productionState.currentWeights.semen.toFixed(0)} kg
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            
-            {/* Air */}
-            <div className="flex flex-col gap-1">
-              {/* Target box */}
-              <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
-                <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
-                <div className="text-xs font-bold text-blue-200 tabular-nums">
-                  {productionState.targetWeights.air.toFixed(0)} kg
+                
+                {/* Air */}
+                <div className="flex flex-col gap-1">
+                  {/* Target box */}
+                  <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
+                    <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
+                    <div className="text-xs font-bold text-blue-200 tabular-nums">
+                      {productionState.targetWeights.air.toFixed(0)} kg
+                    </div>
+                  </div>
+                  {/* Current weight indicator */}
+                  <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
+                    productionState.targetWeights.air > 0 
+                      ? 'bg-green-900/40 border-green-500/50' 
+                      : 'bg-gray-800/40 border-gray-600'
+                  }`}>
+                    <div className="text-xs text-muted-foreground font-semibold">AIR</div>
+                    <div className="text-lg font-bold text-green-300 tabular-nums">
+                      {productionState.currentWeights.air.toFixed(0)} kg
+                    </div>
+                  </div>
                 </div>
-              </div>
-              {/* Current weight indicator */}
-              <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
-                productionState.targetWeights.air > 0 
-                  ? 'bg-green-900/40 border-green-500/50' 
-                  : 'bg-gray-800/40 border-gray-600'
-              }`}>
-                <div className="text-xs text-muted-foreground font-semibold">AIR</div>
-                <div className="text-lg font-bold text-green-300 tabular-nums">
-                  {productionState.currentWeights.air.toFixed(0)} kg
-                </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
 
           {/* Print Auto Toggle & Help Button - Bottom Right Corner */}
