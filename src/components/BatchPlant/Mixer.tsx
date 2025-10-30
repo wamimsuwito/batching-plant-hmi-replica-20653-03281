@@ -28,8 +28,8 @@ export const Mixer = ({
     ? ((totalMixingTime - mixingTimeRemaining) / totalMixingTime) * 100 
     : 0;
   
-  // Circle parameters for progress ring
-  const radius = 25;
+  // Circle parameters for progress ring - ENLARGED
+  const radius = 35;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (progressPercentage / 100) * circumference;
   return (
@@ -470,15 +470,15 @@ export const Mixer = ({
         </>
       )}
       
-      {/* Circular timer display - ALWAYS VISIBLE */}
+      {/* Circular timer display - ALWAYS VISIBLE - ENLARGED */}
       {(
         <g transform="translate(199, 59)">
-          {/* Background box for better visibility */}
+          {/* Background box - ENLARGED */}
           <rect
-            x="-35"
-            y="-40"
-            width="70"
-            height="90"
+            x="-55"
+            y="-65"
+            width="110"
+            height="130"
             rx="8"
             className="fill-slate-900/90 stroke-cyan-500"
             strokeWidth="2"
@@ -487,7 +487,7 @@ export const Mixer = ({
             }}
           />
           
-          {/* Background circle */}
+          {/* Background circle - ENLARGED */}
           <circle
             cx="0"
             cy="0"
@@ -496,23 +496,23 @@ export const Mixer = ({
             strokeWidth="3"
           />
           
-          {/* Progress ring background */}
+          {/* Progress ring background - ENLARGED */}
           <circle
             cx="0"
             cy="0"
-            r={radius - 5}
+            r={30}
             className="fill-none stroke-slate-600"
-            strokeWidth="6"
+            strokeWidth="8"
             opacity="0.3"
           />
           
-          {/* Progress ring */}
+          {/* Progress ring - ENLARGED */}
           <circle
             cx="0"
             cy="0"
-            r={radius - 5}
+            r={30}
             className="fill-none stroke-cyan-500"
-            strokeWidth="6"
+            strokeWidth="8"
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
@@ -523,11 +523,11 @@ export const Mixer = ({
             }}
           />
           
-          {/* Timer countdown number */}
+          {/* Timer countdown number - ENLARGED */}
           <text
             x="0"
-            y="10"
-            className="fill-white text-2xl font-bold"
+            y="15"
+            className="fill-white text-5xl font-bold"
             textAnchor="middle"
             style={{ 
               textShadow: '0 0 10px rgba(0,0,0,0.9)',
@@ -537,32 +537,32 @@ export const Mixer = ({
             {isTimerActive ? mixingTimeRemaining : 0}
           </text>
           
-          {/* Label above circle */}
+          {/* Label above circle - ENLARGED */}
           <text
             x="0"
-            y="-32"
-            className="fill-white text-[7px] font-semibold"
+            y="-42"
+            className="fill-white text-[12px] font-semibold"
             textAnchor="middle"
           >
             WAKTU MIXING
           </text>
           
-          {/* Mixing count below */}
+          {/* Mixing count below - ENLARGED + NEW FORMAT */}
           <text
             x="0"
-            y="38"
-            className="fill-white text-[8px] font-semibold"
+            y="48"
+            className="fill-white text-[14px] font-semibold"
             textAnchor="middle"
           >
-            ✓ {currentMixing}x{totalMixing}
+            {currentMixing} Dari {totalMixing}
           </text>
           
           {/* Yellow indicator dot - animate only when active */}
           {isTimerActive && (
             <circle
-              cx="18"
-              cy="-3"
-              r="3"
+              cx="25"
+              cy="-5"
+              r="4"
               className="fill-yellow-400"
             >
               <animateTransform

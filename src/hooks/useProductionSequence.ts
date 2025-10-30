@@ -1323,13 +1323,13 @@ export const useProductionSequence = (
       controlRelay('konveyor_horizontal', true);
       addActivityLog('🚚 Conveyor Horizontal ON + Pintu Aggregate BUKA');
       
-      // Animate fillLevel reduction (10 seconds smooth animation)
+      // Animate fillLevel reduction with setTimeout (smooth 10 seconds)
       const dischargeDuration = 10000; // 10 detik
-      const steps = 50; // 50 steps untuk animasi smooth
-      const interval = dischargeDuration / steps;
-      let currentStep = 0;
+      const steps = 100; // 100 steps untuk animasi smooth
+      const interval = dischargeDuration / steps; // 100ms per step
       
-      const animationInterval = setInterval(() => {
+      let currentStep = 0;
+      const animateDischarge = () => {
         currentStep++;
         const progress = currentStep / steps;
         
@@ -1337,14 +1337,18 @@ export const useProductionSequence = (
           ...prev,
           hopperFillLevels: {
             ...prev.hopperFillLevels,
-            aggregate: Math.max(0, 100 - (progress * 100)) // 100% → 0%
+            aggregate: Math.max(0, 100 * (1 - progress)) // Smooth: 100% → 0%
           }
         }));
         
-        if (currentStep >= steps) {
-          clearInterval(animationInterval);
+        if (currentStep < steps) {
+          const timer = setTimeout(animateDischarge, interval);
+          addTimer(timer); // Track timer untuk cleanup
         }
-      }, interval);
+      };
+      
+      // Start animation
+      animateDischarge();
       
       // Turn OFF after 10 seconds
       const clearTimer = setTimeout(() => {

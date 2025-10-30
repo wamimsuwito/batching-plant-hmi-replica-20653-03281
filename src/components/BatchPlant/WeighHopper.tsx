@@ -53,7 +53,7 @@ export const WeighHopper = ({
       {displayFillLevel > 0 && (
         <path
           d={`M ${leftEdge + (50 - displayFillLevel) * 0.4} ${50 - displayFillLevel} L ${rightEdge - (50 - displayFillLevel) * 0.4} ${50 - displayFillLevel} L ${bottomRight} 50 L ${bottomLeft} 50 Z`}
-          className={`${getFillColor()} ${isWeighing ? 'animate-pulse' : ''}`}
+          className={`${getFillColor()}`}
           opacity="0.9"
         />
       )}

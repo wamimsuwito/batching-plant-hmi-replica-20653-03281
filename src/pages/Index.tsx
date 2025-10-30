@@ -617,7 +617,7 @@ const Index = () => {
           <svg
             width="100%"
             height="100%"
-            viewBox="0 0 1200 720"
+            viewBox="0 0 1200 780"
             preserveAspectRatio="xMidYMid meet"
             className="w-full h-full"
           >
@@ -629,7 +629,7 @@ const Index = () => {
                   {/* 4 Storage Bins */}
                   <StorageBin 
                     x={25} 
-                    y={250}
+                    y={310}
                     fillLevel={(aggregateBins[0].currentVolume / aggregateBins[0].capacity) * 100} 
                     gateOpen={componentStates.sandBin1Valve} 
                     label="PASIR 1"
@@ -637,7 +637,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={105} 
-                    y={250}
+                    y={310}
                     fillLevel={(aggregateBins[1].currentVolume / aggregateBins[1].capacity) * 100} 
                     gateOpen={componentStates.sandBin2Valve} 
                     label="PASIR 2"
@@ -645,7 +645,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={185} 
-                    y={250}
+                    y={310}
                     fillLevel={(aggregateBins[2].currentVolume / aggregateBins[2].capacity) * 100} 
                     gateOpen={componentStates.stoneBin1Valve} 
                     label="BATU 1"
@@ -653,7 +653,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={265} 
-                    y={250}
+                    y={310}
                     fillLevel={(aggregateBins[3].currentVolume / aggregateBins[3].capacity) * 100} 
                     gateOpen={componentStates.stoneBin2Valve} 
                     label="BATU 2"
@@ -663,7 +663,7 @@ const Index = () => {
                   {/* Single Elongated WeighHopper for ALL aggregate */}
                   <WeighHopper 
                     x={20} 
-                    y={390}
+                    y={450}
                     fillLevel={productionState.hopperFillLevels?.aggregate || 0}
                     currentWeight={productionState.currentWeights.aggregate || 0}
                     targetWeight={productionState.cumulativeTargets.pasir + productionState.cumulativeTargets.batu}
@@ -677,14 +677,14 @@ const Index = () => {
                   {/* Horizontal Conveyor below hopper (integrated) */}
                   <ConveyorBelt 
                     x={50} 
-                    y={496} 
+                    y={556}
                     width={260} 
                     horizontal={true}
                     isRunning={componentStates.beltBawah} 
                   />
                   
                   {/* Angled Conveyor to mixer */}
-                  <ConveyorBelt x={320} y={540} width={180} angle={32} isRunning={isRunning} />
+                  <ConveyorBelt x={320} y={600} width={180} angle={32} isRunning={isRunning} />
                 </>
               )}
               
@@ -694,7 +694,7 @@ const Index = () => {
                   {/* 4 Storage Bins */}
                   <StorageBin 
                     x={25} 
-                    y={250}
+                    y={310}
                     fillLevel={(aggregateBins[0].currentVolume / aggregateBins[0].capacity) * 100} 
                     gateOpen={componentStates.sandBin1Valve} 
                     label="PASIR 1"
@@ -702,7 +702,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={105} 
-                    y={250}
+                    y={310}
                     fillLevel={(aggregateBins[1].currentVolume / aggregateBins[1].capacity) * 100} 
                     gateOpen={componentStates.sandBin2Valve} 
                     label="PASIR 2"
@@ -710,7 +710,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={185} 
-                    y={250}
+                    y={310}
                     fillLevel={(aggregateBins[2].currentVolume / aggregateBins[2].capacity) * 100} 
                     gateOpen={componentStates.stoneBin1Valve} 
                     label="BATU 1"
@@ -718,7 +718,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={265} 
-                    y={250}
+                    y={310}
                     fillLevel={(aggregateBins[3].currentVolume / aggregateBins[3].capacity) * 100} 
                     gateOpen={componentStates.stoneBin2Valve} 
                     label="BATU 2"
@@ -728,7 +728,7 @@ const Index = () => {
                   {/* 2 Aggregate Hoppers - Cumulative weighing */}
                   <AggregateHopper 
                     x={31} 
-                    y={390}
+                    y={450}
                     fillLevel={productionState.hopperFillLevels?.pasir || 0} 
                     isActive={componentStates.hopperValvePasir}
                     isFilling={componentStates.sandBin1Valve || componentStates.sandBin2Valve}
@@ -737,7 +737,7 @@ const Index = () => {
                   />
                   <AggregateHopper 
                     x={196} 
-                    y={390}
+                    y={450}
                     fillLevel={productionState.hopperFillLevels?.batu || 0} 
                     isActive={componentStates.hopperValveBatu}
                     isFilling={componentStates.stoneBin1Valve || componentStates.stoneBin2Valve}
@@ -746,10 +746,10 @@ const Index = () => {
                   />
 
                   {/* Conveyor Belt 1 - Below hoppers (horizontal) */}
-                  <ConveyorBelt x={50} y={496} width={260} angle={0} isRunning={componentStates.beltBawah} />
+                  <ConveyorBelt x={50} y={556} width={260} angle={0} isRunning={componentStates.beltBawah} />
 
                   {/* Conveyor Belt 2 - From bottom left, angled upward to mixer */}
-                  <ConveyorBelt x={320} y={540} width={180} angle={32} isRunning={isRunning} />
+                  <ConveyorBelt x={320} y={600} width={180} angle={32} isRunning={isRunning} />
                 </>
               )}
               
@@ -759,7 +759,7 @@ const Index = () => {
                   {/* 4 Storage Bins with weight display */}
                   <StorageBin 
                     x={25} 
-                    y={250}
+                    y={310}
                     fillLevel={(aggregateBins[0].currentVolume / aggregateBins[0].capacity) * 100} 
                     gateOpen={componentStates.sandBin1Valve} 
                     label="PASIR 1"
@@ -768,7 +768,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={105} 
-                    y={250}
+                    y={310}
                     fillLevel={(aggregateBins[1].currentVolume / aggregateBins[1].capacity) * 100} 
                     gateOpen={componentStates.sandBin2Valve} 
                     label="PASIR 2"
@@ -777,7 +777,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={185} 
-                    y={250}
+                    y={310}
                     fillLevel={(aggregateBins[2].currentVolume / aggregateBins[2].capacity) * 100} 
                     gateOpen={componentStates.stoneBin1Valve} 
                     label="BATU 1"
@@ -786,7 +786,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={265} 
-                    y={250}
+                    y={310}
                     fillLevel={(aggregateBins[3].currentVolume / aggregateBins[3].capacity) * 100} 
                     gateOpen={componentStates.stoneBin2Valve} 
                     label="BATU 2"
@@ -799,14 +799,14 @@ const Index = () => {
                   {/* Horizontal Conveyor below storage bins */}
                   <ConveyorBelt 
                     x={50} 
-                    y={420} 
+                    y={480}
                     width={260} 
                     horizontal={true}
                     isRunning={componentStates.beltBawah} 
                   />
                   
                   {/* Angled Conveyor to mixer */}
-                  <ConveyorBelt x={320} y={470} width={180} angle={32} isRunning={isRunning} />
+                  <ConveyorBelt x={320} y={530} width={180} angle={32} isRunning={isRunning} />
                 </>
               )}
               
@@ -814,7 +814,7 @@ const Index = () => {
               {accessories.includes('4') && (
                 <WaitingHopper 
                   x={500} 
-                  y={450} 
+                  y={510}
                   fillLevel={componentStates.waitingHopperFillLevel || 0}
                   isActive={componentStates.isWaitingHopperActive || false}
                 />
@@ -876,7 +876,7 @@ const Index = () => {
               {/* Single Weigh Hopper below silos (BIGGER) */}
               <WeighHopper 
                 x={550} 
-                y={370}
+                y={430}
                 currentWeight={productionState.currentWeights.semen}
                 targetWeight={productionState.targetWeights.semen}
                 isWeighing={productionState.targetWeights.semen > 0 && !productionState.weighingComplete.semen}
@@ -885,12 +885,12 @@ const Index = () => {
               />
 
               {/* Pipes from silos to single weigh hopper with elbows */}
-              <Pipe points="480,340 480,355 570,355 570,370" type="material" isActive={componentStates.siloValves[0]} />
-              <Pipe points="530,340 530,360 580,360 580,370" type="material" isActive={componentStates.siloValves[1]} />
-              <Pipe points="580,340 580,370" type="material" isActive={componentStates.siloValves[2]} />
-              <Pipe points="630,340 630,360 610,360 610,370" type="material" isActive={componentStates.siloValves[3]} />
-              <Pipe points="680,340 680,355 620,355 620,370" type="material" isActive={componentStates.siloValves[4]} />
-              <Pipe points="730,340 730,350 620,350 620,370" type="material" isActive={componentStates.siloValves[5]} />
+              <Pipe points="480,340 480,415 570,415 570,430" type="material" isActive={componentStates.siloValves[0]} />
+              <Pipe points="530,340 530,420 580,420 580,430" type="material" isActive={componentStates.siloValves[1]} />
+              <Pipe points="580,340 580,430" type="material" isActive={componentStates.siloValves[2]} />
+              <Pipe points="630,340 630,420 610,420 610,430" type="material" isActive={componentStates.siloValves[3]} />
+              <Pipe points="680,340 680,415 620,415 620,430" type="material" isActive={componentStates.siloValves[4]} />
+              <Pipe points="730,340 730,410 620,410 620,430" type="material" isActive={componentStates.siloValves[5]} />
             </g>
 
             {/* Additive Tanks Section - Right Side */}
@@ -916,7 +916,7 @@ const Index = () => {
               />
 
               {/* Intermediate Tank dengan fungsi Weighing */}
-              <g transform="translate(780, 350)">
+              <g transform="translate(780, 410)">
                 {/* Tank body */}
                 <rect
                   x="0"
@@ -992,14 +992,14 @@ const Index = () => {
 
               {/* Pipe from water tank to intermediate tank */}
               <Pipe 
-                points="797,315 797,350" 
+                points="797,315 797,410" 
                 type="water" 
                 isActive={false}
               />
 
               {/* Pipe from intermediate tank to mixer */}
               <Pipe 
-                points="797,405 797,450 605,450 605,480" 
+                points="797,465 797,510 605,510 605,540" 
                 type="water" 
                 isActive={componentStates.waterHopperValve}
               />
@@ -1008,10 +1008,10 @@ const Index = () => {
 
             {/* Mixer Section - Center Bottom */}
             <g id="mixer-section">
-              {/* Main Mixer - Twin Shaft Horizontal */}
+            {/* Main Mixer - Twin Shaft Horizontal */}
             <Mixer 
               x={455} 
-              y={470}
+              y={530}
               isRunning={componentStates.mixer}
               doorOpen={componentStates.mixerDoor}
               isDoorMoving={productionState.isDoorMoving}
@@ -1025,16 +1025,16 @@ const Index = () => {
               {/* Mixer Truck - Below discharge chute */}
               <MixerTruck 
                 x={510} 
-                y={570}
+                y={630}
                 isReceiving={componentStates.mixerDoor}
                 isMoving={false}
               />
 
               {/* Pipe to mixer from single weigh hopper */}
-              <Pipe points="600,446 600,460 530,460 530,480" type="material" isActive={componentStates.cementValve} />
+              <Pipe points="600,506 600,520 530,520 530,540" type="material" isActive={componentStates.cementValve} />
               
               {/* Pipe from additive intermediate tank */}
-              <Pipe points="797,405 720,405 720,480 605,480" type="water" isActive={false} />
+              <Pipe points="797,465 720,465 720,540 605,540" type="water" isActive={false} />
             </g>
 
           </svg>
@@ -1095,76 +1095,78 @@ const Index = () => {
             />
           </div>
           
-          {/* Material Weight Indicators - Horizontal on Top Left */}
-          <div className="absolute top-4 left-4 flex flex-row gap-3">
+          {/* Material Weight Indicators - Horizontal on Top Left - ENLARGED & STANDARDIZED */}
+          <div className="absolute top-4 left-4 flex flex-row gap-6">
             {systemConfig === 1 ? (
               <>
                 {/* SYSTEM 1: 3 Indikator - Aggregate (komulatif), Semen, Air */}
                 {/* Aggregate */}
-                <div className="flex flex-col gap-1">
-                  {/* Target box */}
-                  <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
-                    <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
-                    <div className="text-xs font-bold text-blue-200 tabular-nums">
+                <div className="flex flex-col gap-2">
+                  {/* Target box - STANDARDIZED */}
+                  <div className="backdrop-blur-sm bg-blue-900/40 border-2 border-blue-500/50 rounded-lg px-4 py-3 w-[220px] h-[70px] flex flex-col justify-center">
+                    <div className="text-[12px] text-blue-300 font-semibold uppercase tracking-wide">TARGET</div>
+                    <div className="text-xl font-bold text-blue-200 tabular-nums">
                       {(productionState.cumulativeTargets.pasir + productionState.cumulativeTargets.batu).toFixed(0)} kg
                     </div>
                     {/* Detail target pasir & batu */}
-                    <div className="text-[8px] text-blue-400/60 mt-0.5">
-                      Pasir: {productionState.cumulativeTargets.pasir.toFixed(0)} | Batu: {productionState.cumulativeTargets.batu.toFixed(0)}
+                    <div className="text-[10px] text-blue-400/70 mt-1 flex gap-2">
+                      <span>Pasir: {productionState.cumulativeTargets.pasir.toFixed(0)}</span>
+                      <span>|</span>
+                      <span>Batu: {productionState.cumulativeTargets.batu.toFixed(0)}</span>
                     </div>
                   </div>
-                  {/* Current weight indicator */}
-                  <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
+                  {/* Current weight indicator - STANDARDIZED */}
+                  <div className={`backdrop-blur-sm border-2 rounded-lg px-5 py-4 w-[220px] h-[85px] flex flex-col justify-center ${
                     (productionState.cumulativeTargets.pasir + productionState.cumulativeTargets.batu) > 0
                       ? 'bg-green-900/40 border-green-500/50' 
                       : 'bg-gray-800/40 border-gray-600'
                   }`}>
-                    <div className="text-xs text-muted-foreground font-semibold">AGGREGATE</div>
-                    <div className="text-lg font-bold text-green-300 tabular-nums">
+                    <div className="text-sm text-muted-foreground font-semibold uppercase tracking-wide">AGGREGATE</div>
+                    <div className="text-3xl font-bold text-green-300 tabular-nums">
                       {(productionState.currentWeights.aggregate || 0).toFixed(0)} kg
                     </div>
                   </div>
                 </div>
                 
                 {/* Semen */}
-                <div className="flex flex-col gap-1">
-                  {/* Target box */}
-                  <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
-                    <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
-                    <div className="text-xs font-bold text-blue-200 tabular-nums">
+                <div className="flex flex-col gap-2">
+                  {/* Target box - STANDARDIZED */}
+                  <div className="backdrop-blur-sm bg-blue-900/40 border-2 border-blue-500/50 rounded-lg px-4 py-3 w-[220px] h-[60px] flex flex-col justify-center">
+                    <div className="text-[12px] text-blue-300 font-semibold uppercase tracking-wide">TARGET</div>
+                    <div className="text-xl font-bold text-blue-200 tabular-nums">
                       {productionState.targetWeights.semen.toFixed(0)} kg
                     </div>
                   </div>
-                  {/* Current weight indicator */}
-                  <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
+                  {/* Current weight indicator - STANDARDIZED */}
+                  <div className={`backdrop-blur-sm border-2 rounded-lg px-5 py-4 w-[220px] h-[85px] flex flex-col justify-center ${
                     productionState.targetWeights.semen > 0 
                       ? 'bg-green-900/40 border-green-500/50' 
                       : 'bg-gray-800/40 border-gray-600'
                   }`}>
-                    <div className="text-xs text-muted-foreground font-semibold">SEMEN</div>
-                    <div className="text-lg font-bold text-green-300 tabular-nums">
+                    <div className="text-sm text-muted-foreground font-semibold uppercase tracking-wide">SEMEN</div>
+                    <div className="text-3xl font-bold text-green-300 tabular-nums">
                       {productionState.currentWeights.semen.toFixed(0)} kg
                     </div>
                   </div>
                 </div>
                 
                 {/* Air */}
-                <div className="flex flex-col gap-1">
-                  {/* Target box */}
-                  <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
-                    <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
-                    <div className="text-xs font-bold text-blue-200 tabular-nums">
+                <div className="flex flex-col gap-2">
+                  {/* Target box - STANDARDIZED */}
+                  <div className="backdrop-blur-sm bg-blue-900/40 border-2 border-blue-500/50 rounded-lg px-4 py-3 w-[220px] h-[60px] flex flex-col justify-center">
+                    <div className="text-[12px] text-blue-300 font-semibold uppercase tracking-wide">TARGET</div>
+                    <div className="text-xl font-bold text-blue-200 tabular-nums">
                       {productionState.targetWeights.air.toFixed(0)} kg
                     </div>
                   </div>
-                  {/* Current weight indicator */}
-                  <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
+                  {/* Current weight indicator - STANDARDIZED */}
+                  <div className={`backdrop-blur-sm border-2 rounded-lg px-5 py-4 w-[220px] h-[85px] flex flex-col justify-center ${
                     productionState.targetWeights.air > 0 
                       ? 'bg-green-900/40 border-green-500/50' 
                       : 'bg-gray-800/40 border-gray-600'
                   }`}>
-                    <div className="text-xs text-muted-foreground font-semibold">AIR</div>
-                    <div className="text-lg font-bold text-green-300 tabular-nums">
+                    <div className="text-sm text-muted-foreground font-semibold uppercase tracking-wide">AIR</div>
+                    <div className="text-3xl font-bold text-green-300 tabular-nums">
                       {productionState.currentWeights.air.toFixed(0)} kg
                     </div>
                   </div>
@@ -1172,90 +1174,90 @@ const Index = () => {
               </>
             ) : (
               <>
-                {/* SYSTEM 2: 4 Indikator - Pasir, Batu, Semen, Air */}
+                {/* SYSTEM 2: 4 Indikator - Pasir, Batu, Semen, Air - STANDARDIZED */}
                 {/* Pasir */}
-                <div className="flex flex-col gap-1">
-                  {/* Target box */}
-                  <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
-                    <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
-                    <div className="text-xs font-bold text-blue-200 tabular-nums">
+                <div className="flex flex-col gap-2">
+                  {/* Target box - STANDARDIZED */}
+                  <div className="backdrop-blur-sm bg-blue-900/40 border-2 border-blue-500/50 rounded-lg px-4 py-3 w-[220px] h-[60px] flex flex-col justify-center">
+                    <div className="text-[12px] text-blue-300 font-semibold uppercase tracking-wide">TARGET</div>
+                    <div className="text-xl font-bold text-blue-200 tabular-nums">
                       {productionState.cumulativeTargets.pasir.toFixed(0)} kg
                     </div>
                   </div>
-                  {/* Current weight indicator */}
-                  <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
+                  {/* Current weight indicator - STANDARDIZED */}
+                  <div className={`backdrop-blur-sm border-2 rounded-lg px-5 py-4 w-[220px] h-[85px] flex flex-col justify-center ${
                     productionState.cumulativeTargets.pasir > 0
                       ? 'bg-green-900/40 border-green-500/50' 
                       : 'bg-gray-800/40 border-gray-600'
                   }`}>
-                    <div className="text-xs text-muted-foreground font-semibold">PASIR</div>
-                    <div className="text-lg font-bold text-green-300 tabular-nums">
+                    <div className="text-sm text-muted-foreground font-semibold uppercase tracking-wide">PASIR</div>
+                    <div className="text-3xl font-bold text-green-300 tabular-nums">
                       {productionState.currentWeights.pasir.toFixed(0)} kg
                     </div>
                   </div>
                 </div>
                 
                 {/* Batu */}
-                <div className="flex flex-col gap-1">
-                  {/* Target box */}
-                  <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
-                    <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
-                    <div className="text-xs font-bold text-blue-200 tabular-nums">
+                <div className="flex flex-col gap-2">
+                  {/* Target box - STANDARDIZED */}
+                  <div className="backdrop-blur-sm bg-blue-900/40 border-2 border-blue-500/50 rounded-lg px-4 py-3 w-[220px] h-[60px] flex flex-col justify-center">
+                    <div className="text-[12px] text-blue-300 font-semibold uppercase tracking-wide">TARGET</div>
+                    <div className="text-xl font-bold text-blue-200 tabular-nums">
                       {productionState.cumulativeTargets.batu.toFixed(0)} kg
                     </div>
                   </div>
-                  {/* Current weight indicator */}
-                  <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
+                  {/* Current weight indicator - STANDARDIZED */}
+                  <div className={`backdrop-blur-sm border-2 rounded-lg px-5 py-4 w-[220px] h-[85px] flex flex-col justify-center ${
                     productionState.cumulativeTargets.batu > 0
                       ? 'bg-green-900/40 border-green-500/50' 
                       : 'bg-gray-800/40 border-gray-600'
                   }`}>
-                    <div className="text-xs text-muted-foreground font-semibold">BATU</div>
-                    <div className="text-lg font-bold text-green-300 tabular-nums">
+                    <div className="text-sm text-muted-foreground font-semibold uppercase tracking-wide">BATU</div>
+                    <div className="text-3xl font-bold text-green-300 tabular-nums">
                       {productionState.currentWeights.batu.toFixed(0)} kg
                     </div>
                   </div>
                 </div>
                 
                 {/* Semen */}
-                <div className="flex flex-col gap-1">
-                  {/* Target box */}
-                  <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
-                    <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
-                    <div className="text-xs font-bold text-blue-200 tabular-nums">
+                <div className="flex flex-col gap-2">
+                  {/* Target box - STANDARDIZED */}
+                  <div className="backdrop-blur-sm bg-blue-900/40 border-2 border-blue-500/50 rounded-lg px-4 py-3 w-[220px] h-[60px] flex flex-col justify-center">
+                    <div className="text-[12px] text-blue-300 font-semibold uppercase tracking-wide">TARGET</div>
+                    <div className="text-xl font-bold text-blue-200 tabular-nums">
                       {productionState.targetWeights.semen.toFixed(0)} kg
                     </div>
                   </div>
-                  {/* Current weight indicator */}
-                  <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
+                  {/* Current weight indicator - STANDARDIZED */}
+                  <div className={`backdrop-blur-sm border-2 rounded-lg px-5 py-4 w-[220px] h-[85px] flex flex-col justify-center ${
                     productionState.targetWeights.semen > 0 
                       ? 'bg-green-900/40 border-green-500/50' 
                       : 'bg-gray-800/40 border-gray-600'
                   }`}>
-                    <div className="text-xs text-muted-foreground font-semibold">SEMEN</div>
-                    <div className="text-lg font-bold text-green-300 tabular-nums">
+                    <div className="text-sm text-muted-foreground font-semibold uppercase tracking-wide">SEMEN</div>
+                    <div className="text-3xl font-bold text-green-300 tabular-nums">
                       {productionState.currentWeights.semen.toFixed(0)} kg
                     </div>
                   </div>
                 </div>
                 
                 {/* Air */}
-                <div className="flex flex-col gap-1">
-                  {/* Target box */}
-                  <div className="backdrop-blur-sm bg-blue-900/40 border border-blue-500/50 rounded px-2 py-1">
-                    <div className="text-[9px] text-blue-300 font-semibold">TARGET</div>
-                    <div className="text-xs font-bold text-blue-200 tabular-nums">
+                <div className="flex flex-col gap-2">
+                  {/* Target box - STANDARDIZED */}
+                  <div className="backdrop-blur-sm bg-blue-900/40 border-2 border-blue-500/50 rounded-lg px-4 py-3 w-[220px] h-[60px] flex flex-col justify-center">
+                    <div className="text-[12px] text-blue-300 font-semibold uppercase tracking-wide">TARGET</div>
+                    <div className="text-xl font-bold text-blue-200 tabular-nums">
                       {productionState.targetWeights.air.toFixed(0)} kg
                     </div>
                   </div>
-                  {/* Current weight indicator */}
-                  <div className={`backdrop-blur-sm border-2 rounded px-4 py-2 min-w-[150px] ${
+                  {/* Current weight indicator - STANDARDIZED */}
+                  <div className={`backdrop-blur-sm border-2 rounded-lg px-5 py-4 w-[220px] h-[85px] flex flex-col justify-center ${
                     productionState.targetWeights.air > 0 
                       ? 'bg-green-900/40 border-green-500/50' 
                       : 'bg-gray-800/40 border-gray-600'
                   }`}>
-                    <div className="text-xs text-muted-foreground font-semibold">AIR</div>
-                    <div className="text-lg font-bold text-green-300 tabular-nums">
+                    <div className="text-sm text-muted-foreground font-semibold uppercase tracking-wide">AIR</div>
+                    <div className="text-3xl font-bold text-green-300 tabular-nums">
                       {productionState.currentWeights.air.toFixed(0)} kg
                     </div>
                   </div>
