@@ -650,7 +650,7 @@ const Index = () => {
           <svg
             width="100%"
             height="100%"
-            viewBox="0 0 1200 780"
+            viewBox="0 0 1200 893"
             preserveAspectRatio="xMidYMid meet"
             className="w-full h-full"
           >
@@ -662,7 +662,7 @@ const Index = () => {
                   {/* 4 Storage Bins */}
                   <StorageBin 
                     x={25} 
-                    y={310}
+                    y={423}
                     fillLevel={(aggregateBins[0].currentVolume / aggregateBins[0].capacity) * 100} 
                     gateOpen={componentStates.sandBin1Valve} 
                     label="PASIR 1"
@@ -670,7 +670,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={105} 
-                    y={310}
+                    y={423}
                     fillLevel={(aggregateBins[1].currentVolume / aggregateBins[1].capacity) * 100} 
                     gateOpen={componentStates.sandBin2Valve} 
                     label="PASIR 2"
@@ -678,7 +678,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={185} 
-                    y={310}
+                    y={423}
                     fillLevel={(aggregateBins[2].currentVolume / aggregateBins[2].capacity) * 100} 
                     gateOpen={componentStates.stoneBin1Valve} 
                     label="BATU 1"
@@ -686,7 +686,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={265} 
-                    y={310}
+                    y={423}
                     fillLevel={(aggregateBins[3].currentVolume / aggregateBins[3].capacity) * 100} 
                     gateOpen={componentStates.stoneBin2Valve} 
                     label="BATU 2"
@@ -696,7 +696,7 @@ const Index = () => {
                   {/* Single Elongated WeighHopper for ALL aggregate */}
                   <WeighHopper 
                     x={20} 
-                    y={450}
+                    y={563}
                     fillLevel={productionState.hopperFillLevels?.aggregate || 0}
                     currentWeight={productionState.currentWeights.aggregate || 0}
                     targetWeight={productionState.cumulativeTargets.pasir + productionState.cumulativeTargets.batu}
@@ -710,14 +710,14 @@ const Index = () => {
                   {/* Horizontal Conveyor below hopper (integrated) */}
                   <ConveyorBelt 
                     x={50} 
-                    y={556}
+                    y={669}
                     width={260} 
                     horizontal={true}
                     isRunning={componentStates.beltBawah} 
                   />
                   
                   {/* Angled Conveyor to mixer */}
-                  <ConveyorBelt x={320} y={600} width={180} angle={32} isRunning={isRunning} />
+                  <ConveyorBelt x={320} y={713} width={180} angle={32} isRunning={isRunning} />
                 </>
               )}
               
@@ -727,7 +727,7 @@ const Index = () => {
                   {/* 4 Storage Bins */}
                   <StorageBin 
                     x={25} 
-                    y={310}
+                    y={423}
                     fillLevel={(aggregateBins[0].currentVolume / aggregateBins[0].capacity) * 100} 
                     gateOpen={componentStates.sandBin1Valve} 
                     label="PASIR 1"
@@ -735,7 +735,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={105} 
-                    y={310}
+                    y={423}
                     fillLevel={(aggregateBins[1].currentVolume / aggregateBins[1].capacity) * 100} 
                     gateOpen={componentStates.sandBin2Valve} 
                     label="PASIR 2"
@@ -743,7 +743,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={185} 
-                    y={310}
+                    y={423}
                     fillLevel={(aggregateBins[2].currentVolume / aggregateBins[2].capacity) * 100} 
                     gateOpen={componentStates.stoneBin1Valve} 
                     label="BATU 1"
@@ -751,7 +751,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={265} 
-                    y={310}
+                    y={423}
                     fillLevel={(aggregateBins[3].currentVolume / aggregateBins[3].capacity) * 100} 
                     gateOpen={componentStates.stoneBin2Valve} 
                     label="BATU 2"
@@ -761,7 +761,7 @@ const Index = () => {
                   {/* 2 Aggregate Hoppers - Cumulative weighing */}
                   <AggregateHopper 
                     x={31} 
-                    y={450}
+                    y={563}
                     fillLevel={productionState.hopperFillLevels?.pasir || 0} 
                     isActive={componentStates.hopperValvePasir}
                     isFilling={componentStates.sandBin1Valve || componentStates.sandBin2Valve}
@@ -770,7 +770,7 @@ const Index = () => {
                   />
                   <AggregateHopper 
                     x={196} 
-                    y={450}
+                    y={563}
                     fillLevel={productionState.hopperFillLevels?.batu || 0} 
                     isActive={componentStates.hopperValveBatu}
                     isFilling={componentStates.stoneBin1Valve || componentStates.stoneBin2Valve}
@@ -779,10 +779,10 @@ const Index = () => {
                   />
 
                   {/* Conveyor Belt 1 - Below hoppers (horizontal) */}
-                  <ConveyorBelt x={50} y={556} width={260} angle={0} isRunning={componentStates.beltBawah} />
+                  <ConveyorBelt x={50} y={669} width={260} angle={0} isRunning={componentStates.beltBawah} />
 
                   {/* Conveyor Belt 2 - From bottom left, angled upward to mixer */}
-                  <ConveyorBelt x={320} y={600} width={180} angle={32} isRunning={isRunning} />
+                  <ConveyorBelt x={320} y={713} width={180} angle={32} isRunning={isRunning} />
                 </>
               )}
               
@@ -792,7 +792,7 @@ const Index = () => {
                   {/* 4 Storage Bins with weight display */}
                   <StorageBin 
                     x={25} 
-                    y={310}
+                    y={423}
                     fillLevel={(aggregateBins[0].currentVolume / aggregateBins[0].capacity) * 100} 
                     gateOpen={componentStates.sandBin1Valve} 
                     label="PASIR 1"
@@ -801,7 +801,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={105} 
-                    y={310}
+                    y={423}
                     fillLevel={(aggregateBins[1].currentVolume / aggregateBins[1].capacity) * 100} 
                     gateOpen={componentStates.sandBin2Valve} 
                     label="PASIR 2"
@@ -810,7 +810,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={185} 
-                    y={310}
+                    y={423}
                     fillLevel={(aggregateBins[2].currentVolume / aggregateBins[2].capacity) * 100} 
                     gateOpen={componentStates.stoneBin1Valve} 
                     label="BATU 1"
@@ -819,7 +819,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={265} 
-                    y={310}
+                    y={423}
                     fillLevel={(aggregateBins[3].currentVolume / aggregateBins[3].capacity) * 100} 
                     gateOpen={componentStates.stoneBin2Valve} 
                     label="BATU 2"
@@ -832,14 +832,14 @@ const Index = () => {
                   {/* Horizontal Conveyor below storage bins */}
                   <ConveyorBelt 
                     x={50} 
-                    y={480}
+                    y={593}
                     width={260} 
                     horizontal={true}
                     isRunning={componentStates.beltBawah} 
                   />
                   
                   {/* Angled Conveyor to mixer */}
-                  <ConveyorBelt x={320} y={530} width={180} angle={32} isRunning={isRunning} />
+                  <ConveyorBelt x={320} y={643} width={180} angle={32} isRunning={isRunning} />
                 </>
               )}
               
@@ -847,7 +847,7 @@ const Index = () => {
               {accessories.includes('4') && (
                 <WaitingHopper 
                   x={500} 
-                  y={510}
+                  y={623}
                   fillLevel={componentStates.waitingHopperFillLevel || 0}
                   isActive={componentStates.isWaitingHopperActive || false}
                 />
@@ -859,7 +859,7 @@ const Index = () => {
               {/* 6 Cement Silos */}
               <CementSilo 
                 x={460} 
-                y={170}
+                y={283}
                 label="SILO 1"
                 currentVolume={silos[0].currentVolume}
                 capacity={silos[0].capacity}
@@ -867,7 +867,7 @@ const Index = () => {
               />
               <CementSilo 
                 x={510} 
-                y={170}
+                y={283}
                 label="SILO 2"
                 currentVolume={silos[1].currentVolume}
                 capacity={silos[1].capacity}
@@ -875,7 +875,7 @@ const Index = () => {
               />
               <CementSilo 
                 x={560} 
-                y={170}
+                y={283}
                 label="SILO 3"
                 currentVolume={silos[2].currentVolume}
                 capacity={silos[2].capacity}
@@ -883,7 +883,7 @@ const Index = () => {
               />
               <CementSilo 
                 x={610} 
-                y={170}
+                y={283}
                 label="SILO 4"
                 currentVolume={silos[3].currentVolume}
                 capacity={silos[3].capacity}
@@ -891,7 +891,7 @@ const Index = () => {
               />
               <CementSilo 
                 x={660} 
-                y={170}
+                y={283}
                 label="SILO 5"
                 currentVolume={silos[4].currentVolume}
                 capacity={silos[4].capacity}
@@ -899,7 +899,7 @@ const Index = () => {
               />
               <CementSilo 
                 x={710} 
-                y={170}
+                y={283}
                 label="SILO 6"
                 currentVolume={silos[5].currentVolume}
                 capacity={silos[5].capacity}
@@ -909,7 +909,7 @@ const Index = () => {
               {/* Single Weigh Hopper below silos (BIGGER) */}
               <WeighHopper 
                 x={550} 
-                y={430}
+                y={543}
                 currentWeight={productionState.currentWeights.semen}
                 targetWeight={productionState.targetWeights.semen}
                 isWeighing={productionState.targetWeights.semen > 0 && !productionState.weighingComplete.semen}
@@ -918,12 +918,12 @@ const Index = () => {
               />
 
               {/* Pipes from silos to single weigh hopper with elbows */}
-              <Pipe points="480,340 480,415 570,415 570,430" type="material" isActive={componentStates.siloValves[0]} />
-              <Pipe points="530,340 530,420 580,420 580,430" type="material" isActive={componentStates.siloValves[1]} />
-              <Pipe points="580,340 580,430" type="material" isActive={componentStates.siloValves[2]} />
-              <Pipe points="630,340 630,420 610,420 610,430" type="material" isActive={componentStates.siloValves[3]} />
-              <Pipe points="680,340 680,415 620,415 620,430" type="material" isActive={componentStates.siloValves[4]} />
-              <Pipe points="730,340 730,410 620,410 620,430" type="material" isActive={componentStates.siloValves[5]} />
+              <Pipe points="480,453 480,528 570,528 570,543" type="material" isActive={componentStates.siloValves[0]} />
+              <Pipe points="530,453 530,533 580,533 580,543" type="material" isActive={componentStates.siloValves[1]} />
+              <Pipe points="580,453 580,543" type="material" isActive={componentStates.siloValves[2]} />
+              <Pipe points="630,453 630,533 610,533 610,543" type="material" isActive={componentStates.siloValves[3]} />
+              <Pipe points="680,453 680,528 620,528 620,543" type="material" isActive={componentStates.siloValves[4]} />
+              <Pipe points="730,453 730,523 620,523 620,543" type="material" isActive={componentStates.siloValves[5]} />
             </g>
 
             {/* Additive Tanks Section - Right Side */}
@@ -931,7 +931,7 @@ const Index = () => {
               {/* Water Tank - Storage (2000 kg capacity) */}
               <AdditiveTank 
                 x={780} 
-                y={200}
+                y={313}
                 label="TANK AIR" 
                 isValveActive={componentStates.waterTankValve}
                 currentVolume={waterTank.currentVolume}
@@ -940,7 +940,7 @@ const Index = () => {
               
               <AdditiveTank 
                 x={840} 
-                y={200}
+                y={313}
                 fillLevel={75} 
                 label="ADDITIVE" 
                 isValveActive={componentStates.additiveValve}
@@ -949,7 +949,7 @@ const Index = () => {
               />
 
               {/* Intermediate Tank dengan fungsi Weighing */}
-              <g transform="translate(780, 410)">
+              <g transform="translate(780, 523)">
                 {/* Tank body */}
                 <rect
                   x="0"
@@ -1025,14 +1025,14 @@ const Index = () => {
 
               {/* Pipe from water tank to intermediate tank */}
               <Pipe 
-                points="797,315 797,410" 
+                points="797,428 797,523" 
                 type="water" 
                 isActive={false}
               />
 
               {/* Pipe from intermediate tank to mixer */}
               <Pipe 
-                points="797,465 797,510 605,510 605,540" 
+                points="797,578 797,623 605,623 605,653" 
                 type="water" 
                 isActive={componentStates.waterHopperValve}
               />
@@ -1044,7 +1044,7 @@ const Index = () => {
             {/* Main Mixer - Twin Shaft Horizontal */}
             <Mixer 
               x={455} 
-              y={530}
+              y={643}
               isRunning={componentStates.mixer}
               doorOpen={componentStates.mixerDoor}
               isDoorMoving={productionState.isDoorMoving}
@@ -1058,16 +1058,16 @@ const Index = () => {
               {/* Mixer Truck - Below discharge chute */}
               <MixerTruck 
                 x={510} 
-                y={630}
+                y={743}
                 isReceiving={componentStates.mixerDoor}
                 isMoving={false}
               />
 
               {/* Pipe to mixer from single weigh hopper */}
-              <Pipe points="600,506 600,520 530,520 530,540" type="material" isActive={componentStates.cementValve} />
+              <Pipe points="600,619 600,633 530,633 530,653" type="material" isActive={componentStates.cementValve} />
               
               {/* Pipe from additive intermediate tank */}
-              <Pipe points="797,465 720,465 720,540 605,540" type="water" isActive={false} />
+              <Pipe points="797,578 720,578 720,653 605,653" type="water" isActive={false} />
             </g>
 
           </svg>
@@ -1129,7 +1129,7 @@ const Index = () => {
           </div>
           
           {/* Material Weight Indicators - Horizontal on Top Left - ENLARGED & STANDARDIZED */}
-          <div className="absolute top-16 left-4 flex flex-row gap-6">
+          <div className="absolute top-4 left-4 flex flex-row gap-6"> {/* Naik 3cm: top-16 → top-4 */}
             {systemConfig === 1 ? (
               <>
                 {/* SYSTEM 1: 3 Indikator - Aggregate (komulatif), Semen, Air */}
