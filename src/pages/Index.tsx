@@ -372,13 +372,46 @@ const Index = () => {
         ? (batchConfig.volume / productionState.jumlahMixing).toFixed(2)
         : ((targetPasir + targetBatu + targetSemen + targetAir) / 2400).toFixed(2);
 
+      // Helper function: Extract time from activity log
+      const extractTimeFromLog = (logMessage: string): string => {
+        const match = logMessage.match(/\[(\d{2}:\d{2}:\d{2})\]/);
+        return match ? match[1] : new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      };
+
+      // Helper function: Get start and end time from activity logs
+      const getProductionTimes = (activityLogs: string[]) => {
+        let startTime = '';
+        let endTime = '';
+        
+        // Cari log "🚀 Starting production sequence" untuk jam mulai
+        const startLog = activityLogs.find(log => log.includes('🚀 Starting production sequence'));
+        if (startLog) {
+          startTime = extractTimeFromLog(startLog);
+        }
+        
+        // Cari log "🎉 Production complete!" untuk jam selesai
+        const endLog = activityLogs.find(log => log.includes('🎉 Production complete!'));
+        if (endLog) {
+          endTime = extractTimeFromLog(endLog);
+        }
+        
+        // Fallback: Gunakan waktu saat ini jika tidak ditemukan
+        if (!startTime) startTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        if (!endTime) endTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        
+        return { startTime, endTime };
+      };
+
+      // Extract waktu dari activity logs
+      const { startTime: jamMulai, endTime: jamSelesai } = getProductionTimes(productionState.activityLog);
+
       const ticket: TicketData = {
         id: `TICKET-${Date.now()}`,
         jobOrder: `${productionState.currentMixing}`,
         nomorPO: "-",
         tanggal: endTime.toLocaleDateString('id-ID'),
-        jamMulai: startTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-        jamSelesai: endTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        jamMulai: jamMulai,
+        jamSelesai: jamSelesai,
         namaPelanggan: batchConfig?.pelanggan || "",
         lokasiProyek: batchConfig?.lokasi || "",
         mutuBeton: batchConfig?.mutuBeton || "",
@@ -1096,7 +1129,7 @@ const Index = () => {
           </div>
           
           {/* Material Weight Indicators - Horizontal on Top Left - ENLARGED & STANDARDIZED */}
-          <div className="absolute top-4 left-4 flex flex-row gap-6">
+          <div className="absolute top-16 left-4 flex flex-row gap-6">
             {systemConfig === 1 ? (
               <>
                 {/* SYSTEM 1: 3 Indikator - Aggregate (komulatif), Semen, Air */}

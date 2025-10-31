@@ -530,6 +530,7 @@ export const useProductionSequence = (
     setComponentStates(prev => ({ ...prev, mixer: true, beltAtas: true }));
     controlRelay('mixer', true);
     controlRelay('konveyor_atas', true);
+    addActivityLog('🚀 Starting production sequence');
     addActivityLog('🔄 Mixer ON');
     addActivityLog('🔄 Belt Atas ON');
 
@@ -1923,6 +1924,7 @@ export const useProductionSequence = (
       } else {
         // All mixing cycles complete
         console.log(`✅ Semua mixing selesai (${jumlahMixing} mixing)`);
+        addActivityLog('🎉 Production complete!');
         
         // 📝 SAVE PRODUCTION RECORD TO DATABASE
         try {
