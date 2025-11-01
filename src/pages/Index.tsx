@@ -308,7 +308,7 @@ const Index = () => {
     relaySettings,
     raspberryPi,
     isAutoMode,
-    (finalWeights) => {
+    (finalWeights?: { pasir: number; batu: number; semen: number; air: number; startTime?: string; endTime?: string }) => {
       // Auto-stop when production completes
       setIsRunning(false);
       console.log('✅ Production complete - Start button ready for next batch');
@@ -402,8 +402,9 @@ const Index = () => {
         return { startTime, endTime };
       };
 
-      // Extract waktu dari activity logs
-      const { startTime: jamMulai, endTime: jamSelesai } = getProductionTimes(productionState.activityLog);
+      // ✅ FIXED: Get start and end time from callback (more accurate)
+      const jamMulai = finalWeights?.startTime || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const jamSelesai = finalWeights?.endTime || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
       const ticket: TicketData = {
         id: `TICKET-${Date.now()}`,
@@ -789,7 +790,7 @@ const Index = () => {
               {/* System 3: Storage Bin Weighing (No Weigh Hopper) */}
               {systemConfig === 3 && (
                 <>
-                  {/* 4 Storage Bins with weight display */}
+                  {/* 4 Storage Bins with weight display and weighing animation */}
                   <StorageBin 
                     x={25} 
                     y={423}
@@ -798,6 +799,7 @@ const Index = () => {
                     label="PASIR 1"
                     materialType="pasir"
                     currentWeight={aggregateBins[0].currentVolume}
+                    isWeighing={componentStates.sandBin1Valve}
                   />
                   <StorageBin 
                     x={105} 
@@ -807,6 +809,7 @@ const Index = () => {
                     label="PASIR 2"
                     materialType="pasir"
                     currentWeight={aggregateBins[1].currentVolume}
+                    isWeighing={componentStates.sandBin2Valve}
                   />
                   <StorageBin 
                     x={185} 
@@ -816,6 +819,7 @@ const Index = () => {
                     label="BATU 1"
                     materialType="batu"
                     currentWeight={aggregateBins[2].currentVolume}
+                    isWeighing={componentStates.stoneBin1Valve}
                   />
                   <StorageBin 
                     x={265} 
@@ -825,6 +829,7 @@ const Index = () => {
                     label="BATU 2"
                     materialType="batu"
                     currentWeight={aggregateBins[3].currentVolume}
+                    isWeighing={componentStates.stoneBin2Valve}
                   />
                   
                   {/* NO Weigh Hopper - material goes directly to horizontal conveyor */}

@@ -182,7 +182,7 @@ export const useProductionSequence = (
   relaySettings: RelayConfig[],
   raspberryPi?: { isConnected: boolean; actualWeights: any; sendRelayCommand: any; productionMode: 'production' | 'simulation' },
   isAutoMode: boolean = false,
-  onComplete?: (finalWeights?: { pasir: number; batu: number; semen: number; air: number }) => void
+  onComplete?: (finalWeights?: { pasir: number; batu: number; semen: number; air: number; startTime?: string; endTime?: string }) => void
 ) => {
   const [productionState, setProductionState] = useState<ProductionState>(initialProductionState);
   const [componentStates, setComponentStates] = useState<ComponentStates>(initialComponentStates);
@@ -213,6 +213,9 @@ export const useProductionSequence = (
     weighingComplete?: any;
     timers: any;
   } | null>(null);
+  // ✅ NEW: Track start/end time per production cycle
+  const productionStartTimeRef = useRef<string | null>(null);
+  const productionEndTimeRef = useRef<string | null>(null);
 
   // Helper function to add activity log
   const addActivityLog = (message: string) => {
@@ -491,7 +494,14 @@ export const useProductionSequence = (
     
     // ✅ CRITICAL: Set accurate production start timestamp
     setProductionStartTimestamp(new Date());
-    console.log('⏱️ Production start timestamp recorded:', new Date().toISOString());
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('id-ID', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit' 
+    });
+    productionStartTimeRef.current = timeStr;
+    console.log(`⏱️ Production START TIME: ${timeStr}`);
     
     // Clear mixer idle timer - production started again
     if (mixerIdleTimerRef.current) {
@@ -862,6 +872,20 @@ export const useProductionSequence = (
                          material === 'air' ? 'air' : material;
           currentWeight = raspberryPi.actualWeights[channel] || startingWeight;
           console.log(`📊 PRODUCTION MODE: Reading load cell ${channel} = ${currentWeight}kg`);
+          
+          // ✅ NEW: Deduct from storage bin based on weight increase (System 3)
+          if (systemConfig === 3) {
+            const weightIncrease = currentWeight - startingWeight;
+            if (weightIncrease > 0.1) { // Only deduct if there's measurable increase
+              if (material === 'pasir1' || material === 'pasir2') {
+                const binId = material === 'pasir1' ? config.selectedBins.pasir1 : config.selectedBins.pasir2;
+                onAggregateDeduction(binId, weightIncrease);
+              } else if (material === 'batu1' || material === 'batu2') {
+                const binId = material === 'batu1' ? config.selectedBins.batu1 : config.selectedBins.batu2;
+                onAggregateDeduction(binId, weightIncrease);
+              }
+            }
+          }
         } else {
           // ✅ SIMULATION MODE: Auto-increment simulation
           if (phase === 1) {
@@ -1418,17 +1442,20 @@ export const useProductionSequence = (
         addActivityLog('🟢 Dump Batu ON');
       }
       
-      // Animate hopper depletion from 100% to 0%
+      // ✅ FIXED: Animate hopper depletion with 100 steps for smooth animation
       const dischargeDuration = Math.max(10000, targetWeight * 30); // 10-15 seconds
-      const animationSteps = 20;
+      const animationSteps = 100; // ← Changed from 20 to 100 for smoother animation
       const stepDuration = dischargeDuration / animationSteps;
       
-      const animationInterval = setInterval(() => {
+      // ✅ Use setTimeout recursion instead of setInterval (more reliable)
+      let currentStep = 0;
+      const animateDischarge = () => {
+        currentStep++;
+        const progress = currentStep / animationSteps;
+        
         setProductionState(prev => {
-          const currentFill = prev.hopperFillLevels[material as 'pasir' | 'batu'];
-          const currentWeight = prev.currentWeights[material as 'pasir' | 'batu'];
-          const newFill = Math.max(0, currentFill - (100 / animationSteps));
-          const newWeight = Math.max(0, currentWeight - (targetWeight / animationSteps));
+          const newFill = Math.max(0, 100 * (1 - progress));
+          const newWeight = Math.max(0, targetWeight * (1 - progress));
           
           return {
             ...prev,
@@ -1442,13 +1469,18 @@ export const useProductionSequence = (
             }
           };
         });
-      }, stepDuration);
+        
+        if (currentStep < animationSteps) {
+          const timer = setTimeout(animateDischarge, stepDuration);
+          addTimer(timer);
+        }
+      };
       
-      addInterval(animationInterval);
+      // Start animation
+      animateDischarge();
       
       // Clear hopper and weight to 0 at end of discharge
       const clearTimer = setTimeout(() => {
-        clearInterval(animationInterval);
         setProductionState(prev => ({
           ...prev,
           hopperFillLevels: {
@@ -1924,6 +1956,17 @@ export const useProductionSequence = (
       } else {
         // All mixing cycles complete
         console.log(`✅ Semua mixing selesai (${jumlahMixing} mixing)`);
+        
+        // ✅ NEW: Set end time
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('id-ID', { 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          second: '2-digit' 
+        });
+        productionEndTimeRef.current = timeStr;
+        console.log(`🏁 Production END TIME: ${timeStr}`);
+        
         addActivityLog('🎉 Production complete!');
         
         // 📝 SAVE PRODUCTION RECORD TO DATABASE
@@ -2008,10 +2051,14 @@ export const useProductionSequence = (
           
           // Toast removed - silent operation
           
-          // Call completion callback with CUMULATIVE weights (all mixings)
+          // ✅ UPDATED: Call completion callback with CUMULATIVE weights AND timestamps
           if (onComplete) {
             console.log('✅ Calling onComplete with CUMULATIVE weights:', cumulativeActualWeights.current);
-            onComplete(cumulativeActualWeights.current);
+            onComplete({
+              ...cumulativeActualWeights.current,
+              startTime: productionStartTimeRef.current || '',
+              endTime: productionEndTimeRef.current || '',
+            });
           }
         }, 2000);
         addTimer(resetTimer);

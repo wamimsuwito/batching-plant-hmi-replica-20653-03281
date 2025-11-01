@@ -6,6 +6,7 @@ interface StorageBinProps {
   label?: string;
   materialType?: 'pasir' | 'batu';
   currentWeight?: number; // New prop for displaying actual weight
+  isWeighing?: boolean; // ✅ NEW: For gate animation during weighing
 }
 
 export const StorageBin = ({ 
@@ -15,7 +16,8 @@ export const StorageBin = ({
   gateOpen = false, 
   label = "BIN",
   materialType = 'pasir',
-  currentWeight
+  currentWeight,
+  isWeighing = false // ✅ NEW: Default false
 }: StorageBinProps) => {
   const binWidth = 70;
   const binHeight = 90;
@@ -60,22 +62,22 @@ export const StorageBin = ({
         strokeWidth="2"
       />
       
-      {/* Gate/pintu di bawah bin */}
+      {/* Gate/pintu di bawah bin with weighing animation */}
       <rect
         x={binWidth / 2 - 15}
         y={binHeight + 12}
         width="30"
         height="8"
-        className={gateOpen ? "fill-red-500" : "fill-green-500"}
+        className={gateOpen || isWeighing ? "fill-green-500" : "fill-red-500"}
         stroke="white"
         strokeWidth="1"
         rx="1"
       >
-        {gateOpen && (
+        {(gateOpen || isWeighing) && (
           <animate
             attributeName="opacity"
             values="1;0.3;1"
-            dur="0.6s"
+            dur="0.5s"
             repeatCount="indefinite"
           />
         )}
