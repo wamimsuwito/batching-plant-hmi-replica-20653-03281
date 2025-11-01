@@ -256,7 +256,7 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
                   value={volume}
                   onChange={(e) => setVolume(e.target.value)}
                   min="0"
-                  step="0.1"
+                  step="0.5"
                 />
               </div>
               <div className="grid gap-2">
