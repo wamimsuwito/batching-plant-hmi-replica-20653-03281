@@ -262,6 +262,15 @@ const Index = () => {
     });
   };
 
+  // ✅ NEW: Refill aggregate bins after production complete (System 3, Simulation mode)
+  const handleAggregateBinsRefill = () => {
+    console.log('🔄 Refilling aggregate bins to 10,000 kg');
+    setAggregateBins(prev => prev.map(bin => ({
+      ...bin,
+      currentVolume: 10000, // Reset to full capacity
+    })));
+  };
+
   // Load relay settings
   const [relaySettings, setRelaySettings] = useState<any[]>([]);
   useEffect(() => {
@@ -457,7 +466,8 @@ const Index = () => {
       if (autoPrintEnabled) {
         setPrintTicketOpen(true);
       }
-    }
+    },
+    handleAggregateBinsRefill // ✅ NEW: Pass refill callback for System 3
   );
 
   const handleStart = () => {
@@ -1228,9 +1238,10 @@ const Index = () => {
                       ? 'bg-green-900/40 border-green-500/50' 
                       : 'bg-gray-800/40 border-gray-600'
                   }`}>
-                    <div className="text-sm text-muted-foreground font-semibold uppercase tracking-wide">PASIR</div>
+                    <div className="text-sm text-muted-foreground font-semibold uppercase tracking-wide">PASIR (Storage)</div>
                     <div className="text-3xl font-bold text-green-300 tabular-nums">
-                      {productionState.currentWeights.pasir.toFixed(0)} kg
+                      {/* ✅ System 3: Show total storage bin weight */}
+                      {(aggregateBins[0].currentVolume + aggregateBins[1].currentVolume).toFixed(0)} kg
                     </div>
                   </div>
                 </div>
@@ -1250,9 +1261,10 @@ const Index = () => {
                       ? 'bg-green-900/40 border-green-500/50' 
                       : 'bg-gray-800/40 border-gray-600'
                   }`}>
-                    <div className="text-sm text-muted-foreground font-semibold uppercase tracking-wide">BATU</div>
+                    <div className="text-sm text-muted-foreground font-semibold uppercase tracking-wide">BATU (Storage)</div>
                     <div className="text-3xl font-bold text-green-300 tabular-nums">
-                      {productionState.currentWeights.batu.toFixed(0)} kg
+                      {/* ✅ System 3: Show total storage bin weight */}
+                      {(aggregateBins[2].currentVolume + aggregateBins[3].currentVolume).toFixed(0)} kg
                     </div>
                   </div>
                 </div>

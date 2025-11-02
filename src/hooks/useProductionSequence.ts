@@ -135,7 +135,7 @@ const initialProductionState: ProductionState = {
   selectedSilos: [],
   selectedBins: { pasir1: 0, pasir2: 0, batu1: 0, batu2: 0 },
   targetWeights: { pasir1: 0, pasir2: 0, batu1: 0, batu2: 0, semen: 0, air: 0, additive: 0 },
-  currentWeights: { pasir: 0, batu: 0, semen: 0, air: 0, additive: 0 },
+  currentWeights: { pasir: 10000, batu: 10000, semen: 0, air: 0, additive: 0 }, // ✅ System 3: Initialize to 10,000 kg
   weighingComplete: { pasir1: false, pasir2: false, batu1: false, batu2: false, semen: false, air: false },
   mixingTimeRemaining: 0,
   mixerDoorCycle: 0,
@@ -182,7 +182,8 @@ export const useProductionSequence = (
   relaySettings: RelayConfig[],
   raspberryPi?: { isConnected: boolean; actualWeights: any; sendRelayCommand: any; productionMode: 'production' | 'simulation' },
   isAutoMode: boolean = false,
-  onComplete?: (finalWeights?: { pasir: number; batu: number; semen: number; air: number; startTime?: string; endTime?: string }) => void
+  onComplete?: (finalWeights?: { pasir: number; batu: number; semen: number; air: number; startTime?: string; endTime?: string }) => void,
+  onAggregateBinsRefill?: () => void // ✅ NEW: Callback for refilling aggregate bins (System 3)
 ) => {
   const [productionState, setProductionState] = useState<ProductionState>(initialProductionState);
   const [componentStates, setComponentStates] = useState<ComponentStates>(initialComponentStates);
@@ -773,14 +774,14 @@ export const useProductionSequence = (
     }
   };
 
-  const weighMaterialWithJogging = (
+  const weighMaterialWithJogging = async (
     material: 'pasir1' | 'pasir2' | 'batu1' | 'batu2' | 'semen' | 'air',
     targetWeight: number,
     config: ProductionConfig,
     weighingStatus: { [key: string]: boolean },
     startingWeight: number = 0 // NEW: for cumulative weighing
   ) => {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>(async (resolve) => {
       // ✅ SYSTEM 1: Cumulative weighing logic
       let adjustedTarget = targetWeight;
       let adjustedStarting = startingWeight;
@@ -860,6 +861,17 @@ export const useProductionSequence = (
         addActivityLog('🟢 Air ON');
       }
 
+      // ✅ NEW: System 3 - Start horizontal conveyor 5 seconds BEFORE dumping
+      if (systemConfig === 3 && (material === 'pasir1' || material === 'pasir2' || material === 'batu1' || material === 'batu2')) {
+        console.log('🔄 System 3: Starting horizontal conveyor (beltBawah) before dumping');
+        setComponentStates(prev => ({ ...prev, beltBawah: true }));
+        controlRelay('belt_bawah', true);
+        addActivityLog('🟢 Belt Bawah ON (pre-dump)');
+        
+        // Wait 5 seconds before opening storage bin gate
+        await delay(5000);
+      }
+
       const weighingInterval = setInterval(() => {
         // Get current weight
         let currentWeight;
@@ -872,20 +884,6 @@ export const useProductionSequence = (
                          material === 'air' ? 'air' : material;
           currentWeight = raspberryPi.actualWeights[channel] || startingWeight;
           console.log(`📊 PRODUCTION MODE: Reading load cell ${channel} = ${currentWeight}kg`);
-          
-          // ✅ NEW: Deduct from storage bin based on weight increase (System 3)
-          if (systemConfig === 3) {
-            const weightIncrease = currentWeight - startingWeight;
-            if (weightIncrease > 0.1) { // Only deduct if there's measurable increase
-              if (material === 'pasir1' || material === 'pasir2') {
-                const binId = material === 'pasir1' ? config.selectedBins.pasir1 : config.selectedBins.pasir2;
-                onAggregateDeduction(binId, weightIncrease);
-              } else if (material === 'batu1' || material === 'batu2') {
-                const binId = material === 'batu1' ? config.selectedBins.batu1 : config.selectedBins.batu2;
-                onAggregateDeduction(binId, weightIncrease);
-              }
-            }
-          }
         } else {
           // ✅ SIMULATION MODE: Auto-increment simulation
           if (phase === 1) {
@@ -898,13 +896,35 @@ export const useProductionSequence = (
             simulatedWeight = Math.min(simulatedWeight + increment + (Math.random() * 2 - 1), triggerWeight);
             currentWeight = simulatedWeight;
             
-            // Animate bin deduction in real-time for aggregates
+            // ✅ IMPROVED: Smooth deduction animation for all systems
             if (material === 'pasir1' || material === 'pasir2') {
               const binId = material === 'pasir1' ? config.selectedBins.pasir1 : config.selectedBins.pasir2;
               onAggregateDeduction(binId, increment);
+              
+              // System 3: Also update storage bin fill level indicator
+              if (systemConfig === 3) {
+                setProductionState(prev => ({
+                  ...prev,
+                  currentWeights: {
+                    ...prev.currentWeights,
+                    pasir: Math.max(0, prev.currentWeights.pasir - increment),
+                  },
+                }));
+              }
             } else if (material === 'batu1' || material === 'batu2') {
               const binId = material === 'batu1' ? config.selectedBins.batu1 : config.selectedBins.batu2;
               onAggregateDeduction(binId, increment);
+              
+              // System 3: Also update storage bin fill level indicator
+              if (systemConfig === 3) {
+                setProductionState(prev => ({
+                  ...prev,
+                  currentWeights: {
+                    ...prev.currentWeights,
+                    batu: Math.max(0, prev.currentWeights.batu - increment),
+                  },
+                }));
+              }
             }
           } else if (phase === 2) {
             // Phase 2: Jogging - slower, controlled increments
@@ -924,9 +944,31 @@ export const useProductionSequence = (
               if (material === 'pasir1' || material === 'pasir2') {
                 const binId = material === 'pasir1' ? config.selectedBins.pasir1 : config.selectedBins.pasir2;
                 onAggregateDeduction(binId, joggingIncrement);
+                
+                // System 3: Also update storage bin fill level indicator
+                if (systemConfig === 3) {
+                  setProductionState(prev => ({
+                    ...prev,
+                    currentWeights: {
+                      ...prev.currentWeights,
+                      pasir: Math.max(0, prev.currentWeights.pasir - joggingIncrement),
+                    },
+                  }));
+                }
               } else if (material === 'batu1' || material === 'batu2') {
                 const binId = material === 'batu1' ? config.selectedBins.batu1 : config.selectedBins.batu2;
                 onAggregateDeduction(binId, joggingIncrement);
+                
+                // System 3: Also update storage bin fill level indicator
+                if (systemConfig === 3) {
+                  setProductionState(prev => ({
+                    ...prev,
+                    currentWeights: {
+                      ...prev.currentWeights,
+                      batu: Math.max(0, prev.currentWeights.batu - joggingIncrement),
+                    },
+                  }));
+                }
               }
             }
             currentWeight = simulatedWeight;
@@ -1155,6 +1197,18 @@ export const useProductionSequence = (
             weighingComplete: { ...prev.weighingComplete, [material]: true }
           }));
           console.log(`✅ ${material} weighing complete: ${currentWeight.toFixed(1)}kg`);
+          
+          // ✅ NEW: System 3 - Stop horizontal conveyor 5 seconds AFTER closing storage bin gate
+          if (systemConfig === 3 && (material === 'pasir1' || material === 'pasir2' || material === 'batu1' || material === 'batu2')) {
+            console.log('⏳ System 3: Waiting 5 seconds before stopping belt...');
+            setTimeout(() => {
+              console.log('🔴 System 3: Stopping horizontal conveyor (beltBawah) after dump');
+              setComponentStates(prev => ({ ...prev, beltBawah: false }));
+              controlRelay('belt_bawah', false);
+              addActivityLog('🔴 Belt Bawah OFF (post-dump)');
+            }, 5000);
+          }
+          
           resolve();
         }
       }, 200);
@@ -2023,10 +2077,32 @@ export const useProductionSequence = (
         // Refill aggregate bins to 10000 kg after 2 seconds
         setTimeout(() => {
           console.log('🔄 Refilling aggregate bins to 10000 kg...');
-          onAggregateDeduction(1, -10000); // Bin 1 (PASIR)
-          onAggregateDeduction(2, -10000); // Bin 2 (BATU 1)
-          onAggregateDeduction(3, -10000); // Bin 3 (BATU 2)
-          onAggregateDeduction(4, -10000); // Bin 4
+          
+          // ✅ FIXED: System 3 - Refill aggregate bins using refill callback
+          if (systemConfig === 3 && raspberryPi?.productionMode !== 'production') {
+            console.log('🔄 System 3 Simulation: Refilling aggregate bins to 10,000 kg');
+            
+            // Call parent refill callback if provided
+            if (onAggregateBinsRefill) {
+              onAggregateBinsRefill();
+            }
+            
+            // Reset weight indicators to 10,000 kg
+            setProductionState(prev => ({
+              ...prev,
+              currentWeights: {
+                ...prev.currentWeights,
+                pasir: 10000,
+                batu: 10000,
+              },
+            }));
+          } else {
+            // Other systems: refill bins to 10000 kg as before
+            onAggregateDeduction(1, -10000); // Bin 1 (PASIR)
+            onAggregateDeduction(2, -10000); // Bin 2 (BATU 1)
+            onAggregateDeduction(3, -10000); // Bin 3 (BATU 2)
+            onAggregateDeduction(4, -10000); // Bin 4
+          }
           
           // Toast removed - silent operation
         }, 2000);
