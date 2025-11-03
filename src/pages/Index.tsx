@@ -800,10 +800,10 @@ const Index = () => {
               {/* System 3: Storage Bin Weighing (No Weigh Hopper) */}
               {systemConfig === 3 && (
                 <>
-                  {/* 4 Storage Bins with weight display and weighing animation */}
+                  {/* 4 Storage Bins - LOWERED for aesthetic balance without weigh hopper */}
                   <StorageBin 
                     x={25} 
-                    y={423}
+                    y={493}
                     fillLevel={(aggregateBins[0].currentVolume / aggregateBins[0].capacity) * 100} 
                     gateOpen={componentStates.sandBin1Valve} 
                     label="PASIR 1"
@@ -813,7 +813,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={105} 
-                    y={423}
+                    y={493}
                     fillLevel={(aggregateBins[1].currentVolume / aggregateBins[1].capacity) * 100} 
                     gateOpen={componentStates.sandBin2Valve} 
                     label="PASIR 2"
@@ -823,7 +823,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={185} 
-                    y={423}
+                    y={493}
                     fillLevel={(aggregateBins[2].currentVolume / aggregateBins[2].capacity) * 100} 
                     gateOpen={componentStates.stoneBin1Valve} 
                     label="BATU 1"
@@ -833,7 +833,7 @@ const Index = () => {
                   />
                   <StorageBin 
                     x={265} 
-                    y={423}
+                    y={493}
                     fillLevel={(aggregateBins[3].currentVolume / aggregateBins[3].capacity) * 100} 
                     gateOpen={componentStates.stoneBin2Valve} 
                     label="BATU 2"
@@ -844,17 +844,17 @@ const Index = () => {
                   
                   {/* NO Weigh Hopper - material goes directly to horizontal conveyor */}
                   
-                  {/* Horizontal Conveyor below storage bins */}
+                  {/* Horizontal Conveyor - SAME POSITION as other systems */}
                   <ConveyorBelt 
                     x={50} 
-                    y={593}
+                    y={669}
                     width={260} 
                     horizontal={true}
                     isRunning={componentStates.beltBawah} 
                   />
                   
-                  {/* Angled Conveyor to mixer */}
-                  <ConveyorBelt x={320} y={643} width={180} angle={32} isRunning={isRunning} />
+                  {/* Angled Conveyor to mixer - SAME POSITION as other systems */}
+                  <ConveyorBelt x={320} y={713} width={180} angle={32} isRunning={isRunning} />
                 </>
               )}
               
