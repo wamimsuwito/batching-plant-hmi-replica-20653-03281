@@ -135,7 +135,7 @@ const initialProductionState: ProductionState = {
   selectedSilos: [],
   selectedBins: { pasir1: 0, pasir2: 0, batu1: 0, batu2: 0 },
   targetWeights: { pasir1: 0, pasir2: 0, batu1: 0, batu2: 0, semen: 0, air: 0, additive: 0 },
-  currentWeights: { pasir: 10000, batu: 10000, semen: 0, air: 0, additive: 0 }, // ✅ System 3: Initialize to 10,000 kg
+  currentWeights: { pasir: 0, batu: 0, semen: 0, air: 0, additive: 0 }, // ✅ Will be initialized based on mode
   weighingComplete: { pasir1: false, pasir2: false, batu1: false, batu2: false, semen: false, air: false },
   mixingTimeRemaining: 0,
   mixerDoorCycle: 0,
@@ -492,6 +492,38 @@ export const useProductionSequence = (
     }
 
     clearAllTimers();
+    
+    // ✅ SYSTEM 3: Initialize aggregate weights based on mode
+    if (systemConfig === 3) {
+      if (raspberryPi?.productionMode === 'production' && raspberryPi?.isConnected) {
+        // PRODUCTION MODE: Read from load cell
+        const pasirWeight = raspberryPi.actualWeights['pasir'] || 0;
+        const batuWeight = raspberryPi.actualWeights['batu'] || 0;
+        
+        console.log(`📊 SYSTEM 3 PRODUCTION: Reading aggregate weights - Pasir: ${pasirWeight}kg, Batu: ${batuWeight}kg`);
+        
+        setProductionState(prev => ({
+          ...prev,
+          currentWeights: {
+            ...prev.currentWeights,
+            pasir: pasirWeight,
+            batu: batuWeight,
+          },
+        }));
+      } else {
+        // SIMULATION MODE: Set to 10,000 kg
+        console.log('🎮 SYSTEM 3 SIMULATION: Setting aggregate weights to 10,000 kg');
+        
+        setProductionState(prev => ({
+          ...prev,
+          currentWeights: {
+            ...prev.currentWeights,
+            pasir: 10000,
+            batu: 10000,
+          },
+        }));
+      }
+    }
     
     // ✅ CRITICAL: Set accurate production start timestamp
     setProductionStartTimestamp(new Date());
@@ -1329,6 +1361,58 @@ export const useProductionSequence = (
     let aggregateDischargeEnd = 0;
     let groupDelay = 0;
     
+    // ✅ SYSTEM 3: Special handling for aggregate discharge timing
+    if (systemConfig === 3) {
+      const pasirTarget = (config.targetWeights.pasir1 || 0) + (config.targetWeights.pasir2 || 0);
+      const batuTarget = (config.targetWeights.batu1 || 0) + (config.targetWeights.batu2 || 0);
+      
+      let aggregateDelay = 0;
+      
+      // Discharge pasir first (if exists)
+      if (pasirTarget > 0) {
+        const pasirDuration = Math.max(10000, pasirTarget * 30);
+        
+        const pasirTimer = setTimeout(() => {
+          console.log('💧 SYSTEM 3: Discharging PASIR from storage bin');
+          dischargeMaterial('pasir', pasirTarget, config);
+        }, aggregateDelay);
+        addTimer(pasirTimer);
+        
+        aggregateDelay += pasirDuration; // Wait for pasir to finish
+        aggregateDischargeEnd = aggregateDelay;
+      }
+      
+      // Discharge batu 2 seconds after pasir finishes
+      if (batuTarget > 0) {
+        aggregateDelay += 2000; // 2 detik jeda
+        const batuDuration = Math.max(10000, batuTarget * 30);
+        
+        const batuTimer = setTimeout(() => {
+          console.log('💧 SYSTEM 3: Discharging BATU from storage bin (2s after pasir)');
+          dischargeMaterial('batu', batuTarget, config);
+        }, aggregateDelay);
+        addTimer(batuTimer);
+        
+        aggregateDelay += batuDuration;
+        aggregateDischargeEnd = aggregateDelay;
+      }
+      
+      // Now handle cement and water normally (they follow mixing sequence)
+      (['semen', 'air'] as const).forEach(material => {
+        const targetWeight = config.targetWeights[material] || 0;
+        if (targetWeight > 0) {
+          const mixingNum = mixingSequence[material].mixing;
+          const timer = mixingSequence[material].timer;
+          
+          if (!groups[mixingNum]) {
+            groups[mixingNum] = [];
+          }
+          groups[mixingNum].push({ material, timer, targetWeight });
+        }
+      });
+    }
+    
+    // Process mixing groups for non-System 3 or for cement/water in System 3
     sortedGroups.forEach((groupNum) => {
       const groupMaterials = groups[groupNum];
       
@@ -1337,10 +1421,15 @@ export const useProductionSequence = (
       
       // Within each group, apply individual timer delays
       groupMaterials.forEach(({ material, timer, targetWeight }) => {
+        // Skip aggregate in System 3 (already handled above)
+        if (systemConfig === 3 && (material === 'pasir' || material === 'batu')) {
+          return;
+        }
+        
         const totalDelay = groupDelay + (timer * 1000);
         const dischargeDuration = Math.max(10000, targetWeight * 30);
         
-        // Track when aggregate finishes
+        // Track when aggregate finishes (non-System 3)
         if (material === 'pasir' || material === 'batu') {
           const endTime = totalDelay + dischargeDuration;
           if (endTime > aggregateDischargeEnd) {
@@ -1365,30 +1454,39 @@ export const useProductionSequence = (
       groupDelay += maxGroupDuration;
     });
 
-    // Turn off BELT-1 after aggregate discharge + 5 second delay
+    // Turn off BELT after aggregate discharge + 5 second delay
     if (aggregateDischargeEnd > 0) {
       const beltOffTimer = setTimeout(() => {
         console.log('⏸️ Aggregate discharge complete, waiting 5 seconds...');
         
-        // Turn off vibrator and hopper valves
-        setComponentStates(prev => ({
-          ...prev,
-          vibrator: false,
-          hopperValvePasir: false,
-          hopperValveBatu: false,
-        }));
-        controlRelay('vibrator', false);
-        addActivityLog('🔴 Vibrator OFF');
-        
-        // Wait 5 seconds, then turn off BELT-1
-        const beltDelayTimer = setTimeout(() => {
-          console.log('🛑 Turning off BELT-1');
-          setComponentStates(prev => ({ ...prev, beltBawah: false }));
-          controlRelay('konveyor_bawah', false);
-          addActivityLog('🔴 Belt Bawah OFF');
-        }, 5000);
-        addTimer(beltDelayTimer);
-        
+        // ✅ SYSTEM 3: Turn off beltBawah (horizontal conveyor)
+        if (systemConfig === 3) {
+          const beltDelayTimer = setTimeout(() => {
+            console.log('🛑 SYSTEM 3: Turning off Belt Bawah');
+            setComponentStates(prev => ({ ...prev, beltBawah: false }));
+            controlRelay('belt_bawah', false);
+            addActivityLog('🔴 Belt Bawah OFF (System 3)');
+          }, 5000);
+          addTimer(beltDelayTimer);
+        } else {
+          // System 1/2: existing logic
+          setComponentStates(prev => ({
+            ...prev,
+            vibrator: false,
+            hopperValvePasir: false,
+            hopperValveBatu: false,
+          }));
+          controlRelay('vibrator', false);
+          addActivityLog('🔴 Vibrator OFF');
+          
+          const beltDelayTimer = setTimeout(() => {
+            console.log('🛑 Turning off BELT-1');
+            setComponentStates(prev => ({ ...prev, beltBawah: false }));
+            controlRelay('konveyor_bawah', false);
+            addActivityLog('🔴 Belt Bawah OFF');
+          }, 5000);
+          addTimer(beltDelayTimer);
+        }
       }, aggregateDischargeEnd);
       addTimer(beltOffTimer);
     }
@@ -1426,21 +1524,57 @@ export const useProductionSequence = (
       
       // Then open storage bin gate
       if (material === 'pasir') {
-        setComponentStates(prev => ({ ...prev, sandBin1Valve: true, sandBin2Valve: true }));
-        // Control both pasir bins
-        const relayName1 = getAggregateRelayName('pasir1', config.selectedBins.pasir1);
-        const relayName2 = getAggregateRelayName('pasir2', config.selectedBins.pasir2);
-        if (relayName1) controlRelay(relayName1, true);
-        if (relayName2) controlRelay(relayName2, true);
-        addActivityLog('🟢 Storage Bin Pasir BUKA');
+        // ✅ Cek bin mana yang digunakan di Job Mix Formula
+        const usePasir1 = config.targetWeights.pasir1 > 0;
+        const usePasir2 = config.targetWeights.pasir2 > 0;
+        
+        setComponentStates(prev => ({ 
+          ...prev, 
+          sandBin1Valve: usePasir1,
+          sandBin2Valve: usePasir2,
+        }));
+        
+        if (usePasir1) {
+          const relayName1 = getAggregateRelayName('pasir1', config.selectedBins.pasir1);
+          if (relayName1) {
+            controlRelay(relayName1, true);
+            addActivityLog('🟢 Storage Bin Pasir 1 BUKA');
+          }
+        }
+        
+        if (usePasir2) {
+          const relayName2 = getAggregateRelayName('pasir2', config.selectedBins.pasir2);
+          if (relayName2) {
+            controlRelay(relayName2, true);
+            addActivityLog('🟢 Storage Bin Pasir 2 BUKA');
+          }
+        }
       } else if (material === 'batu') {
-        setComponentStates(prev => ({ ...prev, stoneBin1Valve: true, stoneBin2Valve: true }));
-        // Control both batu bins
-        const relayName1 = getAggregateRelayName('batu1', config.selectedBins.batu1);
-        const relayName2 = getAggregateRelayName('batu2', config.selectedBins.batu2);
-        if (relayName1) controlRelay(relayName1, true);
-        if (relayName2) controlRelay(relayName2, true);
-        addActivityLog('🟢 Storage Bin Batu BUKA');
+        // ✅ Cek bin mana yang digunakan di Job Mix Formula
+        const useBatu1 = config.targetWeights.batu1 > 0;
+        const useBatu2 = config.targetWeights.batu2 > 0;
+        
+        setComponentStates(prev => ({ 
+          ...prev, 
+          stoneBin1Valve: useBatu1,
+          stoneBin2Valve: useBatu2,
+        }));
+        
+        if (useBatu1) {
+          const relayName1 = getAggregateRelayName('batu1', config.selectedBins.batu1);
+          if (relayName1) {
+            controlRelay(relayName1, true);
+            addActivityLog('🟢 Storage Bin Batu 1 BUKA');
+          }
+        }
+        
+        if (useBatu2) {
+          const relayName2 = getAggregateRelayName('batu2', config.selectedBins.batu2);
+          if (relayName2) {
+            controlRelay(relayName2, true);
+            addActivityLog('🟢 Storage Bin Batu 2 BUKA');
+          }
+        }
       }
       
       // Animate storage bin deduction based on target weight
@@ -1463,13 +1597,37 @@ export const useProductionSequence = (
           }
         }));
         
-        // Also deduct from aggregate bins
+        // ✅ Also deduct from aggregate bins - only deduct from bins actually used
         if (material === 'pasir') {
-          onAggregateDeduction(config.selectedBins.pasir1, deductionRate / 2);
-          onAggregateDeduction(config.selectedBins.pasir2, deductionRate / 2);
+          const usePasir1 = config.targetWeights.pasir1 > 0;
+          const usePasir2 = config.targetWeights.pasir2 > 0;
+          
+          if (usePasir1 && usePasir2) {
+            // Both bins used: split deduction
+            onAggregateDeduction(config.selectedBins.pasir1, deductionRate / 2);
+            onAggregateDeduction(config.selectedBins.pasir2, deductionRate / 2);
+          } else if (usePasir1) {
+            // Only pasir1 used
+            onAggregateDeduction(config.selectedBins.pasir1, deductionRate);
+          } else if (usePasir2) {
+            // Only pasir2 used
+            onAggregateDeduction(config.selectedBins.pasir2, deductionRate);
+          }
         } else if (material === 'batu') {
-          onAggregateDeduction(config.selectedBins.batu1, deductionRate / 2);
-          onAggregateDeduction(config.selectedBins.batu2, deductionRate / 2);
+          const useBatu1 = config.targetWeights.batu1 > 0;
+          const useBatu2 = config.targetWeights.batu2 > 0;
+          
+          if (useBatu1 && useBatu2) {
+            // Both bins used: split deduction
+            onAggregateDeduction(config.selectedBins.batu1, deductionRate / 2);
+            onAggregateDeduction(config.selectedBins.batu2, deductionRate / 2);
+          } else if (useBatu1) {
+            // Only batu1 used
+            onAggregateDeduction(config.selectedBins.batu1, deductionRate);
+          } else if (useBatu2) {
+            // Only batu2 used
+            onAggregateDeduction(config.selectedBins.batu2, deductionRate);
+          }
         }
         
         if (currentStep < steps) {
@@ -1484,28 +1642,58 @@ export const useProductionSequence = (
       // Close storage bin gate after discharge duration
       const closeGateTimer = setTimeout(() => {
         if (material === 'pasir') {
-          setComponentStates(prev => ({ ...prev, sandBin1Valve: false, sandBin2Valve: false }));
-          const relayName1 = getAggregateRelayName('pasir1', config.selectedBins.pasir1);
-          const relayName2 = getAggregateRelayName('pasir2', config.selectedBins.pasir2);
-          if (relayName1) controlRelay(relayName1, false);
-          if (relayName2) controlRelay(relayName2, false);
-          addActivityLog('🔴 Storage Bin Pasir TUTUP');
+          const usePasir1 = config.targetWeights.pasir1 > 0;
+          const usePasir2 = config.targetWeights.pasir2 > 0;
+          
+          setComponentStates(prev => ({ 
+            ...prev, 
+            sandBin1Valve: false, 
+            sandBin2Valve: false 
+          }));
+          
+          if (usePasir1) {
+            const relayName1 = getAggregateRelayName('pasir1', config.selectedBins.pasir1);
+            if (relayName1) {
+              controlRelay(relayName1, false);
+              addActivityLog('🔴 Storage Bin Pasir 1 TUTUP');
+            }
+          }
+          
+          if (usePasir2) {
+            const relayName2 = getAggregateRelayName('pasir2', config.selectedBins.pasir2);
+            if (relayName2) {
+              controlRelay(relayName2, false);
+              addActivityLog('🔴 Storage Bin Pasir 2 TUTUP');
+            }
+          }
         } else if (material === 'batu') {
-          setComponentStates(prev => ({ ...prev, stoneBin1Valve: false, stoneBin2Valve: false }));
-          const relayName1 = getAggregateRelayName('batu1', config.selectedBins.batu1);
-          const relayName2 = getAggregateRelayName('batu2', config.selectedBins.batu2);
-          if (relayName1) controlRelay(relayName1, false);
-          if (relayName2) controlRelay(relayName2, false);
-          addActivityLog('🔴 Storage Bin Batu TUTUP');
+          const useBatu1 = config.targetWeights.batu1 > 0;
+          const useBatu2 = config.targetWeights.batu2 > 0;
+          
+          setComponentStates(prev => ({ 
+            ...prev, 
+            stoneBin1Valve: false, 
+            stoneBin2Valve: false 
+          }));
+          
+          if (useBatu1) {
+            const relayName1 = getAggregateRelayName('batu1', config.selectedBins.batu1);
+            if (relayName1) {
+              controlRelay(relayName1, false);
+              addActivityLog('🔴 Storage Bin Batu 1 TUTUP');
+            }
+          }
+          
+          if (useBatu2) {
+            const relayName2 = getAggregateRelayName('batu2', config.selectedBins.batu2);
+            if (relayName2) {
+              controlRelay(relayName2, false);
+              addActivityLog('🔴 Storage Bin Batu 2 TUTUP');
+            }
+          }
         }
         
-        // Turn OFF horizontal conveyor 5 seconds AFTER gate closes
-        const beltOffTimer = setTimeout(() => {
-          setComponentStates(prev => ({ ...prev, beltBawah: false }));
-          controlRelay('belt_bawah', false);
-          addActivityLog('🔴 Belt Bawah OFF (System 3)');
-        }, 5000);
-        addTimer(beltOffTimer);
+        // ❌ REMOVED: Don't turn off belt here, will be turned off after ALL aggregate discharge completes
         
         console.log(`✅ ${material} discharged from storage bin (System 3)`);
         

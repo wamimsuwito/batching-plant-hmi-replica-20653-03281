@@ -1238,10 +1238,15 @@ const Index = () => {
                       ? 'bg-green-900/40 border-green-500/50' 
                       : 'bg-gray-800/40 border-gray-600'
                   }`}>
-                    <div className="text-sm text-muted-foreground font-semibold uppercase tracking-wide">PASIR (Storage)</div>
+                    <div className="text-sm text-muted-foreground font-semibold uppercase tracking-wide">
+                      PASIR {raspberryPi?.productionMode === 'production' ? '(Actual)' : '(Storage)'}
+                    </div>
                     <div className="text-3xl font-bold text-green-300 tabular-nums">
-                      {/* ✅ System 3: Show total storage bin weight */}
-                      {(aggregateBins[0].currentVolume + aggregateBins[1].currentVolume).toFixed(0)} kg
+                      {/* ✅ System 3: Show actual weight in production mode or storage bin weight in simulation */}
+                      {raspberryPi?.productionMode === 'production' && raspberryPi?.isConnected
+                        ? (raspberryPi.actualWeights['pasir'] || 0).toFixed(0)
+                        : (aggregateBins[0].currentVolume + aggregateBins[1].currentVolume).toFixed(0)
+                      } kg
                     </div>
                   </div>
                 </div>
@@ -1261,10 +1266,15 @@ const Index = () => {
                       ? 'bg-green-900/40 border-green-500/50' 
                       : 'bg-gray-800/40 border-gray-600'
                   }`}>
-                    <div className="text-sm text-muted-foreground font-semibold uppercase tracking-wide">BATU (Storage)</div>
+                    <div className="text-sm text-muted-foreground font-semibold uppercase tracking-wide">
+                      BATU {raspberryPi?.productionMode === 'production' ? '(Actual)' : '(Storage)'}
+                    </div>
                     <div className="text-3xl font-bold text-green-300 tabular-nums">
-                      {/* ✅ System 3: Show total storage bin weight */}
-                      {(aggregateBins[2].currentVolume + aggregateBins[3].currentVolume).toFixed(0)} kg
+                      {/* ✅ System 3: Show actual weight in production mode or storage bin weight in simulation */}
+                      {raspberryPi?.productionMode === 'production' && raspberryPi?.isConnected
+                        ? (raspberryPi.actualWeights['batu'] || 0).toFixed(0)
+                        : (aggregateBins[2].currentVolume + aggregateBins[3].currentVolume).toFixed(0)
+                      } kg
                     </div>
                   </div>
                 </div>
