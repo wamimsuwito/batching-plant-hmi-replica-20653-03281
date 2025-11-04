@@ -1239,14 +1239,18 @@ const Index = () => {
                       : 'bg-gray-800/40 border-gray-600'
                   }`}>
                     <div className="text-sm text-muted-foreground font-semibold uppercase tracking-wide">
-                      PASIR {raspberryPi?.productionMode === 'production' ? '(Actual)' : '(Storage)'}
+                      PASIR
                     </div>
                     <div className="text-3xl font-bold text-green-300 tabular-nums">
-                      {/* ✅ System 3: Show actual weight in production mode or storage bin weight in simulation */}
-                      {raspberryPi?.productionMode === 'production' && raspberryPi?.isConnected
-                        ? (raspberryPi.actualWeights['pasir'] || 0).toFixed(0)
-                        : (aggregateBins[0].currentVolume + aggregateBins[1].currentVolume).toFixed(0)
-                      } kg
+                      {systemConfig === 3 ? (
+                        /* System 3: Show actual weight in production mode or storage bin weight in simulation */
+                        raspberryPi?.productionMode === 'production' && raspberryPi?.isConnected
+                          ? (raspberryPi.actualWeights['pasir'] || 0).toFixed(0)
+                          : (aggregateBins[0].currentVolume + aggregateBins[1].currentVolume).toFixed(0)
+                      ) : (
+                        /* System 1 & 2: Show weighing hopper weight */
+                        productionState.currentWeights.pasir.toFixed(0)
+                      )} kg
                     </div>
                   </div>
                 </div>
@@ -1267,14 +1271,18 @@ const Index = () => {
                       : 'bg-gray-800/40 border-gray-600'
                   }`}>
                     <div className="text-sm text-muted-foreground font-semibold uppercase tracking-wide">
-                      BATU {raspberryPi?.productionMode === 'production' ? '(Actual)' : '(Storage)'}
+                      BATU
                     </div>
                     <div className="text-3xl font-bold text-green-300 tabular-nums">
-                      {/* ✅ System 3: Show actual weight in production mode or storage bin weight in simulation */}
-                      {raspberryPi?.productionMode === 'production' && raspberryPi?.isConnected
-                        ? (raspberryPi.actualWeights['batu'] || 0).toFixed(0)
-                        : (aggregateBins[2].currentVolume + aggregateBins[3].currentVolume).toFixed(0)
-                      } kg
+                      {systemConfig === 3 ? (
+                        /* System 3: Show actual weight in production mode or storage bin weight in simulation */
+                        raspberryPi?.productionMode === 'production' && raspberryPi?.isConnected
+                          ? (raspberryPi.actualWeights['batu'] || 0).toFixed(0)
+                          : (aggregateBins[2].currentVolume + aggregateBins[3].currentVolume).toFixed(0)
+                      ) : (
+                        /* System 1 & 2: Show weighing hopper weight */
+                        productionState.currentWeights.batu.toFixed(0)
+                      )} kg
                     </div>
                   </div>
                 </div>
