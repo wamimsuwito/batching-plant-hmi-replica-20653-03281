@@ -493,37 +493,21 @@ export const useProductionSequence = (
 
     clearAllTimers();
     
-    // ✅ SYSTEM 3: Initialize aggregate weights based on mode
-    if (systemConfig === 3) {
-      if (raspberryPi?.productionMode === 'production' && raspberryPi?.isConnected) {
-        // PRODUCTION MODE: Read from load cell
-        const pasirWeight = raspberryPi.actualWeights['pasir'] || 0;
-        const batuWeight = raspberryPi.actualWeights['batu'] || 0;
-        
-        console.log(`📊 SYSTEM 3 PRODUCTION: Reading aggregate weights - Pasir: ${pasirWeight}kg, Batu: ${batuWeight}kg`);
-        
-        setProductionState(prev => ({
-          ...prev,
-          currentWeights: {
-            ...prev.currentWeights,
-            pasir: pasirWeight,
-            batu: batuWeight,
-          },
-        }));
-      } else {
-        // SIMULATION MODE: Set to 10,000 kg
-        console.log('🎮 SYSTEM 3 SIMULATION: Setting aggregate weights to 10,000 kg');
-        
-        setProductionState(prev => ({
-          ...prev,
-          currentWeights: {
-            ...prev.currentWeights,
-            pasir: 10000,
-            batu: 10000,
-          },
-        }));
-      }
+    // ✅ SYSTEM 3: Initialize aggregate weights (SIMULATION MODE ONLY)
+    if (systemConfig === 3 && raspberryPi?.productionMode !== 'production') {
+      // SIMULATION MODE: Set to 10,000 kg
+      console.log('🎮 SYSTEM 3 SIMULATION: Setting aggregate weights to 10,000 kg');
+      
+      setProductionState(prev => ({
+        ...prev,
+        currentWeights: {
+          ...prev.currentWeights,
+          pasir: 10000,
+          batu: 10000,
+        },
+      }));
     }
+    // ❌ PRODUCTION MODE: Don't initialize - indicator will read directly from raspberryPi.actualWeights in UI
     
     // ✅ CRITICAL: Set accurate production start timestamp
     setProductionStartTimestamp(new Date());
