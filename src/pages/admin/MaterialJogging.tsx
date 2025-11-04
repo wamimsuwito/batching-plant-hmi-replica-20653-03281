@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Info } from 'lucide-react';
 
 interface MaterialSetting {
   nama: string;
@@ -21,16 +23,24 @@ const defaultMaterials: MaterialSetting[] = [
   { nama: 'Semen', trigger: '', jogingOn: '', jogingOff: '', toleransi: '' },
   { nama: 'Air', trigger: '', jogingOn: '', jogingOff: '', toleransi: '' },
   { nama: 'Additive', trigger: '', jogingOn: '', jogingOff: '', toleransi: '' },
+  { nama: 'Timer Dumping Pasir', trigger: '', jogingOn: '3', jogingOff: '2', toleransi: '' }, // System 3 only
+  { nama: 'Timer Dumping Batu', trigger: '', jogingOn: '3', jogingOff: '2', toleransi: '' }, // System 3 only
 ];
 
 export default function MaterialJogging() {
   const [materials, setMaterials] = useState<MaterialSetting[]>(defaultMaterials);
+  const [systemConfig, setSystemConfig] = useState<number>(1);
   const { toast } = useToast();
 
   useEffect(() => {
     const saved = localStorage.getItem('material_jogging_settings');
     if (saved) {
       setMaterials(JSON.parse(saved));
+    }
+    
+    const savedSystem = localStorage.getItem('system_config');
+    if (savedSystem) {
+      setSystemConfig(parseInt(savedSystem));
     }
   }, []);
 
@@ -56,6 +66,16 @@ export default function MaterialJogging() {
           <CardDescription>Pengaturan joging dan testing material</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {systemConfig === 3 && (
+            <Alert className="mb-4">
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Timer Dumping:</strong> Mengatur interval ON/OFF pintu aggregate untuk mencegah material berceceran. 
+                Pintu akan membuka (ON) dan menutup (OFF) berulang sampai aggregate kosong.
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -115,6 +135,74 @@ export default function MaterialJogging() {
                     </TableCell>
                   </TableRow>
                 ))}
+                
+                {/* System 3 Only: Timer Dumping */}
+                {systemConfig === 3 && (
+                  <>
+                    <TableRow className="bg-muted/50">
+                      <TableCell colSpan={5} className="font-semibold text-primary">
+                        <div className="flex items-center gap-2">
+                          <Info className="w-4 h-4" />
+                          Timer Dumping Aggregate (Sistem 3)
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">Timer Dumping Pasir</TableCell>
+                      <TableCell>
+                        <span className="text-muted-foreground text-sm">-</span>
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          value={materials[7]?.jogingOn || ''}
+                          onChange={(e) => handleInputChange(7, 'jogingOn', e.target.value)}
+                          placeholder="3"
+                          className="w-full"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          value={materials[7]?.jogingOff || ''}
+                          onChange={(e) => handleInputChange(7, 'jogingOff', e.target.value)}
+                          placeholder="2"
+                          className="w-full"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-muted-foreground text-sm">-</span>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">Timer Dumping Batu</TableCell>
+                      <TableCell>
+                        <span className="text-muted-foreground text-sm">-</span>
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          value={materials[8]?.jogingOn || ''}
+                          onChange={(e) => handleInputChange(8, 'jogingOn', e.target.value)}
+                          placeholder="3"
+                          className="w-full"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          value={materials[8]?.jogingOff || ''}
+                          onChange={(e) => handleInputChange(8, 'jogingOff', e.target.value)}
+                          placeholder="2"
+                          className="w-full"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-muted-foreground text-sm">-</span>
+                      </TableCell>
+                    </TableRow>
+                  </>
+                )}
               </TableBody>
             </Table>
           </div>
