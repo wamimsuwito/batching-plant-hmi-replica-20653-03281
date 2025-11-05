@@ -36,8 +36,27 @@ export const WaitingHopper = ({ x, y, fillLevel = 0, isActive = false }: Waiting
         />
       )}
       
+      {/* Discharge valve at bottom - RED blinking when active */}
+      <g transform={`translate(${hopperWidth / 2}, ${hopperHeight + 5})`}>
+        <rect
+          x="-8"
+          y="0"
+          width="16"
+          height="8"
+          className={isActive ? "fill-red-500 animate-pulse" : "fill-gray-600"}
+          rx="2"
+        />
+        <text
+          y="20"
+          className="fill-white text-[8px] font-semibold"
+          textAnchor="middle"
+        >
+          DISCHARGE
+        </text>
+      </g>
+      
       {/* Status indicator */}
-      <g transform={`translate(${hopperWidth / 2}, ${hopperHeight + 20})`}>
+      <g transform={`translate(${hopperWidth / 2}, ${hopperHeight + 35})`}>
         <circle
           r="6"
           className={isActive ? "fill-red-500 animate-pulse" : "fill-green-500"}
@@ -47,7 +66,7 @@ export const WaitingHopper = ({ x, y, fillLevel = 0, isActive = false }: Waiting
           className="fill-white text-[10px] font-semibold"
           textAnchor="middle"
         >
-          {isActive ? 'ACTIVE' : 'READY'}
+          {isActive ? 'DUMPING' : 'READY'}
         </text>
       </g>
       

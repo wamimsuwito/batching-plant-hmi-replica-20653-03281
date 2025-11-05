@@ -23,13 +23,17 @@ const defaultMaterials: MaterialSetting[] = [
   { nama: 'Semen', trigger: '', jogingOn: '', jogingOff: '', toleransi: '' },
   { nama: 'Air', trigger: '', jogingOn: '', jogingOff: '', toleransi: '' },
   { nama: 'Additive', trigger: '', jogingOn: '', jogingOff: '', toleransi: '' },
-  { nama: 'Timer Dumping Pasir', trigger: '', jogingOn: '3', jogingOff: '2', toleransi: '' }, // System 3 only
-  { nama: 'Timer Dumping Batu', trigger: '', jogingOn: '3', jogingOff: '2', toleransi: '' }, // System 3 only
+  { nama: 'Timer Dumping Pasir', trigger: '', jogingOn: '3', jogingOff: '2', toleransi: '' },
+  { nama: 'Timer Dumping Batu', trigger: '', jogingOn: '3', jogingOff: '2', toleransi: '' },
+  { nama: 'Dumping Wait Hopper - Phase 1', trigger: '', jogingOn: '5', jogingOff: '0', toleransi: '' },
+  { nama: 'Dumping Wait Hopper - Phase 2', trigger: '', jogingOn: '0', jogingOff: '6', toleransi: '' },
+  { nama: 'Dumping Wait Hopper - Phase 3', trigger: '', jogingOn: '10', jogingOff: '0', toleransi: '' },
 ];
 
 export default function MaterialJogging() {
   const [materials, setMaterials] = useState<MaterialSetting[]>(defaultMaterials);
   const [systemConfig, setSystemConfig] = useState<number>(1);
+  const [accessories, setAccessories] = useState<string[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -38,9 +42,14 @@ export default function MaterialJogging() {
       setMaterials(JSON.parse(saved));
     }
     
-    const savedSystem = localStorage.getItem('system_config');
+    const savedSystem = localStorage.getItem('batch_plant_system');
     if (savedSystem) {
       setSystemConfig(parseInt(savedSystem));
+    }
+
+    const savedAccessories = localStorage.getItem('batch_plant_accessories');
+    if (savedAccessories) {
+      setAccessories(JSON.parse(savedAccessories));
     }
   }, []);
 
@@ -94,7 +103,7 @@ export default function MaterialJogging() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {materials.map((material, index) => (
+                {materials.slice(0, 7).map((material, index) => (
                   <TableRow key={material.nama}>
                     <TableCell className="font-medium">{material.nama}</TableCell>
                     <TableCell>
@@ -196,6 +205,83 @@ export default function MaterialJogging() {
                           placeholder="2"
                           className="w-full"
                         />
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-muted-foreground text-sm">-</span>
+                      </TableCell>
+                    </TableRow>
+                  </>
+                )}
+
+                {/* Waiting Hopper Settings */}
+                {accessories.includes('4') && (
+                  <>
+                    <TableRow className="bg-muted/50">
+                      <TableCell colSpan={5} className="font-semibold text-primary">
+                        <div className="flex items-center gap-2">
+                          <Info className="w-4 h-4" />
+                          Setting Dumping Waiting Hopper
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">Dumping Wait Hopper - Phase 1 (ON)</TableCell>
+                      <TableCell>
+                        <span className="text-muted-foreground text-sm">-</span>
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          value={materials[9]?.jogingOn || ''}
+                          onChange={(e) => handleInputChange(9, 'jogingOn', e.target.value)}
+                          placeholder="5"
+                          className="w-full"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-muted-foreground text-sm">-</span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-muted-foreground text-sm">-</span>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">Dumping Wait Hopper - Phase 2 (OFF)</TableCell>
+                      <TableCell>
+                        <span className="text-muted-foreground text-sm">-</span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-muted-foreground text-sm">-</span>
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          value={materials[10]?.jogingOff || ''}
+                          onChange={(e) => handleInputChange(10, 'jogingOff', e.target.value)}
+                          placeholder="6"
+                          className="w-full"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-muted-foreground text-sm">-</span>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">Dumping Wait Hopper - Phase 3 (ON Final)</TableCell>
+                      <TableCell>
+                        <span className="text-muted-foreground text-sm">-</span>
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          value={materials[11]?.jogingOn || ''}
+                          onChange={(e) => handleInputChange(11, 'jogingOn', e.target.value)}
+                          placeholder="10"
+                          className="w-full"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-muted-foreground text-sm">-</span>
                       </TableCell>
                       <TableCell>
                         <span className="text-muted-foreground text-sm">-</span>
