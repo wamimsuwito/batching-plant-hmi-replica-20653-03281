@@ -1173,8 +1173,8 @@ export const useProductionSequence = (
           }
         }
 
-        // Check if target weight reached
-        if (currentWeight >= targetWeight - jogging.toleransi) {
+        // Check if target weight reached (using finalWeight for cumulative weighing in System 1)
+        if (currentWeight >= finalWeight) {
           clearInterval(weighingInterval);
           
           // Close relay
