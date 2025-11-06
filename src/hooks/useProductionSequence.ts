@@ -1404,10 +1404,22 @@ export const useProductionSequence = (
       let maxGroupDuration = 0;
       
       // Within each group, apply individual timer delays
+      let aggregateDischargedInSystem1 = false; // Track if aggregate already discharged in System 1
+      
       groupMaterials.forEach(({ material, timer, targetWeight }) => {
         // Skip aggregate in System 3 (already handled above)
         if (systemConfig === 3 && (material === 'pasir' || material === 'batu')) {
           return;
+        }
+        
+        // ✅ SYSTEM 1: Skip 'batu' discharge if 'pasir' already discharged (cumulative hopper)
+        if (systemConfig === 1 && (material === 'pasir' || material === 'batu')) {
+          if (aggregateDischargedInSystem1) {
+            console.log(`⏭️ SYSTEM 1: Skipping ${material} discharge (already handled as aggregate)`);
+            return;
+          }
+          aggregateDischargedInSystem1 = true;
+          console.log(`✅ SYSTEM 1: Discharging aggregate (pasir + batu) as single operation`);
         }
         
         const totalDelay = groupDelay + (timer * 1000);
@@ -1716,6 +1728,11 @@ export const useProductionSequence = (
       controlRelay('konveyor_horizontal', true);
       addActivityLog('🚚 Conveyor Horizontal ON + Pintu Aggregate BUKA');
       
+      // ✅ Capture initial weights for smooth animation
+      const initialAggregateWeight = productionState.currentWeights.aggregate || 0;
+      const initialPasirWeight = productionState.currentWeights.pasir || 0;
+      const initialBatuWeight = productionState.currentWeights.batu || 0;
+      
       // Animate fillLevel reduction with setTimeout (smooth 10 seconds)
       const dischargeDuration = 10000; // 10 detik
       const steps = 100; // 100 steps untuk animasi smooth
@@ -1730,7 +1747,15 @@ export const useProductionSequence = (
           ...prev,
           hopperFillLevels: {
             ...prev.hopperFillLevels,
-            aggregate: Math.max(0, 100 * (1 - progress)) // Smooth: 100% → 0%
+            aggregate: Math.max(0, 100 * (1 - progress)), // Smooth: 100% → 0%
+            pasir: Math.max(0, 100 * (1 - progress)),     // ✅ Animate both hopper levels
+            batu: Math.max(0, 100 * (1 - progress)),
+          },
+          currentWeights: {
+            ...prev.currentWeights,
+            aggregate: Math.max(0, initialAggregateWeight * (1 - progress)), // ✅ Smooth weight reduction
+            pasir: Math.max(0, initialPasirWeight * (1 - progress)),         // Both weights reduce together
+            batu: Math.max(0, initialBatuWeight * (1 - progress)),
           }
         }));
         
@@ -1753,17 +1778,20 @@ export const useProductionSequence = (
         controlRelay('konveyor_horizontal', false);
         addActivityLog('🔴 Conveyor Horizontal OFF + Pintu Aggregate TUTUP');
         
-        // Reset hopper fill level and weight
+        // Reset hopper fill level and weight for BOTH pasir and batu (cumulative hopper)
         setProductionState(prev => ({
           ...prev,
           hopperFillLevels: { 
             ...prev.hopperFillLevels, 
             aggregate: 0,
-            [material === 'pasir' ? 'pasir' : 'batu']: 0 
+            pasir: 0,  // ✅ Reset both pasir and batu in System 1
+            batu: 0,
           },
           currentWeights: {
             ...prev.currentWeights,
-            aggregate: 0
+            aggregate: 0,
+            pasir: 0,  // ✅ Reset both weights
+            batu: 0,
           },
           dischargedMaterialsCount: prev.dischargedMaterialsCount + 1,
         }));
