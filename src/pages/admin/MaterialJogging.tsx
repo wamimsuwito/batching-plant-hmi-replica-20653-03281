@@ -25,9 +25,7 @@ const defaultMaterials: MaterialSetting[] = [
   { nama: 'Additive', trigger: '', jogingOn: '', jogingOff: '', toleransi: '' },
   { nama: 'Timer Dumping Pasir', trigger: '', jogingOn: '3', jogingOff: '2', toleransi: '' },
   { nama: 'Timer Dumping Batu', trigger: '', jogingOn: '3', jogingOff: '2', toleransi: '' },
-  { nama: 'Dumping Wait Hopper - Phase 1', trigger: '', jogingOn: '5', jogingOff: '0', toleransi: '' },
-  { nama: 'Dumping Wait Hopper - Phase 2', trigger: '', jogingOn: '0', jogingOff: '6', toleransi: '' },
-  { nama: 'Dumping Wait Hopper - Phase 3', trigger: '', jogingOn: '10', jogingOff: '0', toleransi: '' },
+  { nama: 'Waiting Hopper 3-Phase', trigger: '', jogingOn: '5', jogingOff: '6', toleransi: '10' },
 ];
 
 export default function MaterialJogging() {
@@ -220,23 +218,31 @@ export default function MaterialJogging() {
                       <TableCell colSpan={5} className="font-semibold text-primary">
                         <div className="flex items-center gap-2">
                           <Info className="w-4 h-4" />
-                          Setting Dumping Waiting Hopper
+                          Waiting Hopper 3-Phase Dumping
                         </div>
                       </TableCell>
                     </TableRow>
+                    <TableRow className="bg-muted/20">
+                      <TableCell colSpan={5} className="text-sm text-muted-foreground italic">
+                        Phase 1 ON → Phase 2 OFF (hold) → Phase 3 ON (final discharge)
+                      </TableCell>
+                    </TableRow>
                     <TableRow>
-                      <TableCell className="font-medium">Dumping Wait Hopper - Phase 1 (ON)</TableCell>
+                      <TableCell className="font-medium">Phase 1 (ON)</TableCell>
                       <TableCell>
                         <span className="text-muted-foreground text-sm">-</span>
                       </TableCell>
                       <TableCell>
                         <Input
                           type="number"
+                          step="0.1"
+                          min="0"
                           value={materials[9]?.jogingOn || ''}
                           onChange={(e) => handleInputChange(9, 'jogingOn', e.target.value)}
                           placeholder="5"
                           className="w-full"
                         />
+                        <span className="text-xs text-muted-foreground block mt-1">detik</span>
                       </TableCell>
                       <TableCell>
                         <span className="text-muted-foreground text-sm">-</span>
@@ -246,7 +252,7 @@ export default function MaterialJogging() {
                       </TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell className="font-medium">Dumping Wait Hopper - Phase 2 (OFF)</TableCell>
+                      <TableCell className="font-medium">Phase 2 (OFF - Hold)</TableCell>
                       <TableCell>
                         <span className="text-muted-foreground text-sm">-</span>
                       </TableCell>
@@ -256,35 +262,41 @@ export default function MaterialJogging() {
                       <TableCell>
                         <Input
                           type="number"
-                          value={materials[10]?.jogingOff || ''}
-                          onChange={(e) => handleInputChange(10, 'jogingOff', e.target.value)}
+                          step="0.1"
+                          min="0"
+                          value={materials[9]?.jogingOff || ''}
+                          onChange={(e) => handleInputChange(9, 'jogingOff', e.target.value)}
                           placeholder="6"
                           className="w-full"
                         />
+                        <span className="text-xs text-muted-foreground block mt-1">detik</span>
                       </TableCell>
                       <TableCell>
                         <span className="text-muted-foreground text-sm">-</span>
                       </TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell className="font-medium">Dumping Wait Hopper - Phase 3 (ON Final)</TableCell>
+                      <TableCell className="font-medium">Phase 3 (ON - Final)</TableCell>
+                      <TableCell>
+                        <span className="text-muted-foreground text-sm">-</span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-muted-foreground text-sm">-</span>
+                      </TableCell>
                       <TableCell>
                         <span className="text-muted-foreground text-sm">-</span>
                       </TableCell>
                       <TableCell>
                         <Input
                           type="number"
-                          value={materials[11]?.jogingOn || ''}
-                          onChange={(e) => handleInputChange(11, 'jogingOn', e.target.value)}
+                          step="0.1"
+                          min="0"
+                          value={materials[9]?.toleransi || ''}
+                          onChange={(e) => handleInputChange(9, 'toleransi', e.target.value)}
                           placeholder="10"
                           className="w-full"
                         />
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-muted-foreground text-sm">-</span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-muted-foreground text-sm">-</span>
+                        <span className="text-xs text-muted-foreground block mt-1">detik</span>
                       </TableCell>
                     </TableRow>
                   </>
