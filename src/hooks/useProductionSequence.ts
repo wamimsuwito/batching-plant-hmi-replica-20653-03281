@@ -102,7 +102,8 @@ export interface ComponentStates {
   klakson: boolean; // Klakson relay (Modbus Coil 15)
   isAggregateWeighing?: boolean; // System 1: Aggregate weighing indicator
   waitingHopperFillLevel?: number; // Fill level for waiting hopper (0-100%)
-  isWaitingHopperActive?: boolean; // Active status for waiting hopper
+  isWaitingHopperActive?: boolean; // Active status for waiting hopper (discharge valve)
+  waitingHopperValve?: boolean; // Waiting hopper discharge valve
 }
 
 interface RelayConfig {
@@ -170,6 +171,9 @@ const initialComponentStates: ComponentStates = {
   mixerDoor: false,
   vibrator: false,
   klakson: false,
+  waitingHopperFillLevel: 0,
+  isWaitingHopperActive: false,
+  waitingHopperValve: false,
 };
 
 // Helper function for delays
@@ -1487,7 +1491,10 @@ export const useProductionSequence = (
       addTimer(beltOffTimer);
     }
 
-    // Start mixing AFTER aggregate discharge + 5 second delay
+    // ✅ NEW: Check if accessories include waiting hopper
+    const hasWaitingHopper = accessories.includes('4');
+    
+    // Start mixing AFTER aggregate discharge + 5 second delay (or after waiting hopper completes)
     const mixingStartDelay = aggregateDischargeEnd > 0 
       ? aggregateDischargeEnd + 5000  // Wait for aggregate + 5s delay
       : groupDelay + 2000;              // Or just normal delay if no aggregate
@@ -1500,9 +1507,132 @@ export const useProductionSequence = (
         waterHopperValve: false,
       }));
       
+      // ✅ NEW: If waiting hopper exists, start 3-phase dumping simultaneously with mixing
+      if (hasWaitingHopper && aggregateDischargeEnd > 0) {
+        console.log('🪣 Starting waiting hopper 3-phase dumping');
+        startWaitingHopperDumping();
+      }
+      
       startMixing(config);
     }, mixingStartDelay);
     addTimer(mixingTimer);
+  };
+
+  // ✅ NEW: Waiting Hopper 3-Phase Dumping Logic
+  // Phase 1: ON 5s, Phase 2: OFF 6s, Phase 3: ON 10s
+  const startWaitingHopperDumping = () => {
+    console.log('🪣 ========== WAITING HOPPER 3-PHASE DUMPING START ==========');
+    
+    // Get timer settings from localStorage (index 9 for waiting hopper)
+    const joggingSettings = JSON.parse(localStorage.getItem('material_jogging_settings') || '[]');
+    const waitingHopperSettings = joggingSettings[9] || { 
+      jogingOn: '5',   // Phase 1: ON 5s (default)
+      jogingOff: '6',  // Phase 2: OFF 6s (default)
+      toleransi: '10'  // Phase 3: ON 10s (stored in toleransi field)
+    };
+    
+    const phase1Duration = parseFloat(waitingHopperSettings.jogingOn || '5') * 1000;  // ON 5s
+    const phase2Duration = parseFloat(waitingHopperSettings.jogingOff || '6') * 1000; // OFF 6s
+    const phase3Duration = parseFloat(waitingHopperSettings.toleransi || '10') * 1000; // ON 10s
+    
+    console.log(`⏱️ Waiting hopper phases: P1=${phase1Duration/1000}s ON, P2=${phase2Duration/1000}s OFF, P3=${phase3Duration/1000}s ON`);
+    
+    // PHASE 1: ON for 5 seconds
+    console.log('🟢 PHASE 1: Valve ON (5s)');
+    setComponentStates(prev => ({ 
+      ...prev, 
+      isWaitingHopperActive: true,
+      waitingHopperValve: true,
+    }));
+    controlRelay('waiting_hopper', true);
+    addActivityLog('🟢 Waiting Hopper: Phase 1 ON');
+    
+    // Animate fill level decrease during Phase 1
+    const phase1Steps = 50;
+    const phase1Interval = phase1Duration / phase1Steps;
+    let phase1Step = 0;
+    
+    const animatePhase1 = () => {
+      phase1Step++;
+      const progress = phase1Step / phase1Steps;
+      const fillReduction = (100 / 3) * progress; // Reduce by 1/3 during Phase 1
+      
+      setComponentStates(prev => ({
+        ...prev,
+        waitingHopperFillLevel: Math.max(0, 100 - fillReduction),
+      }));
+      
+      if (phase1Step < phase1Steps) {
+        const timer = setTimeout(animatePhase1, phase1Interval);
+        addTimer(timer);
+      }
+    };
+    animatePhase1();
+    
+    const phase1Timer = setTimeout(() => {
+      // PHASE 2: OFF for 6 seconds (hold at ~66% fill)
+      console.log('🔴 PHASE 2: Valve OFF (6s)');
+      setComponentStates(prev => ({ 
+        ...prev, 
+        isWaitingHopperActive: false,
+        waitingHopperValve: false,
+      }));
+      controlRelay('waiting_hopper', false);
+      addActivityLog('🔴 Waiting Hopper: Phase 2 OFF');
+      
+      const phase2Timer = setTimeout(() => {
+        // PHASE 3: ON for 10 seconds (final discharge)
+        console.log('🟢 PHASE 3: Valve ON (10s) - FINAL DISCHARGE');
+        setComponentStates(prev => ({ 
+          ...prev, 
+          isWaitingHopperActive: true,
+          waitingHopperValve: true,
+        }));
+        controlRelay('waiting_hopper', true);
+        addActivityLog('🟢 Waiting Hopper: Phase 3 ON (Final)');
+        
+        // Animate remaining fill level to 0
+        const phase3Steps = 50;
+        const phase3Interval = phase3Duration / phase3Steps;
+        let phase3Step = 0;
+        const startingFill = 100 - (100 / 3); // Start from where Phase 1 ended (~66%)
+        
+        const animatePhase3 = () => {
+          phase3Step++;
+          const progress = phase3Step / phase3Steps;
+          const newFill = Math.max(0, startingFill * (1 - progress));
+          
+          setComponentStates(prev => ({
+            ...prev,
+            waitingHopperFillLevel: newFill,
+          }));
+          
+          if (phase3Step < phase3Steps) {
+            const timer = setTimeout(animatePhase3, phase3Interval);
+            addTimer(timer);
+          }
+        };
+        animatePhase3();
+        
+        const phase3Timer = setTimeout(() => {
+          // Complete: Turn OFF valve and reset fill level
+          console.log('✅ WAITING HOPPER DUMPING COMPLETE');
+          setComponentStates(prev => ({ 
+            ...prev, 
+            isWaitingHopperActive: false,
+            waitingHopperValve: false,
+            waitingHopperFillLevel: 0,
+          }));
+          controlRelay('waiting_hopper', false);
+          addActivityLog('✅ Waiting Hopper: Dumping Complete');
+        }, phase3Duration);
+        addTimer(phase3Timer);
+        
+      }, phase2Duration);
+      addTimer(phase2Timer);
+      
+    }, phase1Duration);
+    addTimer(phase1Timer);
   };
 
   const dischargeMaterial = (material: string, targetWeight: number, config: ProductionConfig) => {
@@ -1785,6 +1915,9 @@ export const useProductionSequence = (
       const initialPasirWeight = productionState.currentWeights.pasir || 0;
       const initialBatuWeight = productionState.currentWeights.batu || 0;
       
+      // ✅ Check if waiting hopper accessory is enabled
+      const hasWaitingHopper = accessories.includes('4');
+      
       // Animate fillLevel reduction with setTimeout (smooth 10 seconds)
       const dischargeDuration = 10000; // 10 detik
       const steps = 100; // 100 steps untuk animasi smooth
@@ -1810,6 +1943,14 @@ export const useProductionSequence = (
             batu: Math.max(0, initialBatuWeight * (1 - progress)),
           }
         }));
+        
+        // ✅ NEW: Fill waiting hopper during aggregate discharge
+        if (hasWaitingHopper) {
+          setComponentStates(prevComp => ({
+            ...prevComp,
+            waitingHopperFillLevel: Math.min(100, progress * 100), // 0% → 100%
+          }));
+        }
         
         if (currentStep < steps) {
           const timer = setTimeout(animateDischarge, interval);
@@ -1848,6 +1989,15 @@ export const useProductionSequence = (
           dischargedMaterialsCount: prev.dischargedMaterialsCount + 1,
         }));
         
+        // ✅ NEW: Finalize waiting hopper fill to exactly 100%
+        if (hasWaitingHopper) {
+          setComponentStates(prevComp => ({
+            ...prevComp,
+            waitingHopperFillLevel: 100,
+          }));
+          console.log('🪣 Waiting hopper filled to 100%');
+        }
+        
         console.log(`✅ ${material} discharged via conveyor (System 1)`);
         
         // Check if all materials discharged
@@ -1867,6 +2017,9 @@ export const useProductionSequence = (
     // ✅ SYSTEM 2: Normal discharge logic (vibrator + hoppers)
     // Turn on vibrator and BELT-1 for aggregate discharge
     if (material === 'pasir' || material === 'batu') {
+      // ✅ Check if waiting hopper accessory is enabled
+      const hasWaitingHopper = accessories.includes('4');
+      
       setComponentStates(prev => ({ 
         ...prev, 
         vibrator: true,
@@ -1918,6 +2071,19 @@ export const useProductionSequence = (
           };
         });
         
+        // ✅ NEW: Fill waiting hopper during aggregate discharge (only once for pasir)
+        if (hasWaitingHopper && material === 'pasir') {
+          setComponentStates(prevComp => ({
+            ...prevComp,
+            waitingHopperFillLevel: Math.min(100, progress * 50), // Fill to 50% during pasir
+          }));
+        } else if (hasWaitingHopper && material === 'batu') {
+          setComponentStates(prevComp => ({
+            ...prevComp,
+            waitingHopperFillLevel: Math.min(100, 50 + (progress * 50)), // Fill from 50% to 100% during batu
+          }));
+        }
+        
         if (currentStep < animationSteps) {
           const timer = setTimeout(animateDischarge, stepDuration);
           addTimer(timer);
@@ -1940,6 +2106,23 @@ export const useProductionSequence = (
             [material]: 0
           }
         }));
+        
+        // ✅ NEW: Finalize waiting hopper fill based on material
+        if (hasWaitingHopper) {
+          if (material === 'pasir') {
+            setComponentStates(prevComp => ({
+              ...prevComp,
+              waitingHopperFillLevel: 50, // Pasir fills to 50%
+            }));
+            console.log('🪣 Waiting hopper filled to 50% (pasir)');
+          } else if (material === 'batu') {
+            setComponentStates(prevComp => ({
+              ...prevComp,
+              waitingHopperFillLevel: 100, // Batu completes to 100%
+            }));
+            console.log('🪣 Waiting hopper filled to 100% (pasir + batu)');
+          }
+        }
         
         // ✅ FIX: Turn off the correct relay for each hopper
         if (material === 'pasir') {
