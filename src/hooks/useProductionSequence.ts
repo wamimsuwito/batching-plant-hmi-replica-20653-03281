@@ -1400,15 +1400,15 @@ export const useProductionSequence = (
       });
     }
     
+    // ✅ SYSTEM 1 FIX: Track aggregate discharge OUTSIDE group loop
+    let aggregateDischargedInSystem1 = false;
+    
     // Process mixing groups for non-System 3 or for cement/water in System 3
     sortedGroups.forEach((groupNum) => {
       const groupMaterials = groups[groupNum];
       
       // Calculate max discharge time for THIS group
       let maxGroupDuration = 0;
-      
-      // Within each group, apply individual timer delays
-      let aggregateDischargedInSystem1 = false; // Track if aggregate already discharged in System 1
       
       groupMaterials.forEach(({ material, timer, targetWeight }) => {
         // Skip aggregate in System 3 (already handled above)
