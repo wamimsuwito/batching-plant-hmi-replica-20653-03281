@@ -1022,42 +1022,52 @@ export const useProductionSequence = (
         // Update weight display and hopper fill level (cumulative for aggregates)
         if (material === 'pasir1' || material === 'pasir2') {
           const percentage = Math.min(100, (currentWeight / (config.targetWeights.pasir1 + config.targetWeights.pasir2)) * 100);
-          setProductionState(prev => ({
-            ...prev,
-            currentWeights: { 
-              ...prev.currentWeights, 
-              pasir: currentWeight,
-              // System 1: Update aggregate cumulative weight
-              ...(systemConfig === 1 ? { aggregate: currentWeight } : {})
-            },
-            hopperFillLevels: { 
-              ...prev.hopperFillLevels, 
-              pasir: percentage,
-              // System 1: Update aggregate hopper fill level
-              ...(systemConfig === 1 ? { aggregate: percentage } : {})
-            },
-          }));
+          setProductionState(prev => {
+            const aggTargetTotal = (config.targetWeights.pasir1 + config.targetWeights.pasir2) + (config.targetWeights.batu1 + config.targetWeights.batu2);
+            const aggWeightNow = currentWeight + (prev.currentWeights.batu || 0);
+            const aggPercentage = aggTargetTotal > 0 ? Math.min(100, (aggWeightNow / aggTargetTotal) * 100) : 0;
+            return ({
+              ...prev,
+              currentWeights: { 
+                ...prev.currentWeights, 
+                pasir: currentWeight,
+                // System 1: Update aggregate as SUM of pasir + batu for accurate display
+                ...(systemConfig === 1 ? { aggregate: aggWeightNow } : {})
+              },
+              hopperFillLevels: { 
+                ...prev.hopperFillLevels, 
+                pasir: percentage,
+                // System 1: Update aggregate hopper fill level as combined percentage
+                ...(systemConfig === 1 ? { aggregate: aggPercentage } : {})
+              },
+            });
+          });
           // System 1: Set aggregate weighing indicator
           if (systemConfig === 1) {
             setComponentStates(prev => ({ ...prev, isAggregateWeighing: true }));
           }
         } else if (material === 'batu1' || material === 'batu2') {
           const percentage = Math.min(100, (currentWeight / (config.targetWeights.batu1 + config.targetWeights.batu2)) * 100);
-          setProductionState(prev => ({
-            ...prev,
-            currentWeights: { 
-              ...prev.currentWeights, 
-              batu: currentWeight,
-              // System 1: Update aggregate cumulative weight
-              ...(systemConfig === 1 ? { aggregate: currentWeight } : {})
-            },
-            hopperFillLevels: { 
-              ...prev.hopperFillLevels, 
-              batu: percentage,
-              // System 1: Update aggregate hopper fill level
-              ...(systemConfig === 1 ? { aggregate: percentage } : {})
-            },
-          }));
+          setProductionState(prev => {
+            const aggTargetTotal = (config.targetWeights.pasir1 + config.targetWeights.pasir2) + (config.targetWeights.batu1 + config.targetWeights.batu2);
+            const aggWeightNow = currentWeight + (prev.currentWeights.pasir || 0);
+            const aggPercentage = aggTargetTotal > 0 ? Math.min(100, (aggWeightNow / aggTargetTotal) * 100) : 0;
+            return ({
+              ...prev,
+              currentWeights: { 
+                ...prev.currentWeights, 
+                batu: currentWeight,
+                // System 1: Update aggregate as SUM of pasir + batu for accurate display
+                ...(systemConfig === 1 ? { aggregate: aggWeightNow } : {})
+              },
+              hopperFillLevels: { 
+                ...prev.hopperFillLevels, 
+                batu: percentage,
+                // System 1: Update aggregate hopper fill level as combined percentage
+                ...(systemConfig === 1 ? { aggregate: aggPercentage } : {})
+              },
+            });
+          });
           // System 1: Set aggregate weighing indicator
           if (systemConfig === 1) {
             setComponentStates(prev => ({ ...prev, isAggregateWeighing: true }));
@@ -1910,10 +1920,22 @@ export const useProductionSequence = (
       controlRelay('konveyor_horizontal', true);
       addActivityLog('🚚 Conveyor Horizontal ON + Pintu Aggregate BUKA');
       
-      // ✅ Capture initial weights for smooth animation
-      const initialAggregateWeight = productionState.currentWeights.aggregate || 0;
+      // ✅ Capture initial weights for smooth animation (use SUM if aggregate not set)
+      const sumAgg = (productionState.currentWeights.pasir || 0) + (productionState.currentWeights.batu || 0);
+      const initialAggregateWeight = (productionState.currentWeights.aggregate && productionState.currentWeights.aggregate > 0)
+        ? productionState.currentWeights.aggregate
+        : sumAgg;
       const initialPasirWeight = productionState.currentWeights.pasir || 0;
       const initialBatuWeight = productionState.currentWeights.batu || 0;
+      
+      // Ensure UI starts from the correct aggregate value immediately
+      setProductionState(prev => ({
+        ...prev,
+        currentWeights: {
+          ...prev.currentWeights,
+          aggregate: initialAggregateWeight
+        }
+      }));
       
       // ✅ Check if waiting hopper accessory is enabled
       const hasWaitingHopper = accessories.includes('4');
