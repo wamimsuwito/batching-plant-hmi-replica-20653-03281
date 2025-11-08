@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
 
 interface MaterialSetting {
@@ -66,13 +67,14 @@ export default function MaterialJogging() {
   };
 
   return (
-    <div className="p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Joging Material</CardTitle>
-          <CardDescription>Pengaturan joging dan testing material</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+    <TooltipProvider>
+      <div className="p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Joging Material</CardTitle>
+            <CardDescription>Pengaturan joging dan testing material</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
           {systemConfig === 3 && (
             <Alert className="mb-4">
               <Info className="h-4 w-4" />
@@ -228,7 +230,19 @@ export default function MaterialJogging() {
                       </TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell className="font-medium">Phase 1 (ON)</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          Phase 1 (ON)
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-xs">Initial discharge phase - material begins flowing from waiting hopper to mixer</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <span className="text-muted-foreground text-sm">-</span>
                       </TableCell>
@@ -252,7 +266,19 @@ export default function MaterialJogging() {
                       </TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell className="font-medium">Phase 2 (OFF - Hold)</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          Phase 2 (OFF - Hold)
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-xs">Hold/stabilization phase - valve closed to allow material settling and mixer stabilization</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <span className="text-muted-foreground text-sm">-</span>
                       </TableCell>
@@ -276,7 +302,19 @@ export default function MaterialJogging() {
                       </TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell className="font-medium">Phase 3 (ON - Final)</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          Phase 3 (ON - Final)
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-xs">Final complete discharge - valve opens fully to empty all remaining material into mixer</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <span className="text-muted-foreground text-sm">-</span>
                       </TableCell>
@@ -313,5 +351,6 @@ export default function MaterialJogging() {
         </CardContent>
       </Card>
     </div>
+    </TooltipProvider>
   );
 }
