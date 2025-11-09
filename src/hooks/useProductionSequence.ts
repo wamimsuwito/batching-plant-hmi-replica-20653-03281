@@ -1047,16 +1047,30 @@ export const useProductionSequence = (
             setComponentStates(prev => ({ ...prev, isAggregateWeighing: true }));
           }
         } else if (material === 'batu1' || material === 'batu2') {
-          const percentage = Math.min(100, (currentWeight / (config.targetWeights.batu1 + config.targetWeights.batu2)) * 100);
           setProductionState(prev => {
+            // In System 1, load cell reading for batu is cumulative (pasir + batu)
+            // We must derive batu-only cumulative by subtracting pasir total
+            const pasirCum = prev.currentWeights.pasir || 0;
+            const batuCumNow = systemConfig === 1 
+              ? Math.max(0, currentWeight - pasirCum) 
+              : currentWeight;
+
+            const batuTargetTotal = (config.targetWeights.batu1 + config.targetWeights.batu2);
+            const percentage = batuTargetTotal > 0 
+              ? Math.min(100, (batuCumNow / batuTargetTotal) * 100) 
+              : 0;
+
             const aggTargetTotal = (config.targetWeights.pasir1 + config.targetWeights.pasir2) + (config.targetWeights.batu1 + config.targetWeights.batu2);
-            const aggWeightNow = currentWeight + (prev.currentWeights.pasir || 0);
-            const aggPercentage = aggTargetTotal > 0 ? Math.min(100, (aggWeightNow / aggTargetTotal) * 100) : 0;
+            const aggWeightNow = batuCumNow + pasirCum;
+            const aggPercentage = aggTargetTotal > 0 
+              ? Math.min(100, (aggWeightNow / aggTargetTotal) * 100) 
+              : 0;
+
             return ({
               ...prev,
               currentWeights: { 
                 ...prev.currentWeights, 
-                batu: currentWeight,
+                batu: batuCumNow,
                 // System 1: Update aggregate as SUM of pasir + batu for accurate display
                 ...(systemConfig === 1 ? { aggregate: aggWeightNow } : {})
               },
