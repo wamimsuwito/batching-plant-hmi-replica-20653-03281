@@ -23,7 +23,12 @@ export const WeighHopper = ({
   label,
   width = 100 // Default width for normal hopper
 }: WeighHopperProps) => {
-  const displayFillLevel = targetWeight > 0 ? (currentWeight / targetWeight) * 50 : 0;
+  const displayFillLevel =
+    typeof fillLevel === 'number'
+      ? Math.min(50, Math.max(0, (fillLevel / 100) * 50))
+      : targetWeight > 0
+        ? Math.min(50, Math.max(0, (currentWeight / targetWeight) * 50))
+        : 0;
   
   // Determine fill color based on material type
   const getFillColor = () => {
