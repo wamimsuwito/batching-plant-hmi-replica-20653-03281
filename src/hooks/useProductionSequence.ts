@@ -1934,22 +1934,31 @@ export const useProductionSequence = (
       controlRelay('konveyor_horizontal', true);
       addActivityLog('🚚 Conveyor Horizontal ON + Pintu Aggregate BUKA');
       
-      // ✅ Capture initial weights for smooth animation (use SUM if aggregate not set)
-      const sumAgg = (productionState.currentWeights.pasir || 0) + (productionState.currentWeights.batu || 0);
-      const initialAggregateWeight = (productionState.currentWeights.aggregate && productionState.currentWeights.aggregate > 0)
-        ? productionState.currentWeights.aggregate
-        : sumAgg;
-      const initialPasirWeight = productionState.currentWeights.pasir || 0;
-      const initialBatuWeight = productionState.currentWeights.batu || 0;
+      // ✅ Capture initial weights using setState callback for reliability
+      let capturedInitialAggregateWeight = 0;
+      let capturedInitialPasirWeight = 0;
+      let capturedInitialBatuWeight = 0;
       
-      // Ensure UI starts from the correct aggregate value immediately
-      setProductionState(prev => ({
-        ...prev,
-        currentWeights: {
-          ...prev.currentWeights,
-          aggregate: initialAggregateWeight
-        }
-      }));
+      setProductionState(prev => {
+        const sumAgg = (prev.currentWeights.pasir || 0) + (prev.currentWeights.batu || 0);
+        const initialAgg = (prev.currentWeights.aggregate && prev.currentWeights.aggregate > 0)
+          ? prev.currentWeights.aggregate
+          : sumAgg;
+        
+        capturedInitialAggregateWeight = initialAgg;
+        capturedInitialPasirWeight = prev.currentWeights.pasir || 0;
+        capturedInitialBatuWeight = prev.currentWeights.batu || 0;
+        
+        console.log(`🚚 System 1 discharge starting: initial aggregate = ${initialAgg}kg (pasir: ${capturedInitialPasirWeight}, batu: ${capturedInitialBatuWeight})`);
+        
+        return {
+          ...prev,
+          currentWeights: {
+            ...prev.currentWeights,
+            aggregate: initialAgg
+          }
+        };
+      });
       
       // ✅ Check if waiting hopper accessory is enabled
       const hasWaitingHopper = accessories.includes('4');
@@ -1959,26 +1968,28 @@ export const useProductionSequence = (
       const steps = 100; // 100 steps untuk animasi smooth
       const interval = dischargeDuration / steps; // 100ms per step
       
-      let currentStep = 0;
-      const animateDischarge = () => {
-        currentStep++;
-        const progress = currentStep / steps;
-        
-        setProductionState(prev => ({
-          ...prev,
-          hopperFillLevels: {
-            ...prev.hopperFillLevels,
-            aggregate: Math.max(0, 100 * (1 - progress)), // Smooth: 100% → 0%
-            pasir: Math.max(0, 100 * (1 - progress)),     // ✅ Animate both hopper levels
-            batu: Math.max(0, 100 * (1 - progress)),
-          },
-          currentWeights: {
-            ...prev.currentWeights,
-            aggregate: Math.max(0, initialAggregateWeight * (1 - progress)), // ✅ Smooth weight reduction
-            pasir: Math.max(0, initialPasirWeight * (1 - progress)),         // Both weights reduce together
-            batu: Math.max(0, initialBatuWeight * (1 - progress)),
-          }
-        }));
+      // Wait for state to update before starting animation
+      setTimeout(() => {
+        let currentStep = 0;
+        const animateDischarge = () => {
+          currentStep++;
+          const progress = currentStep / steps;
+          
+          setProductionState(prev => ({
+            ...prev,
+            hopperFillLevels: {
+              ...prev.hopperFillLevels,
+              aggregate: Math.max(0, 100 * (1 - progress)), // Smooth: 100% → 0%
+              pasir: Math.max(0, 100 * (1 - progress)),     // ✅ Animate both hopper levels
+              batu: Math.max(0, 100 * (1 - progress)),
+            },
+            currentWeights: {
+              ...prev.currentWeights,
+              aggregate: Math.max(0, capturedInitialAggregateWeight * (1 - progress)), // ✅ Use captured weight
+              pasir: Math.max(0, capturedInitialPasirWeight * (1 - progress)),
+              batu: Math.max(0, capturedInitialBatuWeight * (1 - progress)),
+            }
+          }));
         
         // ✅ NEW: Fill waiting hopper during aggregate discharge
         if (hasWaitingHopper) {
@@ -1988,14 +1999,15 @@ export const useProductionSequence = (
           }));
         }
         
-        if (currentStep < steps) {
-          const timer = setTimeout(animateDischarge, interval);
-          addTimer(timer); // Track timer untuk cleanup
-        }
-      };
-      
-      // Start animation
-      animateDischarge();
+          if (currentStep < steps) {
+            const timer = setTimeout(animateDischarge, interval);
+            addTimer(timer); // Track timer untuk cleanup
+          }
+        };
+        
+        // Start animation immediately after state is set
+        animateDischarge();
+      }, 100); // 100ms delay to ensure state is updated
       
       // Turn OFF after 10 seconds
       const clearTimer = setTimeout(() => {
@@ -2485,6 +2497,35 @@ export const useProductionSequence = (
           console.log(`🚀 Starting PARALLEL WEIGHING for Mixing ${currentMixing + 1}`);
           console.log(`⏸️  Discharge will wait until Mixing ${currentMixing} completes and door closes`);
           
+          // ✅ Reset hopper states for clean weighing cycle
+          console.log('🔄 Resetting hopper states before next weighing...');
+          setProductionState(prevState => ({
+            ...prevState,
+            currentWeights: {
+              pasir: 0,
+              batu: 0,
+              semen: 0,
+              air: 0,
+              aggregate: 0,
+              additive: 0,
+            },
+            hopperFillLevels: {
+              pasir: 0,
+              batu: 0,
+              semen: 0,
+              air: 0,
+              aggregate: 0,
+            },
+            weighingComplete: {
+              pasir1: false,
+              pasir2: false,
+              batu1: false,
+              batu2: false,
+              semen: false,
+              air: false,
+            },
+          }));
+          
           // Refill aggregate bins for next mixing
           console.log('🔄 Refilling aggregate bins for next mixing...');
           onAggregateDeduction(1, -10000);
@@ -2492,7 +2533,7 @@ export const useProductionSequence = (
           onAggregateDeduction(3, -10000);
           onAggregateDeduction(4, -10000);
           
-          // Start weighing after a short delay
+          // Start weighing after longer delay to ensure state reset
           setTimeout(() => {
             if (lastConfigRef.current) {
               console.log(`✅ Starting Parallel Weighing Cycle ${currentMixing + 1}`);
@@ -2513,7 +2554,7 @@ export const useProductionSequence = (
               // Start weighing - it will set nextMixingWeighingComplete when done
               startWeighingWithJogging(lastConfigRef.current);
             }
-          }, 1000);
+          }, 2000); // ✅ Increased from 1000ms to 2000ms
           
           return {
             ...prev,
@@ -2542,12 +2583,18 @@ export const useProductionSequence = (
         // Check if weighing for next mixing is already complete
         if (nextMixingWeighingComplete) {
           console.log(`✅ Next mixing weighing ALREADY COMPLETE! Starting discharge now`);
+          console.log(`🔍 State check: nextMixingWeighingComplete=${nextMixingWeighingComplete}, isWaitingForMixer=${prev.isWaitingForMixer}`);
+          
+          // ✅ Reset waiting flag BEFORE forcing discharge
+          isWaitingForMixerRef.current = false;
           
           // Trigger discharge sequence with FORCE=true (bypassing guard)
           setTimeout(() => {
             if (lastConfigRef.current) {
               console.log('🚀 FORCING discharge after door closed');
               startDischargeSequence(lastConfigRef.current, { force: true });
+            } else {
+              console.error('❌ lastConfigRef.current is null! Cannot force discharge');
             }
           }, 1000);
           
