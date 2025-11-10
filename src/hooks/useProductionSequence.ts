@@ -63,6 +63,7 @@ export interface ProductionState {
   hopperFillLevels: {
     pasir: number; // Cumulative fill level (pasir1 + pasir2)
     batu: number;  // Cumulative fill level (batu1 + batu2)
+    semen: number; // Semen hopper fill level
     air: number;
     aggregate?: number; // System 1: Aggregate hopper fill level
   };
@@ -140,7 +141,7 @@ const initialProductionState: ProductionState = {
   weighingComplete: { pasir1: false, pasir2: false, batu1: false, batu2: false, semen: false, air: false },
   mixingTimeRemaining: 0,
   mixerDoorCycle: 0,
-  hopperFillLevels: { pasir: 0, batu: 0, air: 0 },
+  hopperFillLevels: { pasir: 0, batu: 0, semen: 0, air: 0 },
   cumulativeTargets: { pasir: 0, batu: 0 },
   jumlahMixing: 1,
   currentMixing: 1,
@@ -1087,12 +1088,15 @@ export const useProductionSequence = (
             setComponentStates(prev => ({ ...prev, isAggregateWeighing: true }));
           }
         } else {
+          // ✅ FIX: Update fill level for both semen and air
+          const percentage = Math.min(100, (currentWeight / targetWeight) * 100);
           setProductionState(prev => ({
             ...prev,
             currentWeights: { ...prev.currentWeights, [material]: currentWeight },
             hopperFillLevels: {
               ...prev.hopperFillLevels,
-              ...(material === 'air' ? { air: Math.min(100, (currentWeight / targetWeight) * 100) } : {})
+              ...(material === 'air' ? { air: percentage } : {}),
+              ...(material === 'semen' ? { semen: percentage } : {})
             }
           }));
         }
@@ -2222,10 +2226,12 @@ export const useProductionSequence = (
       const animationInterval = setInterval(() => {
         setProductionState(prev => {
           const currentWeight = prev.currentWeights.semen;
+          const currentFill = prev.hopperFillLevels.semen || 0;
           const newWeight = Math.max(0, currentWeight - (targetWeight / animationSteps));
+          const newFill = Math.max(0, currentFill - (100 / animationSteps));
           
           if (Math.round(newWeight) % 20 === 0) {
-            console.log(`📉 Cement weight: ${newWeight.toFixed(1)}kg`);
+            console.log(`📉 Cement weight: ${newWeight.toFixed(1)}kg, fill: ${newFill.toFixed(1)}%`);
           }
           
           return {
@@ -2233,6 +2239,10 @@ export const useProductionSequence = (
             currentWeights: {
               ...prev.currentWeights,
               semen: newWeight
+            },
+            hopperFillLevels: {
+              ...prev.hopperFillLevels,
+              semen: newFill
             }
           };
         });
@@ -2240,13 +2250,17 @@ export const useProductionSequence = (
       
       addInterval(animationInterval);
       
-      // Reset weight to 0 at end
+      // Reset weight and fill level to 0 at end
       const clearTimer = setTimeout(() => {
         clearInterval(animationInterval);
         setProductionState(prev => ({
           ...prev,
           currentWeights: {
             ...prev.currentWeights,
+            semen: 0
+          },
+          hopperFillLevels: {
+            ...prev.hopperFillLevels,
             semen: 0
           }
         }));
@@ -2533,7 +2547,7 @@ export const useProductionSequence = (
           onAggregateDeduction(3, -10000);
           onAggregateDeduction(4, -10000);
           
-          // Start weighing after longer delay to ensure state reset
+          // Start weighing immediately after state reset
           setTimeout(() => {
             if (lastConfigRef.current) {
               console.log(`✅ Starting Parallel Weighing Cycle ${currentMixing + 1}`);
@@ -2554,7 +2568,7 @@ export const useProductionSequence = (
               // Start weighing - it will set nextMixingWeighingComplete when done
               startWeighingWithJogging(lastConfigRef.current);
             }
-          }, 2000); // ✅ Increased from 1000ms to 2000ms
+          }, 500); // ✅ Reduced delay: weighing starts immediately after discharge completes
           
           return {
             ...prev,
