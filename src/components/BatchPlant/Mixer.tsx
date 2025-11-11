@@ -9,6 +9,8 @@ interface MixerProps {
   currentMixing?: number;
   totalMixing?: number;
   isTimerActive?: boolean;
+  doorTimeRemaining?: number;
+  totalDoorTime?: number;
 }
 
 export const Mixer = ({ 
@@ -21,12 +23,21 @@ export const Mixer = ({
   totalMixingTime = 10,
   currentMixing = 1,
   totalMixing = 2,
-  isTimerActive = false
+  isTimerActive = false,
+  doorTimeRemaining = 0,
+  totalDoorTime = 0
 }: MixerProps) => {
+  // Determine if we're in door mode
+  const isDoorMode = doorTimeRemaining > 0 && (doorOpen || isDoorMoving);
+  
   // Calculate progress percentage for circular timer
-  const progressPercentage = totalMixingTime > 0 
-    ? ((totalMixingTime - mixingTimeRemaining) / totalMixingTime) * 100 
-    : 0;
+  const progressPercentage = isDoorMode
+    ? totalDoorTime > 0 
+      ? ((totalDoorTime - doorTimeRemaining) / totalDoorTime) * 100 
+      : 0
+    : totalMixingTime > 0 
+      ? ((totalMixingTime - mixingTimeRemaining) / totalMixingTime) * 100 
+      : 0;
   
   // Circle parameters for progress ring - ENLARGED
   const radius = 35;
@@ -511,15 +522,19 @@ export const Mixer = ({
             cx="0"
             cy="0"
             r={30}
-            className="fill-none stroke-cyan-500"
+            className={isDoorMode ? "fill-none stroke-red-500" : "fill-none stroke-cyan-500"}
             strokeWidth="8"
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
-            transform="rotate(-90)"
+            transform={isDoorMode ? "rotate(90)" : "rotate(-90)"}
             style={{ 
-              transition: isTimerActive ? 'stroke-dashoffset 1s linear' : 'none',
-              filter: isTimerActive ? 'drop-shadow(0 0 8px rgba(6, 182, 212, 0.6))' : 'none'
+              transition: (isTimerActive || isDoorMode) ? 'stroke-dashoffset 1s linear' : 'none',
+              filter: (isTimerActive || isDoorMode) 
+                ? isDoorMode 
+                  ? 'drop-shadow(0 0 8px rgba(239, 68, 68, 0.6))' 
+                  : 'drop-shadow(0 0 8px rgba(6, 182, 212, 0.6))' 
+                : 'none'
             }}
           />
           
@@ -534,17 +549,17 @@ export const Mixer = ({
               fontFamily: 'monospace'
             }}
           >
-            {isTimerActive ? mixingTimeRemaining : 0}
+            {isDoorMode ? doorTimeRemaining : (isTimerActive ? mixingTimeRemaining : 0)}
           </text>
           
           {/* Label above circle - ENLARGED */}
           <text
             x="0"
             y="-42"
-            className="fill-white text-[12px] font-semibold"
+            className={isDoorMode ? "fill-red-400 text-[12px] font-semibold" : "fill-white text-[12px] font-semibold"}
             textAnchor="middle"
           >
-            WAKTU MIXING
+            {isDoorMode ? "PINTU DUMPING" : "WAKTU MIXING"}
           </text>
           
           {/* Mixing count below - ENLARGED + NEW FORMAT */}
@@ -558,18 +573,18 @@ export const Mixer = ({
           </text>
           
           {/* Yellow indicator dot - animate only when active */}
-          {isTimerActive && (
+          {(isTimerActive || isDoorMode) && (
             <circle
               cx="25"
               cy="-5"
               r="4"
-              className="fill-yellow-400"
+              className={isDoorMode ? "fill-red-400" : "fill-yellow-400"}
             >
               <animateTransform
                 attributeName="transform"
                 type="rotate"
                 from="0 0 0"
-                to="360 0 0"
+                to={isDoorMode ? "-360 0 0" : "360 0 0"}
                 dur="2s"
                 repeatCount="indefinite"
               />

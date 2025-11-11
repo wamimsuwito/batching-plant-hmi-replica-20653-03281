@@ -80,6 +80,8 @@ export interface ProductionState {
   totalMaterialsToDischarge: number;
   activityLog: string[]; // Activity log (max 4 entries)
   isDoorMoving: boolean; // Indicates if door is actively moving (relay ON)
+  doorTimeRemaining: number; // Door cycle countdown timer
+  totalDoorTime: number; // Total door cycle time
 }
 
 export interface ComponentStates {
@@ -152,6 +154,8 @@ const initialProductionState: ProductionState = {
   totalMaterialsToDischarge: 4,
   activityLog: [],
   isDoorMoving: false,
+  doorTimeRemaining: 0,
+  totalDoorTime: 0,
 };
 
 const initialComponentStates: ComponentStates = {
@@ -2396,7 +2400,7 @@ export const useProductionSequence = (
       setProductionState(prev => {
         const newTime = prev.mixingTimeRemaining - 1;
         
-        if (newTime <= 0) {
+        if (newTime < 0) {
           clearInterval(countdownInterval);
           return prev;
         }
@@ -2421,8 +2425,6 @@ export const useProductionSequence = (
   };
 
   const startDoorCycle = () => {
-    setProductionState(prev => ({ ...prev, currentStep: 'door_cycle', mixerDoorCycle: 1, isDoorMoving: true }));
-    
     // Ambil semua timer values dari localStorage
     const bukaOn1 = getTimerValue('Pintu mixer buka', 1) || 2000;    // Buka 7cm
     const bukaDiam1 = getTimerValue('Pintu mixer buka', 2) || 5000;  // Diam di 7cm
@@ -2431,6 +2433,35 @@ export const useProductionSequence = (
     const bukaOn3 = getTimerValue('Pintu mixer buka', 5) || 2000;    // Buka +6cm = 30cm
     const bukaDiam3 = getTimerValue('Pintu mixer buka', 6) || 5000;  // Diam di 30cm
     const tutupDuration = getTimerValue('Pintu mixer tutup', 1) || 4000; // Tutup penuh
+
+    // Calculate total door cycle time in seconds
+    const totalDoorTimeMs = bukaOn1 + bukaDiam1 + bukaOn2 + bukaDiam2 + bukaOn3 + bukaDiam3 + tutupDuration;
+    const totalDoorTimeSec = Math.ceil(totalDoorTimeMs / 1000);
+
+    // Initialize door countdown
+    setProductionState(prev => ({ 
+      ...prev, 
+      currentStep: 'door_cycle', 
+      mixerDoorCycle: 1, 
+      isDoorMoving: true,
+      doorTimeRemaining: totalDoorTimeSec,
+      totalDoorTime: totalDoorTimeSec
+    }));
+
+    // Door countdown timer
+    const doorCountdownInterval = setInterval(() => {
+      setProductionState(prev => {
+        const newTime = prev.doorTimeRemaining - 1;
+        
+        if (newTime < 0) {
+          clearInterval(doorCountdownInterval);
+          return prev;
+        }
+        
+        return { ...prev, doorTimeRemaining: newTime };
+      });
+    }, 1000);
+    addTimer(doorCountdownInterval);
 
     // ==================== CYCLE 1: Buka 7cm ====================
     setComponentStates(prev => ({ ...prev, mixerDoor: true }));

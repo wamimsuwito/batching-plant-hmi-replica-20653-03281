@@ -1069,6 +1069,8 @@ const Index = () => {
               currentMixing={productionState.currentMixing}
               totalMixing={productionState.jumlahMixing}
               isTimerActive={productionState.mixingTimeRemaining > 0}
+              doorTimeRemaining={productionState.doorTimeRemaining}
+              totalDoorTime={productionState.totalDoorTime}
             />
 
               {/* Mixer Truck - Below discharge chute */}
