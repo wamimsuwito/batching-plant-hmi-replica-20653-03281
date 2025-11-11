@@ -1321,8 +1321,21 @@ export const useProductionSequence = (
         semen: config.targetWeights.semen || 0,
         air: config.targetWeights.air || 0,
       };
-      const totalMaterials = Object.values(materialTargets).filter(val => val > 0).length;
-      console.log(`🎯 Total materials to discharge: ${totalMaterials}`);
+      
+      // ✅ FIX: System 1 counts aggregate as 1 material (not 2)
+      let totalMaterials;
+      if (systemConfig === 1) {
+        // System 1: pasir + batu = 1 (aggregate)
+        const hasAggregate = materialTargets.pasir > 0 || materialTargets.batu > 0 ? 1 : 0;
+        const hasSemen = materialTargets.semen > 0 ? 1 : 0;
+        const hasAir = materialTargets.air > 0 ? 1 : 0;
+        totalMaterials = hasAggregate + hasSemen + hasAir;
+        console.log(`🎯 SYSTEM 1: Total materials = ${totalMaterials} (aggregate=${hasAggregate}, semen=${hasSemen}, air=${hasAir})`);
+      } else {
+        // System 2 & 3: Count each material separately
+        totalMaterials = Object.values(materialTargets).filter(val => val > 0).length;
+        console.log(`🎯 SYSTEM ${systemConfig}: Total materials = ${totalMaterials}`);
+      }
       
       return {
         ...prev,
@@ -2511,10 +2524,41 @@ export const useProductionSequence = (
           console.log(`🚀 Starting PARALLEL WEIGHING for Mixing ${currentMixing + 1}`);
           console.log(`⏸️  Discharge will wait until Mixing ${currentMixing} completes and door closes`);
           
-          // ✅ Reset hopper states for clean weighing cycle
-          console.log('🔄 Resetting hopper states before next weighing...');
-          setProductionState(prevState => ({
-            ...prevState,
+          // Refill aggregate bins for next mixing
+          console.log('🔄 Refilling aggregate bins for next mixing...');
+          onAggregateDeduction(1, -10000);
+          onAggregateDeduction(2, -10000);
+          onAggregateDeduction(3, -10000);
+          onAggregateDeduction(4, -10000);
+          
+          // ✅ FIX: Single setState call - no race condition
+          setTimeout(() => {
+            if (lastConfigRef.current) {
+              console.log(`✅ Starting Parallel Weighing Cycle ${currentMixing + 1}`);
+              
+              // Turn on belt atas (cement conveyor)
+              setComponentStates(prevStates => ({ ...prevStates, beltAtas: true }));
+              controlRelay('konveyor_atas', true);
+
+              // Turn on selected silos
+              setComponentStates(prevStates => ({
+                ...prevStates,
+                siloValves: prevStates.siloValves.map((_, idx) => 
+                  lastConfigRef.current!.selectedSilos.includes(idx + 1)
+                ),
+              }));
+              lastConfigRef.current.selectedSilos.forEach(id => controlRelay(`silo_${id}`, true));
+
+              // Start weighing - it will set nextMixingWeighingComplete when done
+              startWeighingWithJogging(lastConfigRef.current);
+            }
+          }, 500);
+          
+          // ✅ Reset all hopper states in single update
+          return {
+            ...prev,
+            nextMixingReady: true,
+            isWaitingForMixer: true,
             currentWeights: {
               pasir: 0,
               batu: 0,
@@ -2538,42 +2582,6 @@ export const useProductionSequence = (
               semen: false,
               air: false,
             },
-          }));
-          
-          // Refill aggregate bins for next mixing
-          console.log('🔄 Refilling aggregate bins for next mixing...');
-          onAggregateDeduction(1, -10000);
-          onAggregateDeduction(2, -10000);
-          onAggregateDeduction(3, -10000);
-          onAggregateDeduction(4, -10000);
-          
-          // Start weighing immediately after state reset
-          setTimeout(() => {
-            if (lastConfigRef.current) {
-              console.log(`✅ Starting Parallel Weighing Cycle ${currentMixing + 1}`);
-              
-              // Turn on belt atas (cement conveyor)
-              setComponentStates(prevStates => ({ ...prevStates, beltAtas: true }));
-              controlRelay('konveyor_atas', true);
-
-              // Turn on selected silos
-              setComponentStates(prevStates => ({
-                ...prevStates,
-                siloValves: prevStates.siloValves.map((_, idx) => 
-                  lastConfigRef.current!.selectedSilos.includes(idx + 1)
-                ),
-              }));
-              lastConfigRef.current.selectedSilos.forEach(id => controlRelay(`silo_${id}`, true));
-
-              // Start weighing - it will set nextMixingWeighingComplete when done
-              startWeighingWithJogging(lastConfigRef.current);
-            }
-          }, 500); // ✅ Reduced delay: weighing starts immediately after discharge completes
-          
-          return {
-            ...prev,
-            nextMixingReady: true,
-            isWaitingForMixer: true, // Flag that we're waiting for mixer to finish
           };
         }
       }

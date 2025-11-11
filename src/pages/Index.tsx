@@ -925,6 +925,7 @@ const Index = () => {
               <WeighHopper 
                 x={550} 
                 y={543}
+                fillLevel={productionState.hopperFillLevels.semen}
                 currentWeight={productionState.currentWeights.semen}
                 targetWeight={productionState.targetWeights.semen}
                 isWeighing={productionState.targetWeights.semen > 0 && !productionState.weighingComplete.semen}
