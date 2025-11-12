@@ -332,8 +332,43 @@ export const useProductionSequence = (
     return null;
   };
 
+  // Helper function to format relay names for display
+  const formatRelayName = (relayName: string): string => {
+    const nameMapping: { [key: string]: string } = {
+      'konveyor_atas': 'Belt Atas',
+      'konveyor_bawah': 'Belt Bawah',
+      'belt_bawah': 'Belt Bawah',
+      'silo_1': 'Silo 1',
+      'silo_2': 'Silo 2',
+      'silo_3': 'Silo 3',
+      'silo_4': 'Silo 4',
+      'pintu_pasir_1': 'Pasir 1',
+      'pintu_pasir_2': 'Pasir 2',
+      'pintu_batu_1': 'Batu 1',
+      'pintu_batu_2': 'Batu 2',
+      'pompa_air': 'Pompa Air',
+      'semen': 'Semen',
+      'mixer': 'Mixer',
+      'vibrator': 'Vibrator',
+      'pintu_mixer': 'Pintu Mixer',
+      'klakson': 'Klakson',
+      'waiting_hopper': 'Waiting Hopper',
+    };
+    
+    return nameMapping[relayName.toLowerCase()] || relayName
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
   const controlRelay = (relayName: string, state: boolean) => {
     console.log(`🔌 Relay Control: ${relayName} = ${state ? 'ON' : 'OFF'}`);
+    
+    // Add to activity log for UI display
+    const relayDisplayName = formatRelayName(relayName);
+    const statusEmoji = state ? '🟢' : '🔴';
+    const statusText = state ? 'ON' : 'OFF';
+    addActivityLog(`${statusEmoji} ${relayDisplayName} ${statusText}`);
     
     if (raspberryPi?.isConnected) {
       const relay = relaySettings.find(r => r.name.toLowerCase().replace(/ /g, '_') === relayName.toLowerCase());

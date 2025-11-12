@@ -42,7 +42,10 @@ export const Mixer = ({
   // Circle parameters for progress ring - ENLARGED
   const radius = 35;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (progressPercentage / 100) * circumference;
+  // Different strokeDashoffset calculation for door mode (counter-clockwise)
+  const strokeDashoffset = isDoorMode
+    ? (progressPercentage / 100) * circumference  // Door: start from 0, increase to circumference (reverse fill)
+    : circumference - (progressPercentage / 100) * circumference; // Mixing: normal clockwise fill
   return (
     <g transform={`translate(${x}, ${y})`}>
       {/* Main mixer body - horizontal twin shaft design */}
@@ -483,7 +486,7 @@ export const Mixer = ({
       
       {/* Circular timer display - ALWAYS VISIBLE - ENLARGED */}
       {(
-        <g transform="translate(274, 59)">
+        <g transform="translate(274, 69)">
           {/* Background box - ENLARGED */}
           <rect
             x="-55"
@@ -527,7 +530,7 @@ export const Mixer = ({
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
-            transform={isDoorMode ? "rotate(90)" : "rotate(-90)"}
+            transform="rotate(-90)"
             style={{ 
               transition: (isTimerActive || isDoorMode) ? 'stroke-dashoffset 1s linear' : 'none',
               filter: (isTimerActive || isDoorMode) 
@@ -572,7 +575,7 @@ export const Mixer = ({
             {currentMixing} Dari {totalMixing}
           </text>
           
-          {/* Yellow indicator dot - animate only when active */}
+          {/* Indicator dot - animate only when active */}
           {(isTimerActive || isDoorMode) && (
             <circle
               cx="25"
