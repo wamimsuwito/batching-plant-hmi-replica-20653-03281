@@ -29,6 +29,11 @@ import { LogIn, Settings, Package, Wifi, WifiOff, HelpCircle } from "lucide-reac
 import { useToast } from "@/hooks/use-toast";
 import { useProductionSequence } from "@/hooks/useProductionSequence";
 import { useRaspberryPi } from "@/hooks/useRaspberryPi";
+import { useManualProduction } from "@/hooks/useManualProduction";
+import { ManualProductionPanel } from "@/components/ManualProductionPanel";
+import { PhysicalButtonLED } from "@/components/BatchPlant/PhysicalButtonLED";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import farikaLogo from "@/assets/farika-logo.png";
 
 const Index = () => {
@@ -43,6 +48,16 @@ const Index = () => {
   const [siloFillOpen, setSiloFillOpen] = useState(false);
   const [printTicketOpen, setPrintTicketOpen] = useState(false);
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
+  const [manualFormOpen, setManualFormOpen] = useState(false);
+  const [manualFormData, setManualFormData] = useState({
+    pelanggan: '',
+    lokasiProyek: '',
+    mutuBeton: '',
+    slump: '',
+    nomorPO: '',
+    namaSopir: '',
+    nomorMobil: '',
+  });
   const [productionStartTime, setProductionStartTime] = useState<Date | null>(null);
   const [helpDialogOpen, setHelpDialogOpen] = useState(false);
   const [autoPrintEnabled, setAutoPrintEnabled] = useState(() => {
@@ -286,6 +301,9 @@ const Index = () => {
 
   // Raspberry Pi connection
   const raspberryPi = useRaspberryPi();
+  
+  // Manual production hook
+  const manualProduction = useManualProduction(raspberryPi?.actualWeights || { pasir: 0, batu: 0, semen: 0, air: 0 });
 
   // ✅ CRITICAL: Klakson bunyi saat print ticket muncul (alert driver)
   useEffect(() => {
@@ -418,6 +436,7 @@ const Index = () => {
       const ticket: TicketData = {
         id: `TICKET-${Date.now()}`,
         jobOrder: `${productionState.currentMixing}`,
+        productionType: 'AUTO', // Mark as auto production
         nomorPO: "-",
         tanggal: endTime.toLocaleDateString('id-ID'),
         jamMulai: jamMulai,
@@ -499,6 +518,74 @@ const Index = () => {
     setIsRunning(false);
     setIsPaused(false);
     stopProduction();
+  };
+
+  // Manual production handlers
+  const handleStartManual = () => {
+    setManualFormOpen(true);
+  };
+
+  const handleManualFormSubmit = () => {
+    manualProduction.startManualSession(manualFormData);
+    setManualFormOpen(false);
+  };
+
+  const handleStopManual = () => {
+    const finalSession = manualProduction.stopManualSession();
+    
+    if (finalSession) {
+      // Generate ticket from manual session
+      const ticket: TicketData = {
+        id: finalSession.sessionId,
+        jobOrder: 'MANUAL',
+        productionType: 'MANUAL', // Mark as manual production
+        nomorPO: finalSession.formData.nomorPO || '-',
+        tanggal: finalSession.endTime?.toLocaleDateString('id-ID') || new Date().toLocaleDateString('id-ID'),
+        jamMulai: finalSession.startTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        jamSelesai: finalSession.endTime?.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        namaPelanggan: finalSession.formData.pelanggan,
+        lokasiProyek: finalSession.formData.lokasiProyek,
+        mutuBeton: finalSession.formData.mutuBeton,
+        slump: finalSession.formData.slump,
+        volume: '-',
+        namaSopir: finalSession.formData.namaSopir,
+        nomorMobil: finalSession.formData.nomorMobil,
+        nomorLambung: '-',
+        nomorRitasi: '-',
+        totalVolume: '-',
+        materials: {
+          pasir: { 
+            target: 0, 
+            realisasi: Math.round(finalSession.materials.pasir.totalDischarged), 
+            deviasi: 0 
+          },
+          batu: { 
+            target: 0, 
+            realisasi: Math.round(finalSession.materials.batu.totalDischarged), 
+            deviasi: 0 
+          },
+          semen: { 
+            target: 0, 
+            realisasi: Math.round(finalSession.materials.semen.totalDischarged), 
+            deviasi: 0 
+          },
+          air: { 
+            target: 0, 
+            realisasi: Math.round(finalSession.materials.air.totalDischarged), 
+            deviasi: 0 
+          },
+        },
+      };
+
+      // Save to production tickets
+      const saved = localStorage.getItem('production_tickets');
+      const tickets = saved ? JSON.parse(saved) : [];
+      tickets.push(ticket);
+      localStorage.setItem('production_tickets', JSON.stringify(tickets));
+
+      setTicketData(ticket);
+      setPrintTicketOpen(true);
+    }
   };
 
   return (
@@ -652,11 +739,102 @@ const Index = () => {
         />
       )}
 
+      {/* Manual Production Form Dialog */}
+      <AlertDialog open={manualFormOpen} onOpenChange={setManualFormOpen}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Form Manual Production</AlertDialogTitle>
+            <AlertDialogDescription>
+              Isi data produksi manual sebelum memulai
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Nama Pelanggan</Label>
+              <Input
+                value={manualFormData.pelanggan}
+                onChange={(e) => setManualFormData(prev => ({ ...prev, pelanggan: e.target.value }))}
+                placeholder="PT. Example"
+              />
+            </div>
+            <div>
+              <Label>Lokasi Proyek</Label>
+              <Input
+                value={manualFormData.lokasiProyek}
+                onChange={(e) => setManualFormData(prev => ({ ...prev, lokasiProyek: e.target.value }))}
+                placeholder="Jl. Example No. 123"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label>Mutu Beton</Label>
+                <Input
+                  value={manualFormData.mutuBeton}
+                  onChange={(e) => setManualFormData(prev => ({ ...prev, mutuBeton: e.target.value }))}
+                  placeholder="K-300"
+                />
+              </div>
+              <div>
+                <Label>Slump</Label>
+                <Input
+                  value={manualFormData.slump}
+                  onChange={(e) => setManualFormData(prev => ({ ...prev, slump: e.target.value }))}
+                  placeholder="12 ± 2"
+                />
+              </div>
+            </div>
+            <div>
+              <Label>Nomor PO</Label>
+              <Input
+                value={manualFormData.nomorPO}
+                onChange={(e) => setManualFormData(prev => ({ ...prev, nomorPO: e.target.value }))}
+                placeholder="PO-2024-001"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label>Nama Sopir</Label>
+                <Input
+                  value={manualFormData.namaSopir}
+                  onChange={(e) => setManualFormData(prev => ({ ...prev, namaSopir: e.target.value }))}
+                  placeholder="John Doe"
+                />
+              </div>
+              <div>
+                <Label>Nomor Mobil</Label>
+                <Input
+                  value={manualFormData.nomorMobil}
+                  onChange={(e) => setManualFormData(prev => ({ ...prev, nomorMobil: e.target.value }))}
+                  placeholder="B 1234 CD"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-2 justify-end mt-4">
+            <Button variant="outline" onClick={() => setManualFormOpen(false)}>
+              Batal
+            </Button>
+            <Button onClick={handleManualFormSubmit}>
+              Mulai Recording
+            </Button>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Main HMI Panel */}
       <main className="flex-1 p-4">
         <div className="w-full h-[calc(100vh-80px)] border-4 border-hmi-border bg-hmi-panel relative">
           {/* Activity Log Panel - BOTTOM LEFT (dikembalikan) */}
           <ActivityLogPanel logs={productionState.activityLog} />
+          
+          {/* Manual Production Panel - TOP RIGHT */}
+          <ManualProductionPanel
+            isManualSessionActive={manualProduction.isManualSessionActive}
+            onStartManual={handleStartManual}
+            onStopManual={handleStopManual}
+            isAutoMode={isAutoMode}
+            currentSession={manualProduction.currentSession}
+          />
           
           <svg
             width="100%"
@@ -1071,6 +1249,32 @@ const Index = () => {
               isTimerActive={productionState.mixingTimeRemaining > 0}
               doorTimeRemaining={productionState.doorTimeRemaining}
               totalDoorTime={productionState.totalDoorTime}
+            />
+            
+            {/* Physical Button LED Indicators */}
+            <PhysicalButtonLED 
+              x={440} 
+              y={665} 
+              isActive={raspberryPi?.physicalButtonStates?.mixer || false}
+              relayName="mixer"
+            />
+            <PhysicalButtonLED 
+              x={440} 
+              y={700} 
+              isActive={raspberryPi?.physicalButtonStates?.pintu_mixer || false}
+              relayName="pintu_mixer"
+            />
+            <PhysicalButtonLED 
+              x={600} 
+              y={640} 
+              isActive={raspberryPi?.physicalButtonStates?.semen || false}
+              relayName="semen"
+            />
+            <PhysicalButtonLED 
+              x={800} 
+              y={600} 
+              isActive={raspberryPi?.physicalButtonStates?.pompa_air || false}
+              relayName="pompa_air"
             />
 
               {/* Mixer Truck - Below discharge chute */}

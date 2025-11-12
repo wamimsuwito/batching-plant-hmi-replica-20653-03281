@@ -21,6 +21,13 @@ interface WeightUpdateMessage {
   weights: ActualWeights;
 }
 
+interface PhysicalButtonUpdateMessage {
+  type: 'physical_button_update';
+  relay: string;
+  state: boolean;
+  timestamp: number;
+}
+
 export const useRaspberryPi = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [actualWeights, setActualWeights] = useState<ActualWeights>({
@@ -31,6 +38,9 @@ export const useRaspberryPi = () => {
   });
   const [lastWeightUpdate, setLastWeightUpdate] = useState<number>(0);
   const [currentWsUrl, setCurrentWsUrl] = useState<string>('');
+  
+  // Physical button states from ESP32
+  const [physicalButtonStates, setPhysicalButtonStates] = useState<Record<string, boolean>>({});
   
   // Production mode: "production" or "simulation" (default)
   const [productionMode, setProductionModeState] = useState<'production' | 'simulation'>(() => {
@@ -77,6 +87,23 @@ export const useRaspberryPi = () => {
             const msg = data as WeightUpdateMessage;
             setActualWeights(msg.weights);
             setLastWeightUpdate(Date.now());
+          } else if (data.type === 'physical_button_update') {
+            // Handle physical button state from ESP32
+            const msg = data as PhysicalButtonUpdateMessage;
+            console.log(`🔘 Physical button update: ${msg.relay} = ${msg.state ? 'ON' : 'OFF'}`);
+            
+            setPhysicalButtonStates(prev => ({
+              ...prev,
+              [msg.relay]: msg.state,
+            }));
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+              setPhysicalButtonStates(prev => ({
+                ...prev,
+                [msg.relay]: false,
+              }));
+            }, 3000);
           } else if (data.type === 'error') {
             console.error('Raspberry Pi error:', data.message);
           }
@@ -157,5 +184,6 @@ export const useRaspberryPi = () => {
     currentWsUrl,
     productionMode,
     setProductionMode,
+    physicalButtonStates,
   };
 };
