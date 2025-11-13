@@ -27,7 +27,7 @@ export const ManualProductionPanel = ({
   if (isAutoMode) return null;
 
   return (
-    <div className="absolute top-[83px] right-4 bg-background/95 backdrop-blur border-2 border-primary rounded-lg p-4 shadow-lg w-[280px]">
+    <div className="absolute top-[123px] right-4 bg-background/95 backdrop-blur border-2 border-primary rounded-lg p-4 shadow-lg w-[280px]">
       <div className="space-y-3">
         <div className="text-center">
           <h3 className="text-sm font-bold text-foreground">MANUAL PRODUCTION</h3>
