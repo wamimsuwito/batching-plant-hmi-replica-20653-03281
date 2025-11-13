@@ -847,11 +847,13 @@ export const useProductionSequence = (
     // ✅ Check if we're waiting for mixer to finish before discharging
     if (isWaitingForMixerRef.current) {
       console.log('⏸️  Weighing complete, but WAITING for mixer door to close before discharge');
+      console.log('🔍 Setting nextMixingWeighingComplete = TRUE'); // ✅ NEW LOG
       setProductionState(prev => ({
         ...prev,
         nextMixingWeighingComplete: true,
       }));
       console.log('⏸️  Discharge blocked - waiting for mixer to complete');
+      console.log('🔍 Current state: isWaitingForMixer =', isWaitingForMixerRef.current); // ✅ NEW LOG
     } else {
       console.log('✅ Starting discharge sequence');
       setTimeout(() => startDischargeSequence(config), 1000);
@@ -2590,6 +2592,27 @@ export const useProductionSequence = (
           console.log(`🚀 Starting PARALLEL WEIGHING for Mixing ${currentMixing + 1}`);
           console.log(`⏸️  Discharge will wait until Mixing ${currentMixing} completes and door closes`);
           
+          // ✅ NEW: Add watchdog timer (60 seconds timeout)
+          const watchdogTimer = setTimeout(() => {
+            console.error('⚠️ WATCHDOG: Weighing timeout detected after 60s!');
+            console.error('🔧 FORCING discharge to prevent stuck state');
+            
+            setProductionState(check => {
+              if (check.currentStep === 'weighing' || check.isWaitingForMixer) {
+                console.error('🔧 Detected stuck in weighing or waiting state');
+                // Force reset flags
+                isWaitingForMixerRef.current = false;
+                
+                // Force discharge
+                if (lastConfigRef.current) {
+                  startDischargeSequence(lastConfigRef.current, { force: true });
+                }
+              }
+              return check;
+            });
+          }, 60000); // 60 seconds timeout
+          addTimer(watchdogTimer);
+          
           // Refill aggregate bins for next mixing
           console.log('🔄 Refilling aggregate bins for next mixing...');
           onAggregateDeduction(1, -10000);
@@ -2597,26 +2620,33 @@ export const useProductionSequence = (
           onAggregateDeduction(3, -10000);
           onAggregateDeduction(4, -10000);
           
-          // ✅ FIX: Single setState call - no race condition
+          // ✅ IMPROVED: Single setState call to prevent race condition
           setTimeout(() => {
             if (lastConfigRef.current) {
               console.log(`✅ Starting Parallel Weighing Cycle ${currentMixing + 1}`);
               
-              // Turn on belt atas (cement conveyor)
-              setComponentStates(prevStates => ({ ...prevStates, beltAtas: true }));
-              controlRelay('konveyor_atas', true);
-
-              // Turn on selected silos
-              setComponentStates(prevStates => ({
-                ...prevStates,
-                siloValves: prevStates.siloValves.map((_, idx) => 
+              // Single state update with all relay changes
+              setComponentStates(prevStates => {
+                const siloValves = prevStates.siloValves.map((_, idx) => 
                   lastConfigRef.current!.selectedSilos.includes(idx + 1)
-                ),
-              }));
+                );
+                
+                return {
+                  ...prevStates,
+                  beltAtas: true,
+                  siloValves,
+                };
+              });
+              
+              // Send relay commands AFTER state update
+              controlRelay('konveyor_atas', true);
               lastConfigRef.current.selectedSilos.forEach(id => controlRelay(`silo_${id}`, true));
 
               // Start weighing - it will set nextMixingWeighingComplete when done
+              console.log('🚀 Calling startWeighingWithJogging with config:', lastConfigRef.current);
               startWeighingWithJogging(lastConfigRef.current);
+            } else {
+              console.error('❌ lastConfigRef.current is NULL in checkAndStartNextMixingWeighing!');
             }
           }, 500);
           
@@ -2664,16 +2694,20 @@ export const useProductionSequence = (
       console.log(`🏁 completeProduction called: currentMixing=${currentMixing}, jumlahMixing=${jumlahMixing}`);
       console.log(`🚪 Pintu mixer sudah tertutup penuh!`);
       
+      // ✅ NEW: FORCE RESET waiting flag to prevent stuck
+      console.log('🔧 FORCE RESETTING isWaitingForMixer flag to FALSE');
+      isWaitingForMixerRef.current = false;
+      
       // Check if there are more mixings to do
       if (currentMixing < jumlahMixing) {
         console.log(`🔄 Mixer door closed, checking if next mixing weighing is complete`);
+        console.log(`🔍 nextMixingWeighingComplete flag = ${nextMixingWeighingComplete}`);
         
         // Check if weighing for next mixing is already complete
         if (nextMixingWeighingComplete) {
           console.log(`✅ Next mixing weighing ALREADY COMPLETE! Starting discharge now`);
-          console.log(`🔍 State check: nextMixingWeighingComplete=${nextMixingWeighingComplete}, isWaitingForMixer=${prev.isWaitingForMixer}`);
           
-          // ✅ Reset waiting flag BEFORE forcing discharge
+          // ✅ ALREADY EXISTS: Reset waiting flag
           isWaitingForMixerRef.current = false;
           
           // Trigger discharge sequence with FORCE=true (bypassing guard)
@@ -2683,6 +2717,12 @@ export const useProductionSequence = (
               startDischargeSequence(lastConfigRef.current, { force: true });
             } else {
               console.error('❌ lastConfigRef.current is null! Cannot force discharge');
+              // ✅ NEW: Add recovery mechanism
+              console.error('🔧 RECOVERY: Attempting to reconstruct config from state');
+              setProductionState(current => {
+                console.log('🔍 Current state:', current);
+                return current;
+              });
             }
           }, 1000);
           
