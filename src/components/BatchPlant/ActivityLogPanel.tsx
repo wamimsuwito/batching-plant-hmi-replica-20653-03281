@@ -16,9 +16,9 @@ export const ActivityLogPanel = ({ logs }: ActivityLogPanelProps) => {
         {filledLogs.map((log, index) => (
           <div
             key={`log-${index}`}
-            className="text-green-400 text-xs font-mono animate-in slide-in-from-top-2 duration-300 min-h-[20px]"
+            className="text-green-400 text-xs font-mono min-h-[20px]"
             style={{
-              opacity: log ? 1 - (index * 0.15) : 0.3, // Empty rows have lower opacity
+              opacity: log ? 1 : 0, // Full opacity for logs, invisible for empty rows
             }}
           >
             {log || '\u00A0'} {/* Non-breaking space for empty rows */}
