@@ -27,6 +27,7 @@ interface ManualFormDialogProps {
     lokasiProyek: string;
     mutuBeton: string;
     slump: string;
+    targetProduksi: string;
     selectedSilo: string;
     namaSopir: string;
     nomorMobil: string;
@@ -39,6 +40,7 @@ export function ManualFormDialog({ open, onOpenChange, onStart, silos }: ManualF
   const [lokasiProyek, setLokasiProyek] = useState("");
   const [mutuBeton, setMutuBeton] = useState("");
   const [slump, setSlump] = useState("12"); // Default 12
+  const [targetProduksi, setTargetProduksi] = useState("");
   const [selectedSilo, setSelectedSilo] = useState("");
   const [namaSopir, setNamaSopir] = useState("");
   const [nomorMobil, setNomorMobil] = useState("");
@@ -74,7 +76,7 @@ export function ManualFormDialog({ open, onOpenChange, onStart, silos }: ManualF
     }
   }, [open]);
 
-  const isFormValid = pelanggan !== "" && lokasiProyek !== "" && mutuBeton !== "" && slump !== "" && selectedSilo !== "";
+  const isFormValid = pelanggan !== "" && lokasiProyek !== "" && mutuBeton !== "" && slump !== "" && targetProduksi !== "" && selectedSilo !== "";
 
   const handleStart = () => {
     if (!isFormValid) return;
@@ -87,6 +89,7 @@ export function ManualFormDialog({ open, onOpenChange, onStart, silos }: ManualF
       lokasiProyek,
       mutuBeton,
       slump,
+      targetProduksi,
       selectedSilo,
       namaSopir,
       nomorMobil,
@@ -97,6 +100,7 @@ export function ManualFormDialog({ open, onOpenChange, onStart, silos }: ManualF
     setLokasiProyek("");
     setMutuBeton("");
     setSlump("12");
+    setTargetProduksi("");
     setNamaSopir("");
     setNomorMobil("");
     onOpenChange(false);
@@ -173,6 +177,20 @@ export function ManualFormDialog({ open, onOpenChange, onStart, silos }: ManualF
                 value={slump}
                 onChange={(e) => setSlump(e.target.value)}
                 placeholder="12"
+                className="h-8 text-sm"
+              />
+            </div>
+
+            {/* Target Produksi */}
+            <div>
+              <Label htmlFor="targetProduksi" className="text-xs">Target Produksi (m³) *</Label>
+              <Input
+                id="targetProduksi"
+                type="number"
+                step="0.01"
+                value={targetProduksi}
+                onChange={(e) => setTargetProduksi(e.target.value)}
+                placeholder="Contoh: 3.5"
                 className="h-8 text-sm"
               />
             </div>
