@@ -76,7 +76,7 @@ export function ManualFormDialog({ open, onOpenChange, onStart, silos }: ManualF
     }
   }, [open]);
 
-  const isFormValid = pelanggan !== "" && lokasiProyek !== "" && mutuBeton !== "" && slump !== "" && targetProduksi !== "" && selectedSilo !== "";
+  const isFormValid = mutuBeton !== "" && slump !== "" && targetProduksi !== "" && selectedSilo !== "";
 
   const handleStart = () => {
     if (!isFormValid) return;
@@ -120,7 +120,7 @@ export function ManualFormDialog({ open, onOpenChange, onStart, silos }: ManualF
           <div className="space-y-3">
             {/* Pelanggan */}
             <div>
-              <Label htmlFor="pelanggan" className="text-xs">Pelanggan *</Label>
+              <Label htmlFor="pelanggan" className="text-xs">Pelanggan</Label>
               <Input
                 id="pelanggan"
                 value={pelanggan}
@@ -132,7 +132,7 @@ export function ManualFormDialog({ open, onOpenChange, onStart, silos }: ManualF
 
             {/* Lokasi Proyek */}
             <div>
-              <Label htmlFor="lokasi" className="text-xs">Lokasi Proyek *</Label>
+              <Label htmlFor="lokasi" className="text-xs">Lokasi Proyek</Label>
               <Input
                 id="lokasi"
                 value={lokasiProyek}

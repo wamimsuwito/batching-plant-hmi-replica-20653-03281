@@ -60,6 +60,8 @@ const Index = () => {
   const currentBatchConfigRef = useRef<any>(null); // Use ref to persist config in callback
   const [manualTimerDuration, setManualTimerDuration] = useState(10); // Default 10 detik
   const [showTimerControl, setShowTimerControl] = useState(true); // Toggle visibility
+  const [stableWeights, setStableWeights] = useState({ pasir: 0, batu: 0, semen: 0, air: 0, aggregate: 0 });
+  const weightStabilizationTimer = useRef<NodeJS.Timeout | null>(null);
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -481,6 +483,43 @@ const Index = () => {
     handleAggregateBinsRefill // ✅ NEW: Pass refill callback for System 3
   );
 
+  // ✅ NEW: Stabilize weight display to prevent flickering during mixing transitions
+  useEffect(() => {
+    const currentWeights = productionState.currentWeights;
+    
+    // Clear existing timer
+    if (weightStabilizationTimer.current) {
+      clearTimeout(weightStabilizationTimer.current);
+    }
+    
+    // Check if weights changed significantly (>10 kg for any material)
+    const hasSignificantChange = 
+      Math.abs(currentWeights.pasir - stableWeights.pasir) > 10 ||
+      Math.abs(currentWeights.batu - stableWeights.batu) > 10 ||
+      Math.abs(currentWeights.semen - stableWeights.semen) > 10 ||
+      Math.abs(currentWeights.air - stableWeights.air) > 10 ||
+      Math.abs((currentWeights.aggregate || 0) - stableWeights.aggregate) > 10;
+    
+    if (hasSignificantChange) {
+      // Debounce rapid changes to prevent flicker
+      weightStabilizationTimer.current = setTimeout(() => {
+        setStableWeights({
+          pasir: currentWeights.pasir,
+          batu: currentWeights.batu,
+          semen: currentWeights.semen,
+          air: currentWeights.air,
+          aggregate: currentWeights.aggregate || 0,
+        });
+      }, 150); // 150ms debounce
+    }
+    
+    return () => {
+      if (weightStabilizationTimer.current) {
+        clearTimeout(weightStabilizationTimer.current);
+      }
+    };
+  }, [productionState.currentWeights, stableWeights]);
+
   const handleStart = () => {
     if (isPaused) {
       // Resume dari pause
@@ -814,7 +853,7 @@ const Index = () => {
                     x={20} 
                     y={563}
                     fillLevel={productionState.hopperFillLevels?.aggregate || 0}
-                    currentWeight={productionState.currentWeights.aggregate || 0}
+                    currentWeight={stableWeights.aggregate}
                     targetWeight={productionState.cumulativeTargets.pasir + productionState.cumulativeTargets.batu}
                     isWeighing={componentStates.isAggregateWeighing}
                     isDischargingActive={componentStates.hopperValveAggregate}
@@ -1031,7 +1070,7 @@ const Index = () => {
                 x={550} 
                 y={543}
                 fillLevel={productionState.hopperFillLevels.semen}
-                currentWeight={productionState.currentWeights.semen}
+                currentWeight={stableWeights.semen}
                 targetWeight={productionState.targetWeights.semen}
                 isWeighing={productionState.targetWeights.semen > 0 && !productionState.weighingComplete.semen}
                 isDischargingActive={componentStates.cementValve}

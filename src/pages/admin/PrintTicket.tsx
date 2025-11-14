@@ -96,9 +96,6 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
           <div className="mb-3 print:mb-2">
             <h3 className="text-center text-xs print:text-[10px] font-semibold mb-1.5 print:mb-1">
               Aktual penimbangan (Kg)
-              {ticketData.productionType === 'MANUAL' && (
-                <span className="text-orange-600 ml-2">(Manual Recording)</span>
-              )}
             </h3>
             <table className="w-full border-[2.5px] border-black text-xs print:text-[11px]">
               <thead>
