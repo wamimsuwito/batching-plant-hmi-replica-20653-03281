@@ -181,9 +181,9 @@ export function ManualFormDialog({ open, onOpenChange, onStart, silos }: ManualF
               />
             </div>
 
-            {/* Target Produksi */}
+            {/* Volume */}
             <div>
-              <Label htmlFor="targetProduksi" className="text-xs">Target Produksi (m³) *</Label>
+              <Label htmlFor="targetProduksi" className="text-xs">Volume (m3) *</Label>
               <Input
                 id="targetProduksi"
                 type="number"
