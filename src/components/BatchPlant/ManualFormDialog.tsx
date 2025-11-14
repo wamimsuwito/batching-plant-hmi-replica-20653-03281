@@ -44,27 +44,29 @@ export function ManualFormDialog({ open, onOpenChange, onStart, silos }: ManualF
   const [nomorMobil, setNomorMobil] = useState("");
   const [jmfOptions, setJmfOptions] = useState<any[]>([]);
 
-  // Load JMF data when dialog opens
+  // Load JMF data
   useEffect(() => {
-    if (open) {
-      const savedFormulas = localStorage.getItem('job_mix_formulas');
-      console.log('📋 Loading JMF from localStorage:', savedFormulas);
-      
-      if (savedFormulas) {
-        try {
-          const formulas = JSON.parse(savedFormulas);
-          console.log('📋 Parsed JMF formulas:', formulas);
-          setJmfOptions(formulas);
-        } catch (error) {
-          console.error('❌ Error loading JMF data:', error);
-          setJmfOptions([]);
-        }
-      } else {
-        console.log('⚠️ No JMF formulas found in localStorage');
+    const savedFormulas = localStorage.getItem('job_mix_formulas');
+    console.log('📋 Loading JMF from localStorage:', savedFormulas);
+    
+    if (savedFormulas) {
+      try {
+        const formulas = JSON.parse(savedFormulas);
+        console.log('📋 Parsed JMF formulas:', formulas);
+        setJmfOptions(formulas);
+      } catch (error) {
+        console.error('❌ Error loading JMF data:', error);
         setJmfOptions([]);
       }
+    } else {
+      console.log('⚠️ No JMF formulas found in localStorage');
+      setJmfOptions([]);
+    }
+  }, []); // Load once on mount, not dependent on dialog open
 
-      // Load last selected silo
+  // Load last selected silo when dialog opens
+  useEffect(() => {
+    if (open) {
       const savedSilo = localStorage.getItem('last_selected_silo');
       if (savedSilo) {
         setSelectedSilo(savedSilo);
