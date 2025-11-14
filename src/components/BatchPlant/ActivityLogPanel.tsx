@@ -3,10 +3,13 @@ interface ActivityLogPanelProps {
 }
 
 export const ActivityLogPanel = ({ logs }: ActivityLogPanelProps) => {
+  // Show only the last 8 logs
+  const displayLogs = logs.slice(-8);
+  
   return (
     <div className="absolute bottom-4 left-4 w-[280px] h-[200px] bg-black/90 border-2 border-red-500 rounded-lg p-2 overflow-hidden shadow-lg">
       <div className="h-full flex flex-col-reverse gap-0.5">
-        {logs.map((log, index) => (
+        {displayLogs.map((log, index) => (
           <div
             key={`${log}-${index}`}
             className="text-green-400 text-xs font-mono animate-in slide-in-from-top-2 duration-300"
