@@ -2655,21 +2655,7 @@ export const useProductionSequence = (
             ...prev,
             nextMixingReady: true,
             isWaitingForMixer: true,
-            currentWeights: {
-              pasir: 0,
-              batu: 0,
-              semen: 0,
-              air: 0,
-              aggregate: 0,
-              additive: 0,
-            },
-            hopperFillLevels: {
-              pasir: 0,
-              batu: 0,
-              semen: 0,
-              air: 0,
-              aggregate: 0,
-            },
+            // ✅ FIX: Don't reset weights/fill levels to prevent flicker during mixing transition
             weighingComplete: {
               pasir1: false,
               pasir2: false,
