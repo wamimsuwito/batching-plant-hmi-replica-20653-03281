@@ -9,7 +9,8 @@ import farikaLogo from '@/assets/farika-logo.png';
 export interface TicketData {
   id?: string;
   jobOrder: string;
-  productionType?: 'AUTO' | 'MANUAL'; // NEW: Production type indicator
+  productionType?: 'AUTO' | 'MANUAL'; // Production type indicator
+  serialNumber?: string; // ✅ NEW: Serial number for tracking
   nomorPO: string;
   tanggal: string;
   jamMulai: string;
@@ -58,6 +59,12 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
                 Jl. Soekarno Hatta Komp. SKA No. 62 E Pekanbaru Telp. (0761) 7090228 - 571662
               </p>
             </div>
+            {ticketData.serialNumber && (
+              <div className="text-right">
+                <div className="text-[10px] print:text-[9px] font-semibold text-gray-600">No. Seri:</div>
+                <div className="text-sm print:text-xs font-bold">{ticketData.serialNumber}</div>
+              </div>
+            )}
           </div>
 
           {/* Title */}

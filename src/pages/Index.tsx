@@ -62,6 +62,7 @@ const Index = () => {
   const [showTimerControl, setShowTimerControl] = useState(true); // Toggle visibility
   const [stableWeights, setStableWeights] = useState({ pasir: 0, batu: 0, semen: 0, air: 0, aggregate: 0 });
   const weightStabilizationTimer = useRef<NodeJS.Timeout | null>(null);
+  const [bpNaming, setBpNaming] = useState<{inisialBP?: string; nomorBP?: string}>({});
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -280,6 +281,41 @@ const Index = () => {
     })));
   };
 
+  // ✅ Helper functions for serial number generation
+  const getBPPrefix = () => {
+    const cfg = localStorage.getItem('bp_naming_config');
+    if (!cfg) return null;
+    try {
+      const { inisialBP, nomorBP } = JSON.parse(cfg);
+      if (!inisialBP || !nomorBP) return null;
+      return `${inisialBP}-${nomorBP}-`;
+    } catch (error) {
+      console.error('Error parsing BP naming config:', error);
+      return null;
+    }
+  };
+
+  const generateSerialNumber = (prefix: string, width = 7): string => {
+    const key = `serial_counter_${prefix.replace(/-/g, '_')}`;
+    const current = parseInt(localStorage.getItem(key) || '0', 10) || 0;
+    const next = current + 1;
+    localStorage.setItem(key, String(next));
+    const num = String(next).padStart(width, '0');
+    return `${prefix}${num}`;
+  };
+
+  // Load BP naming configuration
+  useEffect(() => {
+    const saved = localStorage.getItem('bp_naming_config');
+    if (saved) {
+      try {
+        setBpNaming(JSON.parse(saved));
+      } catch (error) {
+        console.error('Error loading BP naming config:', error);
+      }
+    }
+  }, []);
+
   // Load relay settings
   const [relaySettings, setRelaySettings] = useState<any[]>([]);
   useEffect(() => {
@@ -427,10 +463,15 @@ const Index = () => {
       const jamMulai = finalWeights?.startTime || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       const jamSelesai = finalWeights?.endTime || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
+      // ✅ NEW: Generate serial number
+      const prefix = getBPPrefix();
+      const serialNumber = prefix ? generateSerialNumber(prefix, 7) : undefined;
+
       const ticket: TicketData = {
         id: `TICKET-${Date.now()}`,
         jobOrder: `${productionState.currentMixing}`,
         productionType: 'AUTO', // Mark as auto production
+        serialNumber, // ✅ NEW: Add serial number
         nomorPO: "-",
         tanggal: endTime.toLocaleDateString('id-ID'),
         jamMulai: jamMulai,
@@ -487,21 +528,26 @@ const Index = () => {
   useEffect(() => {
     const currentWeights = productionState.currentWeights;
     
+    // ✅ FIX: Freeze display during mixer waiting to prevent flicker
+    if (productionState.isWaitingForMixer) {
+      return; // Don't update weights while waiting for mixer
+    }
+    
     // Clear existing timer
     if (weightStabilizationTimer.current) {
       clearTimeout(weightStabilizationTimer.current);
     }
     
-    // Check if weights changed significantly (>10 kg for any material)
+    // ✅ IMPROVED: Higher threshold for aggregate (25kg), 10kg for others
     const hasSignificantChange = 
       Math.abs(currentWeights.pasir - stableWeights.pasir) > 10 ||
       Math.abs(currentWeights.batu - stableWeights.batu) > 10 ||
       Math.abs(currentWeights.semen - stableWeights.semen) > 10 ||
       Math.abs(currentWeights.air - stableWeights.air) > 10 ||
-      Math.abs((currentWeights.aggregate || 0) - stableWeights.aggregate) > 10;
+      Math.abs((currentWeights.aggregate || 0) - stableWeights.aggregate) > 25;
     
     if (hasSignificantChange) {
-      // Debounce rapid changes to prevent flicker
+      // ✅ IMPROVED: Increased debounce to 300ms for smoother display
       weightStabilizationTimer.current = setTimeout(() => {
         setStableWeights({
           pasir: currentWeights.pasir,
@@ -510,7 +556,7 @@ const Index = () => {
           air: currentWeights.air,
           aggregate: currentWeights.aggregate || 0,
         });
-      }, 150); // 150ms debounce
+      }, 300); // 300ms debounce (increased from 150ms)
     }
     
     return () => {
@@ -518,7 +564,7 @@ const Index = () => {
         clearTimeout(weightStabilizationTimer.current);
       }
     };
-  }, [productionState.currentWeights, stableWeights]);
+  }, [productionState.currentWeights, stableWeights, productionState.isWaitingForMixer]);
 
   const handleStart = () => {
     if (isPaused) {
@@ -574,11 +620,16 @@ const Index = () => {
     const finalSession = manualProduction.stopManualSession();
     
     if (finalSession) {
+      // ✅ NEW: Generate serial number for manual production
+      const prefix = getBPPrefix();
+      const serialNumber = prefix ? generateSerialNumber(prefix, 7) : undefined;
+
       // Generate ticket from manual session
       const ticket: TicketData = {
         id: finalSession.sessionId,
         jobOrder: 'MANUAL',
         productionType: 'MANUAL', // Mark as manual production
+        serialNumber, // ✅ NEW: Add serial number
         nomorPO: '-',
         tanggal: finalSession.endTime?.toLocaleDateString('id-ID') || new Date().toLocaleDateString('id-ID'),
         jamMulai: finalSession.startTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
@@ -651,6 +702,11 @@ const Index = () => {
                 <Package className="w-4 h-4" />
                 Isi Silo
               </Button>
+              {bpNaming.inisialBP && bpNaming.nomorBP && (
+                <span className="text-sm font-semibold text-white/90 px-3 py-1 bg-primary/20 rounded-md border border-primary/30">
+                  {bpNaming.inisialBP}-{bpNaming.nomorBP}
+                </span>
+              )}
               {isAdmin() && (
                 <Button
                   size="sm"
@@ -866,7 +922,7 @@ const Index = () => {
                     fillLevel={productionState.hopperFillLevels?.aggregate || 0}
                     currentWeight={stableWeights.aggregate}
                     targetWeight={productionState.cumulativeTargets.pasir + productionState.cumulativeTargets.batu}
-                    isWeighing={componentStates.isAggregateWeighing}
+                    isWeighing={componentStates.isAggregateWeighing && !productionState.isWaitingForMixer}
                     isDischargingActive={componentStates.hopperValveAggregate}
                     materialType="aggregate"
                     label="AGGREGATE HOPPER"
