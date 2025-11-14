@@ -522,6 +522,7 @@ export const useProductionSequence = (
     controlRelay('konveyor_atas', false);
     controlRelay('konveyor_bawah', false);
     controlRelay('vibrator', false);
+    controlRelay('klakson', false);
     
     setProductionState(initialProductionState);
     setComponentStates(initialComponentStates);
@@ -603,7 +604,13 @@ export const useProductionSequence = (
     controlRelay('konveyor_atas', true);
     addActivityLog('🚀 Starting production sequence');
     addActivityLog('🔄 Mixer ON');
-    addActivityLog('🔄 Belt Atas ON');
+    
+    if (systemConfig === 1) {
+      console.log('🔄 SYSTEM 1: Belt Atas akan TETAP ON sampai klakson');
+      addActivityLog('🔄 Belt Atas ON (System 1: continuous)');
+    } else {
+      addActivityLog('🔄 Belt Atas ON');
+    }
 
     // t=1s: Start weighing all materials
     const weighingTimer = setTimeout(() => {
@@ -2727,13 +2734,18 @@ export const useProductionSequence = (
                 
                 return {
                   ...prevStates,
-                  beltAtas: true,
+                  beltAtas: systemConfig === 1 ? prevStates.beltAtas : true, // System 1: jangan ubah state
                   siloValves,
                 };
               });
               
               // Send relay commands AFTER state update
-              controlRelay('konveyor_atas', true);
+              // System 1: Belt sudah ON dari awal, jangan kirim relay command lagi
+              if (systemConfig !== 1) {
+                controlRelay('konveyor_atas', true);
+              } else {
+                console.log('🔄 SYSTEM 1: Belt Atas sudah ON, skip relay command');
+              }
               lastConfigRef.current.selectedSilos.forEach(id => controlRelay(`silo_${id}`, true));
 
               // Start weighing - it will set nextMixingWeighingComplete when done
@@ -2840,9 +2852,13 @@ export const useProductionSequence = (
             if (lastConfigRef.current) {
               console.log(`✅ Starting Weighing Cycle ${currentMixing + 1}`);
               
-              // Turn on belt atas (cement conveyor)
-              setComponentStates(prev => ({ ...prev, beltAtas: true }));
-              controlRelay('konveyor_atas', true);
+              // Turn on belt atas (cement conveyor) - Skip for System 1 (already ON)
+              if (systemConfig !== 1) {
+                setComponentStates(prev => ({ ...prev, beltAtas: true }));
+                controlRelay('konveyor_atas', true);
+              } else {
+                console.log('🔄 SYSTEM 1: Belt Atas sudah ON, skip relay command');
+              }
 
               // Turn on selected silos
               setComponentStates(prev => ({
@@ -2929,18 +2945,32 @@ export const useProductionSequence = (
           console.error('❌ Error saving production record:', error);
         }
         
-        // AKTIVASI KLAKSON - 1 detik
-        console.log('🔔 Activating klakson for 1 second');
+        // AKTIVASI KLAKSON - 3 detik
+        console.log('📢 Turning ON klakson (horn) - production complete');
         controlRelay('klakson', true);
         setComponentStates(prevComp => ({ ...prevComp, klakson: true }));
+        addActivityLog('📢 Klakson ON (production selesai)');
         
         // Toast removed - silent operation
         
         const klaksonTimer = setTimeout(() => {
+          console.log('📢 Turning OFF klakson');
           controlRelay('klakson', false);
           setComponentStates(prevComp => ({ ...prevComp, klakson: false }));
-        }, 1000);
+          addActivityLog('📢 Klakson OFF');
+        }, 3000); // 3 detik
         addTimer(klaksonTimer);
+        
+        // System 1: Turn OFF belt atas AFTER klakson
+        if (systemConfig === 1) {
+          const beltOffTimer = setTimeout(() => {
+            console.log('🔴 SYSTEM 1: Turning OFF Belt Atas (after klakson)');
+            setComponentStates(prevComp => ({ ...prevComp, beltAtas: false }));
+            controlRelay('konveyor_atas', false);
+            addActivityLog('🔴 Belt Atas OFF (after klakson)');
+          }, 3500); // 500ms setelah klakson OFF
+          addTimer(beltOffTimer);
+        }
         
         // Refill aggregate bins to 10000 kg after 2 seconds
         setTimeout(() => {
