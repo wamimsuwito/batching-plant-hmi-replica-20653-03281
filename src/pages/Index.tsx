@@ -67,6 +67,21 @@ const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Helper function to format volume (remove .00 for whole numbers)
+  const formatVolume = (value: number): string => {
+    if (Number.isInteger(value)) {
+      return value.toString();
+    }
+    const str = value.toFixed(2);
+    if (str.endsWith('.00')) {
+      return Math.round(value).toString();
+    }
+    if (str.endsWith('0') && !str.endsWith('.00')) {
+      return value.toFixed(1);
+    }
+    return value.toFixed(2);
+  };
+
   // Initialize 6 cement silos with 120,000 kg capacity each
   const [silos, setSilos] = useState<SiloData[]>([
     { id: 1, currentVolume: 0, capacity: 120000 },
@@ -424,20 +439,6 @@ const Index = () => {
         }
       });
       
-      // Helper function to format volume (remove .00 for whole numbers)
-      const formatVolume = (value: number): string => {
-        if (Number.isInteger(value)) {
-          return value.toString();
-        }
-        const str = value.toFixed(2);
-        if (str.endsWith('.00')) {
-          return Math.round(value).toString();
-        }
-        if (str.endsWith('0') && !str.endsWith('.00')) {
-          return value.toFixed(1);
-        }
-        return value.toFixed(2);
-      };
       
       // Calculate total volume (use volume per mixing if available, otherwise calculate)
       const volumePerMixing = batchConfig?.volume 
@@ -659,8 +660,8 @@ const Index = () => {
         namaPelanggan: finalSession.formData.pelanggan,
         lokasiProyek: finalSession.formData.lokasiProyek,
         mutuBeton: finalSession.formData.mutuBeton,
-        slump: finalSession.formData.slump ? `${finalSession.formData.slump} (cm)` : '-',
-        volume: finalSession.formData.targetProduksi ? `${finalSession.formData.targetProduksi} (m3)` : '-',
+        slump: finalSession.formData.slump ? `${finalSession.formData.slump} cm` : '-',
+        volume: finalSession.formData.targetProduksi ? `${formatVolume(parseFloat(finalSession.formData.targetProduksi))} M³` : '-',
         namaSopir: finalSession.formData.namaSopir,
         nomorMobil: finalSession.formData.nomorMobil,
         nomorLambung: '-',
