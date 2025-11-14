@@ -572,12 +572,28 @@ const Index = () => {
     if (hasSignificantChange) {
       // ✅ IMPROVED: Increased debounce to 300ms for smoother display
       weightStabilizationTimer.current = setTimeout(() => {
+        // ✅ SYSTEM 1 FIX: Monotonic clamp for aggregate during weighing (prevent flickering)
+        let newAggregateWeight = currentWeights.aggregate || 0;
+        
+        // Only apply clamp during System 1 aggregate weighing, NOT during discharge
+        const systemConfig = parseInt(localStorage.getItem('system_config') || '1');
+        if (systemConfig === 1 && 
+            componentStates.isAggregateWeighing && 
+            !componentStates.hopperValveAggregate) {
+          
+          // Prevent sudden drops > 5kg (likely flickering between pasir/batu channels)
+          if (newAggregateWeight < stableWeights.aggregate - 5) {
+            console.log(`🛡️ CLAMP: Aggregate drop prevented (${newAggregateWeight.toFixed(1)}kg → keeping ${stableWeights.aggregate.toFixed(1)}kg)`);
+            newAggregateWeight = stableWeights.aggregate; // Keep previous stable value
+          }
+        }
+        
         setStableWeights({
           pasir: currentWeights.pasir,
           batu: currentWeights.batu,
           semen: currentWeights.semen,
           air: currentWeights.air,
-          aggregate: currentWeights.aggregate || 0,
+          aggregate: newAggregateWeight,
         });
       }, 300); // 300ms debounce (increased from 150ms)
     }

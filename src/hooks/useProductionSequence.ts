@@ -875,16 +875,34 @@ export const useProductionSequence = (
       if (systemConfig === 1 && ['pasir1', 'pasir2', 'batu1', 'batu2'].includes(material)) {
         // System 1: Cumulative 1 hopper - adjust target and starting weight
         if (material === 'pasir2') {
-          // Start from pasir1 result, target = starting + pasir2 target
-          adjustedStarting = startingWeight; // Will be passed from caller
+          // ✅ PRODUCTION MODE: Use real-time aggregate reading as baseline
+          if (raspberryPi?.productionMode === 'production' && raspberryPi?.isConnected) {
+            const realBaseline = (raspberryPi.actualWeights.pasir || 0) + (raspberryPi.actualWeights.batu || 0);
+            adjustedStarting = realBaseline;
+            console.log(`🎯 System1-PASIR2: Real baseline from load cell = ${realBaseline.toFixed(1)}kg`);
+          } else {
+            adjustedStarting = startingWeight; // Simulation mode
+          }
           adjustedTarget = adjustedStarting + targetWeight;
         } else if (material === 'batu1') {
-          // Start from pasir total (pasir1 + pasir2)
-          adjustedStarting = startingWeight;
+          // ✅ PRODUCTION MODE: Use real-time aggregate reading as baseline
+          if (raspberryPi?.productionMode === 'production' && raspberryPi?.isConnected) {
+            const realBaseline = (raspberryPi.actualWeights.pasir || 0) + (raspberryPi.actualWeights.batu || 0);
+            adjustedStarting = realBaseline;
+            console.log(`🎯 System1-BATU1: Real baseline from load cell = ${realBaseline.toFixed(1)}kg`);
+          } else {
+            adjustedStarting = startingWeight; // Simulation mode
+          }
           adjustedTarget = adjustedStarting + targetWeight;
         } else if (material === 'batu2') {
-          // Start from batu1 result
-          adjustedStarting = startingWeight;
+          // ✅ PRODUCTION MODE: Use real-time aggregate reading as baseline
+          if (raspberryPi?.productionMode === 'production' && raspberryPi?.isConnected) {
+            const realBaseline = (raspberryPi.actualWeights.pasir || 0) + (raspberryPi.actualWeights.batu || 0);
+            adjustedStarting = realBaseline;
+            console.log(`🎯 System1-BATU2: Real baseline from load cell = ${realBaseline.toFixed(1)}kg`);
+          } else {
+            adjustedStarting = startingWeight; // Simulation mode
+          }
           adjustedTarget = adjustedStarting + targetWeight;
         }
       }
@@ -958,18 +976,94 @@ export const useProductionSequence = (
         await delay(5000);
       }
 
+      // ✅ WATCHDOG: Track weighing progress to detect stuck scenarios
+      let lastProgressWeight = adjustedStarting;
+      let lastProgressTime = Date.now();
+      
       const weighingInterval = setInterval(() => {
         // Get current weight
         let currentWeight;
         // ✅ CRITICAL: Check production mode FIRST before using real load cell data
         if (raspberryPi?.productionMode === 'production' && raspberryPi?.isConnected) {
-          // ✅ PRODUCTION MODE: Use REAL data from load cell
-          const channel = material.startsWith('pasir') ? 'pasir' : 
-                         material.startsWith('batu') ? 'batu' : 
-                         material === 'semen' ? 'semen' : 
-                         material === 'air' ? 'air' : material;
-          currentWeight = raspberryPi.actualWeights[channel] || startingWeight;
-          console.log(`📊 PRODUCTION MODE: Reading load cell ${channel} = ${currentWeight}kg`);
+          // ✅ SYSTEM 1 FIX: Use unified aggregate reading (sum of pasir + batu)
+          if (systemConfig === 1 && ['pasir1', 'pasir2', 'batu1', 'batu2'].includes(material)) {
+            const pasirWeight = raspberryPi.actualWeights.pasir || 0;
+            const batuWeight = raspberryPi.actualWeights.batu || 0;
+            currentWeight = pasirWeight + batuWeight; // Combined aggregate load cell reading
+            console.log(`📊 System1-AGG PRODUCTION: pasir=${pasirWeight.toFixed(1)}kg + batu=${batuWeight.toFixed(1)}kg = ${currentWeight.toFixed(1)}kg`);
+          } else {
+            // ✅ PRODUCTION MODE: Use REAL data from load cell
+            const channel = material.startsWith('pasir') ? 'pasir' : 
+                           material.startsWith('batu') ? 'batu' : 
+                           material === 'semen' ? 'semen' : 
+                           material === 'air' ? 'air' : material;
+            currentWeight = raspberryPi.actualWeights[channel] || startingWeight;
+            console.log(`📊 PRODUCTION MODE: Reading load cell ${channel} = ${currentWeight}kg`);
+          }
+          
+          // ✅ WATCHDOG: Check if weight is progressing
+          if (currentWeight > lastProgressWeight + 1) {
+            lastProgressWeight = currentWeight;
+            lastProgressTime = Date.now();
+          }
+          
+          // ✅ WATCHDOG: Force completion if stuck for 15 seconds
+          const timeSinceProgress = Date.now() - lastProgressTime;
+          if (timeSinceProgress > 15000 && phase === 2) {
+            console.log(`⚠️ WATCHDOG: Weighing stuck for ${(timeSinceProgress/1000).toFixed(1)}s, forcing completion at ${currentWeight.toFixed(1)}kg`);
+            clearInterval(weighingInterval);
+            
+            // Turn off all relays
+            if (material === 'pasir1') {
+              const binId = config.selectedBins.pasir1;
+              const relayName = getAggregateRelayName(material, binId);
+              if (relayName) {
+                console.log(`🔴 WATCHDOG: ${relayName} -> OFF`);
+                controlRelay(relayName, false);
+              }
+              setComponentStates(prev => ({ ...prev, sandBin1Valve: false }));
+            } else if (material === 'pasir2') {
+              const binId = config.selectedBins.pasir2;
+              const relayName = getAggregateRelayName(material, binId);
+              if (relayName) {
+                console.log(`🔴 WATCHDOG: ${relayName} -> OFF`);
+                controlRelay(relayName, false);
+              }
+              setComponentStates(prev => ({ ...prev, sandBin2Valve: false }));
+            } else if (material === 'batu1') {
+              const binId = config.selectedBins.batu1;
+              const relayName = getAggregateRelayName(material, binId);
+              if (relayName) {
+                console.log(`🔴 WATCHDOG: ${relayName} -> OFF`);
+                controlRelay(relayName, false);
+              }
+              setComponentStates(prev => ({ ...prev, stoneBin1Valve: false }));
+            } else if (material === 'batu2') {
+              const binId = config.selectedBins.batu2;
+              const relayName = getAggregateRelayName(material, binId);
+              if (relayName) {
+                console.log(`🔴 WATCHDOG: ${relayName} -> OFF`);
+                controlRelay(relayName, false);
+              }
+              setComponentStates(prev => ({ ...prev, stoneBin2Valve: false }));
+            } else if (material === 'semen') {
+              console.log('🔴 WATCHDOG: Closing all silo valves');
+              config.selectedSilos.forEach(siloId => {
+                const relayName = `silo_${siloId}`;
+                controlRelay(relayName, false);
+              });
+              setComponentStates(prev => ({ ...prev, cementSiloValve: false }));
+            } else if (material === 'air') {
+              console.log('🔴 WATCHDOG: Closing water tank valve');
+              controlRelay('valve_air', false);
+              setComponentStates(prev => ({ ...prev, waterTankValve: false }));
+            }
+            
+            addActivityLog(`✅ ${material} weighing complete (watchdog): ${currentWeight.toFixed(1)}kg`);
+            weighingStatus[material] = true;
+            resolve();
+            return;
+          }
         } else {
           // ✅ SIMULATION MODE: Auto-increment simulation
           if (phase === 1) {
