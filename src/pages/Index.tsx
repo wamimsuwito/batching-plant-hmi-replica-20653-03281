@@ -424,10 +424,25 @@ const Index = () => {
         }
       });
       
+      // Helper function to format volume (remove .00 for whole numbers)
+      const formatVolume = (value: number): string => {
+        if (Number.isInteger(value)) {
+          return value.toString();
+        }
+        const str = value.toFixed(2);
+        if (str.endsWith('.00')) {
+          return Math.round(value).toString();
+        }
+        if (str.endsWith('0') && !str.endsWith('.00')) {
+          return value.toFixed(1);
+        }
+        return value.toFixed(2);
+      };
+      
       // Calculate total volume (use volume per mixing if available, otherwise calculate)
       const volumePerMixing = batchConfig?.volume 
-        ? (batchConfig.volume / productionState.jumlahMixing).toFixed(2)
-        : ((targetPasir + targetBatu + targetSemen + targetAir) / 2400).toFixed(2);
+        ? formatVolume(batchConfig.volume / productionState.jumlahMixing)
+        : formatVolume((targetPasir + targetBatu + targetSemen + targetAir) / 2400);
 
       // Helper function: Extract time from activity log
       const extractTimeFromLog = (logMessage: string): string => {
@@ -644,8 +659,8 @@ const Index = () => {
         namaPelanggan: finalSession.formData.pelanggan,
         lokasiProyek: finalSession.formData.lokasiProyek,
         mutuBeton: finalSession.formData.mutuBeton,
-        slump: finalSession.formData.slump,
-        volume: finalSession.formData.targetProduksi || '-',
+        slump: finalSession.formData.slump ? `${finalSession.formData.slump} (cm)` : '-',
+        volume: finalSession.formData.targetProduksi ? `${finalSession.formData.targetProduksi} (m3)` : '-',
         namaSopir: finalSession.formData.namaSopir,
         nomorMobil: finalSession.formData.nomorMobil,
         nomorLambung: '-',
