@@ -187,10 +187,10 @@ export function ManualFormDialog({ open, onOpenChange, onStart, silos }: ManualF
               <Input
                 id="targetProduksi"
                 type="number"
-                step="0.01"
+                step="0.5"
                 value={targetProduksi}
                 onChange={(e) => setTargetProduksi(e.target.value)}
-                placeholder="Contoh: 3.5"
+                placeholder="Contoh: 1.5 atau 2.0"
                 className="h-8 text-sm"
               />
             </div>
