@@ -9,7 +9,8 @@ import {
   LogOut,
   LayoutDashboard,
   ListOrdered,
-  Cable
+  Cable,
+  FileText
 } from 'lucide-react';
 import {
   Sidebar,
@@ -28,6 +29,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const menuItems = [
   { title: 'Dashboard', url: '/admin', icon: LayoutDashboard, end: true },
+  { title: 'Penamaan BP', url: '/admin/bp-naming', icon: FileText },
   { title: 'Job Mix Formula', url: '/admin/job-mix-formula', icon: FlaskConical },
   { title: 'Urutan Mixing', url: '/admin/mixing-sequence', icon: ListOrdered },
   { title: 'Pengaturan Relay & Pintu Mixer', url: '/admin/relay-settings', icon: Settings },

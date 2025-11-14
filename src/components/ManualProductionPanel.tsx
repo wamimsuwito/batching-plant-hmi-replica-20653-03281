@@ -119,17 +119,6 @@ export const ManualProductionPanel = ({
             </Button>
           </>
         )}
-
-        {/* Instructions */}
-        <div className="text-[10px] text-muted-foreground border-t border-border pt-2">
-          <p className="font-semibold mb-1">Instruksi:</p>
-          <ol className="list-decimal list-inside space-y-0.5">
-            <li>Pilih mutu & isi form</li>
-            <li>Tekan "MULAI MANUAL"</li>
-            <li>Timbang semua material</li>
-            <li>Tekan "STOP" untuk print</li>
-          </ol>
-        </div>
       </div>
     </div>
   );

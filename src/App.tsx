@@ -9,6 +9,7 @@ import { AdminLayout } from "@/components/layout/AdminLayout";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/admin/Dashboard";
+import BPNaming from "./pages/admin/BPNaming";
 import JobMixFormula from "./pages/admin/JobMixFormula";
 import MixingSequence from "./pages/admin/MixingSequence";
 import RelaySettings from "./pages/admin/RelaySettings";
@@ -40,6 +41,7 @@ const App = () => {
               </ProtectedRoute>
             }>
               <Route index element={<Dashboard />} />
+              <Route path="bp-naming" element={<BPNaming />} />
               <Route path="job-mix-formula" element={<JobMixFormula />} />
               <Route path="mixing-sequence" element={<MixingSequence />} />
               <Route path="relay-settings" element={<RelaySettings />} />

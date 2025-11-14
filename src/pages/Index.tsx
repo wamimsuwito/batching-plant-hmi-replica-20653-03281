@@ -671,14 +671,25 @@ const Index = () => {
               </Button>
             </>
           ) : (
-            <Button
-              size="sm"
-              onClick={() => setLoginOpen(true)}
-              className="gap-2"
-            >
-              <LogIn className="w-4 h-4" />
-              Login Admin
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSiloFillOpen(true)}
+                className="gap-2"
+              >
+                <Package className="w-4 h-4" />
+                Isi Silo
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => setLoginOpen(true)}
+                className="gap-2"
+              >
+                <LogIn className="w-4 h-4" />
+                Login Admin
+              </Button>
+            </>
           )}
         </div>
       </header>
