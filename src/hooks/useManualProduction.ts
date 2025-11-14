@@ -22,7 +22,7 @@ export interface ManualProductionSession {
     lokasiProyek: string;
     mutuBeton: string;
     slump: string;
-    nomorPO: string;
+    selectedSilo: string;
     namaSopir: string;
     nomorMobil: string;
   };
@@ -32,6 +32,7 @@ export interface ManualProductionSession {
     semen: MaterialRecord;
     air: MaterialRecord;
   };
+  activeSilo?: number; // Track which silo was used during production
 }
 
 export const useManualProduction = (actualWeights: { pasir: number; batu: number; semen: number; air: number }) => {

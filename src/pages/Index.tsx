@@ -31,6 +31,7 @@ import { useProductionSequence } from "@/hooks/useProductionSequence";
 import { useRaspberryPi } from "@/hooks/useRaspberryPi";
 import { useManualProduction } from "@/hooks/useManualProduction";
 import { ManualProductionPanel } from "@/components/ManualProductionPanel";
+import { ManualFormDialog } from "@/components/BatchPlant/ManualFormDialog";
 import { PhysicalButtonLED } from "@/components/BatchPlant/PhysicalButtonLED";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,15 +50,6 @@ const Index = () => {
   const [printTicketOpen, setPrintTicketOpen] = useState(false);
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
   const [manualFormOpen, setManualFormOpen] = useState(false);
-  const [manualFormData, setManualFormData] = useState({
-    pelanggan: '',
-    lokasiProyek: '',
-    mutuBeton: '',
-    slump: '',
-    nomorPO: '',
-    namaSopir: '',
-    nomorMobil: '',
-  });
   const [productionStartTime, setProductionStartTime] = useState<Date | null>(null);
   const [helpDialogOpen, setHelpDialogOpen] = useState(false);
   const [autoPrintEnabled, setAutoPrintEnabled] = useState(() => {
@@ -521,12 +513,20 @@ const Index = () => {
   };
 
   // Manual production handlers
-  const handleStartManual = () => {
+  const handleOpenManualForm = () => {
     setManualFormOpen(true);
   };
 
-  const handleManualFormSubmit = () => {
-    manualProduction.startManualSession(manualFormData);
+  const handleManualFormSubmit = (formData: {
+    pelanggan: string;
+    lokasiProyek: string;
+    mutuBeton: string;
+    slump: string;
+    selectedSilo: string;
+    namaSopir: string;
+    nomorMobil: string;
+  }) => {
+    manualProduction.startManualSession(formData);
     setManualFormOpen(false);
   };
 
@@ -539,7 +539,7 @@ const Index = () => {
         id: finalSession.sessionId,
         jobOrder: 'MANUAL',
         productionType: 'MANUAL', // Mark as manual production
-        nomorPO: finalSession.formData.nomorPO || '-',
+        nomorPO: '-',
         tanggal: finalSession.endTime?.toLocaleDateString('id-ID') || new Date().toLocaleDateString('id-ID'),
         jamMulai: finalSession.startTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
         jamSelesai: finalSession.endTime?.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
@@ -740,86 +740,12 @@ const Index = () => {
       )}
 
       {/* Manual Production Form Dialog */}
-      <AlertDialog open={manualFormOpen} onOpenChange={setManualFormOpen}>
-        <AlertDialogContent className="max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Form Manual Production</AlertDialogTitle>
-            <AlertDialogDescription>
-              Isi data produksi manual sebelum memulai
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="space-y-3">
-            <div>
-              <Label>Nama Pelanggan</Label>
-              <Input
-                value={manualFormData.pelanggan}
-                onChange={(e) => setManualFormData(prev => ({ ...prev, pelanggan: e.target.value }))}
-                placeholder="PT. Example"
-              />
-            </div>
-            <div>
-              <Label>Lokasi Proyek</Label>
-              <Input
-                value={manualFormData.lokasiProyek}
-                onChange={(e) => setManualFormData(prev => ({ ...prev, lokasiProyek: e.target.value }))}
-                placeholder="Jl. Example No. 123"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label>Mutu Beton</Label>
-                <Input
-                  value={manualFormData.mutuBeton}
-                  onChange={(e) => setManualFormData(prev => ({ ...prev, mutuBeton: e.target.value }))}
-                  placeholder="K-300"
-                />
-              </div>
-              <div>
-                <Label>Slump</Label>
-                <Input
-                  value={manualFormData.slump}
-                  onChange={(e) => setManualFormData(prev => ({ ...prev, slump: e.target.value }))}
-                  placeholder="12 ± 2"
-                />
-              </div>
-            </div>
-            <div>
-              <Label>Nomor PO</Label>
-              <Input
-                value={manualFormData.nomorPO}
-                onChange={(e) => setManualFormData(prev => ({ ...prev, nomorPO: e.target.value }))}
-                placeholder="PO-2024-001"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label>Nama Sopir</Label>
-                <Input
-                  value={manualFormData.namaSopir}
-                  onChange={(e) => setManualFormData(prev => ({ ...prev, namaSopir: e.target.value }))}
-                  placeholder="John Doe"
-                />
-              </div>
-              <div>
-                <Label>Nomor Mobil</Label>
-                <Input
-                  value={manualFormData.nomorMobil}
-                  onChange={(e) => setManualFormData(prev => ({ ...prev, nomorMobil: e.target.value }))}
-                  placeholder="B 1234 CD"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-2 justify-end mt-4">
-            <Button variant="outline" onClick={() => setManualFormOpen(false)}>
-              Batal
-            </Button>
-            <Button onClick={handleManualFormSubmit}>
-              Mulai Recording
-            </Button>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ManualFormDialog
+        open={manualFormOpen}
+        onOpenChange={setManualFormOpen}
+        onStart={handleManualFormSubmit}
+        silos={silos}
+      />
 
       {/* Main HMI Panel */}
       <main className="flex-1 p-4">
@@ -830,7 +756,7 @@ const Index = () => {
           {/* Manual Production Panel - TOP RIGHT */}
           <ManualProductionPanel
             isManualSessionActive={manualProduction.isManualSessionActive}
-            onStartManual={handleStartManual}
+            onOpenForm={handleOpenManualForm}
             onStopManual={handleStopManual}
             isAutoMode={isAutoMode}
             currentSession={manualProduction.currentSession}

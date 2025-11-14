@@ -3,10 +3,15 @@ import { Play, Square } from 'lucide-react';
 
 interface ManualProductionPanelProps {
   isManualSessionActive: boolean;
-  onStartManual: () => void;
+  onOpenForm: () => void;
   onStopManual: () => void;
   isAutoMode: boolean;
   currentSession: {
+    formData: {
+      mutuBeton: string;
+      slump: string;
+      selectedSilo: string;
+    };
     materials: {
       pasir: { totalDischarged: number };
       batu: { totalDischarged: number };
@@ -18,7 +23,7 @@ interface ManualProductionPanelProps {
 
 export const ManualProductionPanel = ({
   isManualSessionActive,
-  onStartManual,
+  onOpenForm,
   onStopManual,
   isAutoMode,
   currentSession,
@@ -42,6 +47,24 @@ export const ManualProductionPanel = ({
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                 <span className="text-xs font-bold text-green-600">SESSION ACTIVE</span>
               </div>
+              
+              {/* Session Info */}
+              {currentSession && (
+                <div className="space-y-1 text-[10px] mb-2">
+                  <div className="flex justify-between border-b border-green-500/30 pb-1">
+                    <span className="text-muted-foreground">Mutu:</span>
+                    <span className="font-bold">{currentSession.formData.mutuBeton}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-green-500/30 pb-1">
+                    <span className="text-muted-foreground">Slump:</span>
+                    <span className="font-bold">{currentSession.formData.slump} cm</span>
+                  </div>
+                  <div className="flex justify-between border-b border-green-500/30 pb-1 mb-2">
+                    <span className="text-muted-foreground">Silo:</span>
+                    <span className="font-bold">Silo {currentSession.formData.selectedSilo}</span>
+                  </div>
+                </div>
+              )}
               
               {/* Current Totals */}
               {currentSession && (
@@ -82,7 +105,7 @@ export const ManualProductionPanel = ({
             </div>
 
             <Button
-              onClick={onStartManual}
+              onClick={onOpenForm}
               className="w-full bg-green-600 hover:bg-green-700 text-white gap-2"
               size="sm"
             >
