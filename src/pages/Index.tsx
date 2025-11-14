@@ -638,7 +638,7 @@ const Index = () => {
         lokasiProyek: finalSession.formData.lokasiProyek,
         mutuBeton: finalSession.formData.mutuBeton,
         slump: finalSession.formData.slump,
-        volume: '-',
+        volume: finalSession.formData.targetProduksi || '-',
         namaSopir: finalSession.formData.namaSopir,
         nomorMobil: finalSession.formData.nomorMobil,
         nomorLambung: '-',
@@ -688,25 +688,27 @@ const Index = () => {
           BATCHING PLANT CONTROL SYSTEM
         </h1>
         <div className="flex-1 flex justify-end items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setSiloFillOpen(true)}
+            className="gap-2"
+          >
+            <Package className="w-4 h-4" />
+            Isi Silo
+          </Button>
+          
+          {bpNaming.inisialBP && bpNaming.nomorBP && (
+            <span className="text-sm font-semibold text-white/90 px-3 py-1 bg-primary/20 rounded-md border border-primary/30">
+              {bpNaming.inisialBP}-{bpNaming.nomorBP}
+            </span>
+          )}
+          
           {user ? (
             <>
               <span className="text-sm">
                 {user.name}
               </span>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setSiloFillOpen(true)}
-                className="gap-2"
-              >
-                <Package className="w-4 h-4" />
-                Isi Silo
-              </Button>
-              {bpNaming.inisialBP && bpNaming.nomorBP && (
-                <span className="text-sm font-semibold text-white/90 px-3 py-1 bg-primary/20 rounded-md border border-primary/30">
-                  {bpNaming.inisialBP}-{bpNaming.nomorBP}
-                </span>
-              )}
               {isAdmin() && (
                 <Button
                   size="sm"
@@ -727,25 +729,14 @@ const Index = () => {
               </Button>
             </>
           ) : (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSiloFillOpen(true)}
-                className="gap-2"
-              >
-                <Package className="w-4 h-4" />
-                Isi Silo
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => setLoginOpen(true)}
-                className="gap-2"
-              >
-                <LogIn className="w-4 h-4" />
-                Login Admin
-              </Button>
-            </>
+            <Button
+              size="sm"
+              onClick={() => setLoginOpen(true)}
+              className="gap-2"
+            >
+              <LogIn className="w-4 h-4" />
+              Login Admin
+            </Button>
           )}
         </div>
       </header>
