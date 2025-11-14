@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -47,14 +48,20 @@ export function ManualFormDialog({ open, onOpenChange, onStart, silos }: ManualF
   useEffect(() => {
     if (open) {
       const savedFormulas = localStorage.getItem('job_mix_formulas');
+      console.log('📋 Loading JMF from localStorage:', savedFormulas);
+      
       if (savedFormulas) {
         try {
           const formulas = JSON.parse(savedFormulas);
+          console.log('📋 Parsed JMF formulas:', formulas);
           setJmfOptions(formulas);
         } catch (error) {
-          console.error('Error loading JMF data:', error);
+          console.error('❌ Error loading JMF data:', error);
           setJmfOptions([]);
         }
+      } else {
+        console.log('⚠️ No JMF formulas found in localStorage');
+        setJmfOptions([]);
       }
 
       // Load last selected silo
@@ -98,6 +105,9 @@ export function ManualFormDialog({ open, onOpenChange, onStart, silos }: ManualF
       <DialogContent className="max-w-md bg-background">
         <DialogHeader>
           <DialogTitle className="text-lg font-bold">FORM PRODUKSI MANUAL</DialogTitle>
+          <DialogDescription className="text-xs text-muted-foreground">
+            Isi data produksi manual sebelum memulai
+          </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="max-h-[500px] pr-4">
@@ -130,12 +140,12 @@ export function ManualFormDialog({ open, onOpenChange, onStart, silos }: ManualF
             <div>
               <Label htmlFor="mutu" className="text-xs">Mutu Beton *</Label>
               <Select value={mutuBeton} onValueChange={setMutuBeton}>
-                <SelectTrigger className="h-8 text-sm">
+                <SelectTrigger className="h-8 text-sm bg-background">
                   <SelectValue placeholder="Pilih mutu beton" />
                 </SelectTrigger>
-                <SelectContent className="bg-background z-50">
+                <SelectContent className="bg-background border border-border z-[100] max-h-[300px]">
                   {jmfOptions.length === 0 ? (
-                    <SelectItem value="none" disabled>Tidak ada JMF</SelectItem>
+                    <SelectItem value="none" disabled>Tidak ada JMF tersimpan</SelectItem>
                   ) : (
                     jmfOptions.map((jmf) => (
                       <SelectItem key={jmf.id} value={jmf.name}>
@@ -145,6 +155,11 @@ export function ManualFormDialog({ open, onOpenChange, onStart, silos }: ManualF
                   )}
                 </SelectContent>
               </Select>
+              {jmfOptions.length > 0 && (
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  {jmfOptions.length} formula tersedia
+                </p>
+              )}
             </div>
 
             {/* Slump */}
