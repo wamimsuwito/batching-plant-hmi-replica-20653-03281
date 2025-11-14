@@ -10,6 +10,7 @@ interface ManualProductionPanelProps {
     formData: {
       mutuBeton: string;
       slump: string;
+      targetProduksi: string;
       selectedSilo: string;
     };
     materials: {
@@ -54,6 +55,10 @@ export const ManualProductionPanel = ({
                   <div className="flex justify-between border-b border-green-500/30 pb-1">
                     <span className="text-muted-foreground">Mutu:</span>
                     <span className="font-bold">{currentSession.formData.mutuBeton}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-green-500/30 pb-1">
+                    <span className="text-muted-foreground">Target:</span>
+                    <span className="font-bold">{currentSession.formData.targetProduksi} m³</span>
                   </div>
                   <div className="flex justify-between border-b border-green-500/30 pb-1">
                     <span className="text-muted-foreground">Slump:</span>

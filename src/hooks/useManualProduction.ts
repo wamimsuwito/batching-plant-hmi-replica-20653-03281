@@ -22,6 +22,7 @@ export interface ManualProductionSession {
     lokasiProyek: string;
     mutuBeton: string;
     slump: string;
+    targetProduksi: string;
     selectedSilo: string;
     namaSopir: string;
     nomorMobil: string;
