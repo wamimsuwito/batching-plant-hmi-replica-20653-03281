@@ -150,8 +150,8 @@ export function ManualFormDialog({ open, onOpenChange, onStart, silos }: ManualF
                     <SelectItem value="none" disabled>Tidak ada JMF tersimpan</SelectItem>
                   ) : (
                     jmfOptions.map((jmf) => (
-                      <SelectItem key={jmf.id} value={jmf.name}>
-                        {jmf.name}
+                      <SelectItem key={jmf.id} value={jmf.mutuBeton}>
+                        {jmf.mutuBeton}
                       </SelectItem>
                     ))
                   )}
