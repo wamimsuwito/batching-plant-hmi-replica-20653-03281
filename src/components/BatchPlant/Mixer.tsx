@@ -572,7 +572,7 @@ export const Mixer = ({
             className="fill-white text-[21px] font-semibold"
             textAnchor="middle"
           >
-            {currentMixing} Dari {totalMixing}
+            Mix {currentMixing} Dari {totalMixing}
           </text>
           
           {/* Indicator dot - animate only when active - ENLARGED 50% */}
