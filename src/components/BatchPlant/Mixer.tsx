@@ -39,8 +39,8 @@ export const Mixer = ({
       ? ((totalMixingTime - mixingTimeRemaining) / totalMixingTime) * 100 
       : 0;
   
-  // Circle parameters for progress ring - ENLARGED
-  const radius = 35;
+  // Circle parameters for progress ring - ENLARGED 50%
+  const radius = 52;
   const circumference = 2 * Math.PI * radius;
   // Different strokeDashoffset calculation for door mode (counter-clockwise)
   const strokeDashoffset = isDoorMode
@@ -487,46 +487,46 @@ export const Mixer = ({
       {/* Circular timer display - ALWAYS VISIBLE - ENLARGED */}
       {(
         <g transform="translate(584, 175)">
-          {/* Background box - ENLARGED */}
+          {/* Background box - ENLARGED 50% */}
           <rect
-            x="-55"
-            y="-65"
-            width="110"
-            height="130"
-            rx="8"
+            x="-82"
+            y="-97"
+            width="165"
+            height="195"
+            rx="12"
             className="fill-slate-900/90 stroke-cyan-500"
-            strokeWidth="2"
+            strokeWidth="3"
             style={{
               filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5))'
             }}
           />
           
-          {/* Background circle - ENLARGED */}
+          {/* Background circle - ENLARGED 50% */}
           <circle
             cx="0"
             cy="0"
             r={radius}
             className="fill-slate-800/90 stroke-cyan-500"
-            strokeWidth="3"
+            strokeWidth="4"
           />
           
-          {/* Progress ring background - ENLARGED */}
+          {/* Progress ring background - ENLARGED 50% */}
           <circle
             cx="0"
             cy="0"
-            r={30}
+            r={45}
             className="fill-none stroke-slate-600"
-            strokeWidth="8"
+            strokeWidth="12"
             opacity="0.3"
           />
           
-          {/* Progress ring - ENLARGED */}
+          {/* Progress ring - ENLARGED 50% */}
           <circle
             cx="0"
             cy="0"
-            r={30}
+            r={45}
             className={isDoorMode ? "fill-none stroke-red-500" : "fill-none stroke-cyan-500"}
-            strokeWidth="8"
+            strokeWidth="12"
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
@@ -535,52 +535,52 @@ export const Mixer = ({
               transition: (isTimerActive || isDoorMode) ? 'stroke-dashoffset 1s linear' : 'none',
               filter: (isTimerActive || isDoorMode) 
                 ? isDoorMode 
-                  ? 'drop-shadow(0 0 8px rgba(239, 68, 68, 0.6))' 
-                  : 'drop-shadow(0 0 8px rgba(6, 182, 212, 0.6))' 
+                  ? 'drop-shadow(0 0 12px rgba(239, 68, 68, 0.6))' 
+                  : 'drop-shadow(0 0 12px rgba(6, 182, 212, 0.6))' 
                 : 'none'
             }}
           />
           
-          {/* Timer countdown number - ENLARGED */}
+          {/* Timer countdown number - ENLARGED 50% */}
           <text
             x="0"
-            y="15"
-            className="fill-white text-5xl font-bold"
+            y="22"
+            className="fill-white text-7xl font-bold"
             textAnchor="middle"
             style={{ 
-              textShadow: '0 0 10px rgba(0,0,0,0.9)',
+              textShadow: '0 0 15px rgba(0,0,0,0.9)',
               fontFamily: 'monospace'
             }}
           >
             {isDoorMode ? doorTimeRemaining : (isTimerActive ? mixingTimeRemaining : 0)}
           </text>
           
-          {/* Label above circle - ENLARGED */}
+          {/* Label above circle - ENLARGED 50% */}
           <text
             x="0"
-            y="-42"
-            className={isDoorMode ? "fill-red-400 text-[12px] font-semibold" : "fill-white text-[12px] font-semibold"}
+            y="-63"
+            className={isDoorMode ? "fill-red-400 text-[18px] font-semibold" : "fill-white text-[18px] font-semibold"}
             textAnchor="middle"
           >
             {isDoorMode ? "PINTU DUMPING" : "WAKTU MIXING"}
           </text>
           
-          {/* Mixing count below - ENLARGED + NEW FORMAT */}
+          {/* Mixing count below - ENLARGED 50% + NEW FORMAT */}
           <text
             x="0"
-            y="48"
-            className="fill-white text-[14px] font-semibold"
+            y="72"
+            className="fill-white text-[21px] font-semibold"
             textAnchor="middle"
           >
             {currentMixing} Dari {totalMixing}
           </text>
           
-          {/* Indicator dot - animate only when active */}
+          {/* Indicator dot - animate only when active - ENLARGED 50% */}
           {(isTimerActive || isDoorMode) && (
             <circle
-              cx="25"
-              cy="-5"
-              r="4"
+              cx="38"
+              cy="-8"
+              r="6"
               className={isDoorMode ? "fill-red-400" : "fill-yellow-400"}
             >
               <animateTransform
