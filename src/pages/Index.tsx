@@ -530,7 +530,14 @@ const Index = () => {
     
     // ✅ FIX: Freeze display during mixer waiting to prevent flicker
     if (productionState.isWaitingForMixer) {
+      console.log('⏸️ Freezing weight display: isWaitingForMixer=true');
       return; // Don't update weights while waiting for mixer
+    }
+    
+    // ✅ FIX: Freeze display during mixing transition when next mixing is ready
+    if (productionState.currentStep === 'mixing' && productionState.nextMixingReady) {
+      console.log('⏸️ Freezing weight display: mixing transition phase (nextMixingReady=true)');
+      return; // Don't update weights during mixing transition to prevent flicker
     }
     
     // Clear existing timer
@@ -564,7 +571,7 @@ const Index = () => {
         clearTimeout(weightStabilizationTimer.current);
       }
     };
-  }, [productionState.currentWeights, stableWeights, productionState.isWaitingForMixer]);
+  }, [productionState.currentWeights, stableWeights, productionState.isWaitingForMixer, productionState.currentStep, productionState.nextMixingReady]);
 
   const handleStart = () => {
     if (isPaused) {
@@ -930,7 +937,7 @@ const Index = () => {
                   />
                   
                   {/* Angled Conveyor to mixer */}
-                  <ConveyorBelt x={320} y={713} width={180} angle={32} isRunning={isRunning} />
+                  <ConveyorBelt x={320} y={713} width={180} angle={32} isRunning={componentStates.beltBawah} />
                 </>
               )}
               
@@ -995,7 +1002,7 @@ const Index = () => {
                   <ConveyorBelt x={50} y={669} width={260} angle={0} isRunning={componentStates.beltBawah} />
 
                   {/* Conveyor Belt 2 - From bottom left, angled upward to mixer */}
-                  <ConveyorBelt x={320} y={713} width={180} angle={32} isRunning={isRunning} />
+                  <ConveyorBelt x={320} y={713} width={180} angle={32} isRunning={componentStates.beltBawah} />
                 </>
               )}
               
@@ -1056,7 +1063,7 @@ const Index = () => {
                   />
                   
                   {/* Angled Conveyor to mixer - SAME POSITION as other systems */}
-                  <ConveyorBelt x={320} y={713} width={180} angle={32} isRunning={isRunning} />
+                  <ConveyorBelt x={320} y={713} width={180} angle={32} isRunning={componentStates.beltBawah} />
                 </>
               )}
               
