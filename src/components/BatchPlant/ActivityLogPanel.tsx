@@ -12,10 +12,7 @@ export const ActivityLogPanel = ({ logs }: ActivityLogPanelProps) => {
   
   return (
     <div className="absolute bottom-2 left-2 w-[320px] h-[140px] bg-black/90 border-2 border-red-500 rounded-lg p-2 overflow-hidden shadow-lg">
-      <div className="text-red-500 font-bold text-base mb-1 border-b border-red-500 pb-0.5">
-        Activity Log
-      </div>
-      <div className="h-[calc(100%-28px)] flex flex-col-reverse gap-0.5">
+      <div className="h-full flex flex-col-reverse gap-0.5">
         {filledLogs.map((log, index) => (
           <div
             key={`log-${index}`}
