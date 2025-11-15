@@ -608,13 +608,7 @@ export const useProductionSequence = (
     
     addActivityLog('🚀 Starting production sequence');
     addActivityLog('🔄 Mixer ON');
-    
-    if (systemConfig === 1) {
-      console.log('🔄 SYSTEM 1: Belt Atas akan TETAP ON sampai klakson');
-      addActivityLog('🔄 Belt Atas ON (System 1: continuous)');
-    } else {
-      addActivityLog('🔄 Belt Atas ON');
-    }
+    addActivityLog('🔄 Belt Atas ON (akan OFF berbarengan dengan klakson)');
 
     // t=1s: Start weighing all materials
     const weighingTimer = setTimeout(() => {
@@ -2956,6 +2950,12 @@ export const useProductionSequence = (
         setComponentStates(prevComp => ({ ...prevComp, klakson: true }));
         addActivityLog(`📢 Klakson ON (${klaksonDuration}ms)`);
         
+        // Turn OFF Belt Atas BERSAMAAN dengan klakson ON (untuk SEMUA sistem)
+        console.log('🔴 Turning OFF Belt Atas (berbarengan dengan klakson ON)');
+        setComponentStates(prevComp => ({ ...prevComp, beltAtas: false }));
+        controlRelay('konveyor_atas', false);
+        addActivityLog('🔴 Belt Atas OFF (berbarengan dengan klakson)');
+        
         // Toast removed - silent operation
         
         const klaksonTimer = setTimeout(() => {
@@ -2965,18 +2965,6 @@ export const useProductionSequence = (
           addActivityLog('📢 Klakson OFF');
         }, klaksonDuration);
         addTimer(klaksonTimer);
-        
-        // System 1: Turn OFF belt atas - Get delay from settings
-        if (systemConfig === 1) {
-          const beltAtasDelay = Number(localStorage.getItem('belt_atas_delay') || '1000');
-          const beltOffTimer = setTimeout(() => {
-            console.log(`🔴 SYSTEM 1: Turning OFF Belt Atas (${beltAtasDelay}ms setelah klakson)`);
-            setComponentStates(prevComp => ({ ...prevComp, beltAtas: false }));
-            controlRelay('konveyor_atas', false);
-            addActivityLog(`🔴 Belt Atas OFF (${beltAtasDelay}ms setelah klakson)`);
-          }, beltAtasDelay);
-          addTimer(beltOffTimer);
-        }
         
         // Refill aggregate bins to 10000 kg after 2 seconds
         setTimeout(() => {
