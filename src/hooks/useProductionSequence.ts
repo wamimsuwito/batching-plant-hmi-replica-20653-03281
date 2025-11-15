@@ -599,9 +599,13 @@ export const useProductionSequence = (
 
     // t=0s: Mixer ON, Belt Atas ON (cement conveyor)
     // Belt Bawah (BELT-1) will start only when aggregate discharge begins
+    console.log('🔄 Setting componentStates: mixer=true, beltAtas=true');
     setComponentStates(prev => ({ ...prev, mixer: true, beltAtas: true }));
+    
+    console.log('🔌 Sending relay commands: mixer=ON, konveyor_atas=ON');
     controlRelay('mixer', true);
     controlRelay('konveyor_atas', true);
+    
     addActivityLog('🚀 Starting production sequence');
     addActivityLog('🔄 Mixer ON');
     

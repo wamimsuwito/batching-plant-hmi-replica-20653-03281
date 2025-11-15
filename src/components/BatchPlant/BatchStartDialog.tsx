@@ -119,6 +119,14 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
   }, [open]);
 
   const isFormValid = mutuBeton !== "" && volume !== "" && slump !== "" && selectedSilo !== "" && jumlahMixing !== "";
+  
+  // Helper to check which required fields are missing
+  const missingFields = [];
+  if (!mutuBeton) missingFields.push("Mutu Beton");
+  if (!volume) missingFields.push("Volume");
+  if (!slump) missingFields.push("Slump");
+  if (!selectedSilo) missingFields.push("Silo");
+  if (!jumlahMixing) missingFields.push("Jumlah Mixing");
 
   const handleStart = () => {
     if (!isFormValid) return;
@@ -174,6 +182,8 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
       selectedBins,
       mixingCount
     });
+    
+    console.log('🚀 CALLING startProduction - Belt Atas should turn ON immediately');
 
     // Start production with full config including form data
     onStart({
@@ -379,13 +389,18 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
           </div>
         </ScrollArea>
 
-        <div className="flex justify-end pt-4 border-t">
+        <div className="flex flex-col gap-2 pt-4 border-t">
+          {!isFormValid && missingFields.length > 0 && (
+            <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+              ⚠️ Lengkapi field berikut: <span className="font-semibold">{missingFields.join(", ")}</span>
+            </div>
+          )}
           <Button
             onClick={handleStart}
             disabled={!isFormValid}
             className="w-full sm:w-auto"
           >
-            Mulai
+            {isFormValid ? "Mulai Produksi" : `Lengkapi Form (${missingFields.length} field)`}
           </Button>
         </div>
       </DialogContent>
