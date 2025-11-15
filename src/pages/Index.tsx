@@ -842,14 +842,20 @@ const Index = () => {
         onStart={(config) => {
           // ✅ CRITICAL: Safety check - Block production if mode is "production" but controller not connected
           if (raspberryPi?.productionMode === 'production' && !raspberryPi?.isConnected) {
+            console.error('❌ BLOCKED: Cannot start production - Controller not connected in Production mode');
             toast({
               title: "❌ Tidak Dapat Memulai Produksi",
               description: "Mode Produksi memerlukan koneksi Autonics. Hubungkan controller atau switch ke Mode Simulasi di COM & Port Settings.",
               variant: "destructive",
+              duration: 8000, // Longer duration untuk visibility
             });
+            
+            // Close dialog agar user sadar ada masalah
+            setBatchStartOpen(false);
             return; // BLOCK production start
           }
           
+          console.log('✅ Safety check passed - Starting production');
           console.log('📝 Batch Config Saved:', {
             targetWeights: config.targetWeights,
             mutuBeton: config.mutuBeton,
