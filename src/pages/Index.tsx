@@ -948,7 +948,7 @@ const Index = () => {
 
       {/* Main HMI Panel */}
       <main className="flex-1 p-4">
-        <div className="w-full h-[calc(100vh-80px)] border-4 border-hmi-border bg-hmi-panel relative">
+        <div className="w-full h-[calc(100vh-100px)] border-4 border-hmi-border bg-hmi-panel relative overflow-hidden">
           {/* Activity Log Panel - BOTTOM LEFT (dikembalikan) */}
           <ActivityLogPanel logs={productionState.activityLog} />
           
@@ -1491,7 +1491,7 @@ const Index = () => {
           </div>
           
           {/* Material Weight Indicators - Horizontal on Top Left - ENLARGED & STANDARDIZED */}
-          <div className="absolute top-4 left-4 flex flex-row gap-6"> {/* Naik 3cm: top-16 → top-4 */}
+          <div className="absolute top-2 left-2 flex flex-row gap-6"> {/* Adjusted positioning to prevent clipping */}
             {systemConfig === 1 ? (
               <>
                 {/* SYSTEM 1: 3 Indikator - Aggregate (komulatif), Semen, Air */}
@@ -1682,7 +1682,7 @@ const Index = () => {
           </div>
 
           {/* Print Auto Toggle & Help Button - Bottom Right Corner */}
-          <div className="absolute bottom-4 right-4 flex items-center gap-3 z-50">
+          <div className="absolute bottom-2 right-2 flex items-center gap-3 z-50">
             {/* Print Auto Checkbox */}
             <div 
               onClick={() => setAutoPrintEnabled(!autoPrintEnabled)}
