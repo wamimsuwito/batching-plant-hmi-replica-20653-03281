@@ -11,12 +11,12 @@ export const ActivityLogPanel = ({ logs }: ActivityLogPanelProps) => {
   }
   
   return (
-    <div className="absolute bottom-4 left-4 w-[280px] h-[200px] bg-black/90 border-2 border-red-500 rounded-lg p-2 overflow-hidden shadow-lg">
+    <div className="absolute bottom-4 left-4 w-[168px] h-[120px] bg-black/90 border-2 border-red-500 rounded-lg p-2 overflow-hidden shadow-lg">
       <div className="h-full flex flex-col-reverse gap-0.5">
         {filledLogs.map((log, index) => (
           <div
             key={`log-${index}`}
-            className="text-green-400 text-xs font-mono min-h-[20px]"
+            className="text-green-400 text-[10px] font-mono min-h-[12px]"
             style={{
               opacity: log ? 1 : 0, // Full opacity for logs, invisible for empty rows
             }}
