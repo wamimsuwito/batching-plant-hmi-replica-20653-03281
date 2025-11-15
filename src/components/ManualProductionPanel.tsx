@@ -14,8 +14,10 @@ interface ManualProductionPanelProps {
       selectedSilo: string;
     };
     materials: {
-      pasir: { totalDischarged: number };
-      batu: { totalDischarged: number };
+      pasir1: { totalDischarged: number };
+      pasir2: { totalDischarged: number };
+      batu1: { totalDischarged: number };
+      batu2: { totalDischarged: number };
       semen: { totalDischarged: number };
       air: { totalDischarged: number };
     };
@@ -73,14 +75,22 @@ export const ManualProductionPanel = ({
               
               {/* Current Totals */}
               {currentSession && (
-                <div className="space-y-1 text-[10px]">
+                <div className="grid grid-cols-2 gap-1 text-[10px]">
                   <div className="flex justify-between">
-                    <span>Pasir:</span>
-                    <span className="font-bold">{currentSession.materials.pasir.totalDischarged.toFixed(0)} kg</span>
+                    <span>Pasir 1:</span>
+                    <span className="font-bold">{currentSession.materials.pasir1.totalDischarged.toFixed(0)} kg</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Batu:</span>
-                    <span className="font-bold">{currentSession.materials.batu.totalDischarged.toFixed(0)} kg</span>
+                    <span>Pasir 2:</span>
+                    <span className="font-bold">{currentSession.materials.pasir2.totalDischarged.toFixed(0)} kg</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Batu 1:</span>
+                    <span className="font-bold">{currentSession.materials.batu1.totalDischarged.toFixed(0)} kg</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Batu 2:</span>
+                    <span className="font-bold">{currentSession.materials.batu2.totalDischarged.toFixed(0)} kg</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Semen:</span>

@@ -5,12 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Printer, Eye } from 'lucide-react';
 import farikaLogo from '@/assets/farika-logo.png';
+import { AggregateNoteDialog } from '@/components/BatchPlant/AggregateNoteDialog';
 
 export interface TicketData {
   id?: string;
   jobOrder: string;
-  productionType?: 'AUTO' | 'MANUAL'; // Production type indicator
-  serialNumber?: string; // ✅ NEW: Serial number for tracking
+  productionType?: 'AUTO' | 'MANUAL';
+  serialNumber?: string;
   nomorPO: string;
   tanggal: string;
   jamMulai: string;
@@ -26,10 +27,20 @@ export interface TicketData {
   nomorRitasi: string;
   totalVolume: string;
   materials: {
-    pasir: { target: number; realisasi: number; deviasi: number };
-    batu: { target: number; realisasi: number; deviasi: number };
+    pasir1?: { target: number; realisasi: number; deviasi: number };
+    pasir2?: { target: number; realisasi: number; deviasi: number };
+    batu1?: { target: number; realisasi: number; deviasi: number };
+    batu2?: { target: number; realisasi: number; deviasi: number };
+    pasir?: { target: number; realisasi: number; deviasi: number };
+    batu?: { target: number; realisasi: number; deviasi: number };
     semen: { target: number; realisasi: number; deviasi: number };
     air: { target: number; realisasi: number; deviasi: number };
+  };
+  aggregateNote?: {
+    pasir1?: string;
+    pasir2?: string;
+    batu1?: string;
+    batu2?: string;
   };
 }
 
@@ -37,11 +48,20 @@ interface PrintTicketDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   ticketData: TicketData;
+  onUpdateAggregateNote?: (notes: TicketData['aggregateNote']) => void;
 }
 
-export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicketDialogProps) {
+export function PrintTicketDialog({ open, onOpenChange, ticketData, onUpdateAggregateNote }: PrintTicketDialogProps) {
+  const [showAggregateNote, setShowAggregateNote] = useState(false);
+
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleSaveAggregateNote = (notes: TicketData['aggregateNote']) => {
+    if (onUpdateAggregateNote) {
+      onUpdateAggregateNote(notes);
+    }
   };
 
   return (
@@ -118,30 +138,135 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td className="border-[2.5px] border-black p-1.5 print:p-1 font-semibold">Pasir</td>
-                  {ticketData.productionType !== 'MANUAL' && (
-                    <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.pasir.target}</td>
-                  )}
-                  <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.pasir.realisasi}</td>
-                  {ticketData.productionType !== 'MANUAL' && (
-                    <td className={`border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.pasir.deviasi < 0 ? 'text-red-600' : ''}`}>
-                      {ticketData.materials.pasir.deviasi > 0 ? '+' : ''}{ticketData.materials.pasir.deviasi}
+                {/* Pasir 1 */}
+                {ticketData.materials.pasir1 && (
+                  <tr>
+                    <td className="border-[2.5px] border-black p-1.5 print:p-1 font-semibold">
+                      Pasir 1
+                      {ticketData.aggregateNote?.pasir1 && (
+                        <div className="text-xs text-gray-600 italic">({ticketData.aggregateNote.pasir1})</div>
+                      )}
                     </td>
-                  )}
-                </tr>
-                <tr>
-                  <td className="border-[2.5px] border-black p-1.5 print:p-1 font-semibold">Batu</td>
-                  {ticketData.productionType !== 'MANUAL' && (
-                    <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.batu.target}</td>
-                  )}
-                  <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.batu.realisasi}</td>
-                  {ticketData.productionType !== 'MANUAL' && (
-                    <td className={`border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.batu.deviasi < 0 ? 'text-red-600' : ''}`}>
-                      {ticketData.materials.batu.deviasi > 0 ? '+' : ''}{ticketData.materials.batu.deviasi}
+                    <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">
+                      {ticketData.materials.pasir1.target.toFixed(0)}
                     </td>
-                  )}
-                </tr>
+                    <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">
+                      {ticketData.materials.pasir1.realisasi.toFixed(0)}
+                    </td>
+                    <td className={`border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold ${
+                      ticketData.materials.pasir1.deviasi < 0 ? 'text-red-600' : 
+                      ticketData.materials.pasir1.deviasi > 0 ? 'text-green-600' : ''
+                    }`}>
+                      {ticketData.materials.pasir1.deviasi > 0 ? '+' : ''}{ticketData.materials.pasir1.deviasi.toFixed(0)}
+                    </td>
+                  </tr>
+                )}
+
+                {/* Pasir 2 */}
+                {ticketData.materials.pasir2 && (
+                  <tr>
+                    <td className="border-[2.5px] border-black p-1.5 print:p-1 font-semibold">
+                      Pasir 2
+                      {ticketData.aggregateNote?.pasir2 && (
+                        <div className="text-xs text-gray-600 italic">({ticketData.aggregateNote.pasir2})</div>
+                      )}
+                    </td>
+                    <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">
+                      {ticketData.materials.pasir2.target.toFixed(0)}
+                    </td>
+                    <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">
+                      {ticketData.materials.pasir2.realisasi.toFixed(0)}
+                    </td>
+                    <td className={`border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold ${
+                      ticketData.materials.pasir2.deviasi < 0 ? 'text-red-600' : 
+                      ticketData.materials.pasir2.deviasi > 0 ? 'text-green-600' : ''
+                    }`}>
+                      {ticketData.materials.pasir2.deviasi > 0 ? '+' : ''}{ticketData.materials.pasir2.deviasi.toFixed(0)}
+                    </td>
+                  </tr>
+                )}
+
+                {/* Batu 1 */}
+                {ticketData.materials.batu1 && (
+                  <tr>
+                    <td className="border-[2.5px] border-black p-1.5 print:p-1 font-semibold">
+                      Batu 1
+                      {ticketData.aggregateNote?.batu1 && (
+                        <div className="text-xs text-gray-600 italic">({ticketData.aggregateNote.batu1})</div>
+                      )}
+                    </td>
+                    <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">
+                      {ticketData.materials.batu1.target.toFixed(0)}
+                    </td>
+                    <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">
+                      {ticketData.materials.batu1.realisasi.toFixed(0)}
+                    </td>
+                    <td className={`border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold ${
+                      ticketData.materials.batu1.deviasi < 0 ? 'text-red-600' : 
+                      ticketData.materials.batu1.deviasi > 0 ? 'text-green-600' : ''
+                    }`}>
+                      {ticketData.materials.batu1.deviasi > 0 ? '+' : ''}{ticketData.materials.batu1.deviasi.toFixed(0)}
+                    </td>
+                  </tr>
+                )}
+
+                {/* Batu 2 */}
+                {ticketData.materials.batu2 && (
+                  <tr>
+                    <td className="border-[2.5px] border-black p-1.5 print:p-1 font-semibold">
+                      Batu 2
+                      {ticketData.aggregateNote?.batu2 && (
+                        <div className="text-xs text-gray-600 italic">({ticketData.aggregateNote.batu2})</div>
+                      )}
+                    </td>
+                    <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">
+                      {ticketData.materials.batu2.target.toFixed(0)}
+                    </td>
+                    <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">
+                      {ticketData.materials.batu2.realisasi.toFixed(0)}
+                    </td>
+                    <td className={`border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold ${
+                      ticketData.materials.batu2.deviasi < 0 ? 'text-red-600' : 
+                      ticketData.materials.batu2.deviasi > 0 ? 'text-green-600' : ''
+                    }`}>
+                      {ticketData.materials.batu2.deviasi > 0 ? '+' : ''}{ticketData.materials.batu2.deviasi.toFixed(0)}
+                    </td>
+                  </tr>
+                )}
+
+                {/* Legacy Pasir (for AUTO mode) */}
+                {ticketData.materials.pasir && (
+                  <tr>
+                    <td className="border-[2.5px] border-black p-1.5 print:p-1 font-semibold">Pasir</td>
+                    {ticketData.productionType !== 'MANUAL' && (
+                      <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.pasir.target}</td>
+                    )}
+                    <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.pasir.realisasi}</td>
+                    {ticketData.productionType !== 'MANUAL' && (
+                      <td className={`border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.pasir.deviasi < 0 ? 'text-red-600' : ''}`}>
+                        {ticketData.materials.pasir.deviasi > 0 ? '+' : ''}{ticketData.materials.pasir.deviasi}
+                      </td>
+                    )}
+                  </tr>
+                )}
+
+                {/* Legacy Batu (for AUTO mode) */}
+                {ticketData.materials.batu && (
+                  <tr>
+                    <td className="border-[2.5px] border-black p-1.5 print:p-1 font-semibold">Batu</td>
+                    {ticketData.productionType !== 'MANUAL' && (
+                      <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.batu.target}</td>
+                    )}
+                    <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.batu.realisasi}</td>
+                    {ticketData.productionType !== 'MANUAL' && (
+                      <td className={`border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.batu.deviasi < 0 ? 'text-red-600' : ''}`}>
+                        {ticketData.materials.batu.deviasi > 0 ? '+' : ''}{ticketData.materials.batu.deviasi}
+                      </td>
+                    )}
+                  </tr>
+                )}
+
+                {/* Semen */}
                 <tr>
                   <td className="border-[2.5px] border-black p-1.5 print:p-1 font-semibold">Semen</td>
                   {ticketData.productionType !== 'MANUAL' && (
@@ -154,6 +279,8 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
                     </td>
                   )}
                 </tr>
+
+                {/* Air */}
                 <tr>
                   <td className="border-[2.5px] border-black p-1.5 print:p-1 font-semibold">Air</td>
                   {ticketData.productionType !== 'MANUAL' && (
@@ -200,6 +327,11 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
 
           {/* Print Button - Hidden when printing */}
           <div className="mt-4 flex justify-center gap-2 print:hidden">
+            {ticketData.productionType === 'MANUAL' && (
+              <Button variant="outline" onClick={() => setShowAggregateNote(true)}>
+                Query Aggregate
+              </Button>
+            )}
             <Button onClick={handlePrint} className="gap-2">
               <Printer className="w-4 h-4" />
               Print Tiket
@@ -210,6 +342,14 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
           </div>
         </div>
       </DialogContent>
+
+      {/* Aggregate Note Dialog */}
+      <AggregateNoteDialog
+        open={showAggregateNote}
+        onOpenChange={setShowAggregateNote}
+        currentNotes={ticketData.aggregateNote}
+        onSave={handleSaveAggregateNote}
+      />
     </Dialog>
   );
 }
