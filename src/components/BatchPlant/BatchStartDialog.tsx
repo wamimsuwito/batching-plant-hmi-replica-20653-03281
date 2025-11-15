@@ -134,6 +134,7 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
     // Get selected JMF data
     const selectedFormula = jmfOptions.find((f: any) => f.mutuBeton === mutuBeton);
     if (!selectedFormula) {
+      console.error('❌ Formula tidak ditemukan untuk mutu:', mutuBeton);
       toast({
         title: "Error",
         description: "Formula tidak ditemukan",
