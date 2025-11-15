@@ -1506,21 +1506,6 @@ const Index = () => {
               </button>
             </div>
             
-            {/* Quarry Aggregate Button - Only in Manual Mode */}
-            {!isAutoMode && (
-              <button
-                onClick={() => setAggregateNoteDialogOpen(true)}
-                className="w-32 h-16 border-4 rounded-lg transition-all shadow-lg flex flex-col items-center justify-center gap-1 bg-blue-600 border-blue-800 hover:bg-blue-700"
-              >
-                <div className="text-white text-xs font-bold">
-                  QUARRY
-                </div>
-                <div className="text-white text-xs font-bold">
-                  AGGREGATE
-                </div>
-              </button>
-            )}
-            
             {/* Auto/Manual Button */}
             <button
               onClick={() => setIsAutoMode(!isAutoMode)}
@@ -1735,6 +1720,54 @@ const Index = () => {
               </>
             )}
           </div>
+
+          {/* Stok Semen Silo Display - Positioned above Quarry Aggregate button */}
+          <div className="absolute bottom-[136px] right-2 bg-black/80 backdrop-blur-sm border-2 border-blue-500/70 rounded-lg p-4 shadow-xl z-40 min-w-[300px]">
+            {/* Header */}
+            <div className="text-blue-300 font-bold text-base mb-3 text-center border-b border-blue-500/50 pb-2">
+              STOK SEMEN SILO
+            </div>
+            
+            {/* Silo Stock Grid - 2 rows x 3 columns */}
+            <div className="grid grid-cols-3 gap-3">
+              {silos.map((silo) => (
+                <div 
+                  key={silo.id}
+                  className="flex flex-col items-center justify-center bg-gray-800/60 border border-blue-400/40 rounded-md px-3 py-2 min-w-[90px]"
+                >
+                  {/* Silo Label */}
+                  <div className="text-blue-200 text-xs font-semibold mb-1">
+                    SILO {silo.id}
+                  </div>
+                  {/* Silo Volume in Tons */}
+                  <div className="text-green-300 text-lg font-bold tabular-nums">
+                    {(silo.currentVolume / 1000).toFixed(2)} T
+                  </div>
+                  {/* Percentage Indicator */}
+                  <div className={`text-[10px] mt-0.5 ${
+                    (silo.currentVolume / silo.capacity) * 100 < 20 
+                      ? 'text-red-400' 
+                      : 'text-gray-400'
+                  }`}>
+                    {((silo.currentVolume / silo.capacity) * 100).toFixed(0)}%
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Quarry Aggregate Button - Positioned above Print button - Shows in both Manual and Auto modes */}
+          <button
+            onClick={() => setAggregateNoteDialogOpen(true)}
+            className="absolute bottom-[60px] right-2 w-32 h-16 border-4 rounded-lg transition-all shadow-lg flex flex-col items-center justify-center gap-1 bg-blue-600 border-blue-800 hover:bg-blue-700 z-40"
+          >
+            <div className="text-white text-xs font-bold">
+              QUARRY
+            </div>
+            <div className="text-white text-xs font-bold">
+              AGGREGATE
+            </div>
+          </button>
 
           {/* Print Auto Toggle & Help Button - Bottom Right Corner */}
           <div className="absolute bottom-2 right-2 flex items-center gap-3 z-50">

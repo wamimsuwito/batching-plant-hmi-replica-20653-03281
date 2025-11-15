@@ -82,16 +82,6 @@ export const CementSilo = ({
         className="fill-equipment-conveyor stroke-hmi-border"
         strokeWidth="1"
       />
-      {/* Ton display inside silo */}
-      <text
-        x="20"
-        y="80"
-        textAnchor="middle"
-        className="fill-white text-base font-bold"
-        style={{ textShadow: '0 0 3px rgba(0,0,0,0.8)' }}
-      >
-        {(currentVolume / 1000).toFixed(2)} T
-      </text>
       
       {/* Label */}
       {label && (
