@@ -2945,11 +2945,12 @@ export const useProductionSequence = (
           console.error('❌ Error saving production record:', error);
         }
         
-        // AKTIVASI KLAKSON - 1500ms
-        console.log('📢 Turning ON klakson (horn) - production complete');
+        // AKTIVASI KLAKSON - Get duration from settings
+        const klaksonDuration = Number(localStorage.getItem('klakson_duration') || '1500');
+        console.log(`📢 Turning ON klakson (horn) - production complete - duration: ${klaksonDuration}ms`);
         controlRelay('klakson', true);
         setComponentStates(prevComp => ({ ...prevComp, klakson: true }));
-        addActivityLog('📢 Klakson ON (production selesai)');
+        addActivityLog(`📢 Klakson ON (${klaksonDuration}ms)`);
         
         // Toast removed - silent operation
         
@@ -2958,17 +2959,18 @@ export const useProductionSequence = (
           controlRelay('klakson', false);
           setComponentStates(prevComp => ({ ...prevComp, klakson: false }));
           addActivityLog('📢 Klakson OFF');
-        }, 1500); // 1500ms
+        }, klaksonDuration);
         addTimer(klaksonTimer);
         
-        // System 1: Turn OFF belt atas 1 detik setelah klakson mulai berbunyi
+        // System 1: Turn OFF belt atas - Get delay from settings
         if (systemConfig === 1) {
+          const beltAtasDelay = Number(localStorage.getItem('belt_atas_delay') || '1000');
           const beltOffTimer = setTimeout(() => {
-            console.log('🔴 SYSTEM 1: Turning OFF Belt Atas (1 detik setelah klakson)');
+            console.log(`🔴 SYSTEM 1: Turning OFF Belt Atas (${beltAtasDelay}ms setelah klakson)`);
             setComponentStates(prevComp => ({ ...prevComp, beltAtas: false }));
             controlRelay('konveyor_atas', false);
-            addActivityLog('🔴 Belt Atas OFF (1 detik setelah klakson)');
-          }, 1000); // 1 detik setelah klakson ON (klakson masih bunyi)
+            addActivityLog(`🔴 Belt Atas OFF (${beltAtasDelay}ms setelah klakson)`);
+          }, beltAtasDelay);
           addTimer(beltOffTimer);
         }
         

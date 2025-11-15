@@ -4,6 +4,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Settings() {
@@ -15,6 +16,16 @@ export default function Settings() {
   const [selectedAccessories, setSelectedAccessories] = useState<string[]>(() => {
     const saved = localStorage.getItem('batch_plant_accessories');
     return saved ? JSON.parse(saved) : []; // Default: no accessories
+  });
+  
+  const [klaksonDuration, setKlaksonDuration] = useState(() => {
+    const saved = localStorage.getItem('klakson_duration');
+    return saved || '1500'; // Default: 1500ms
+  });
+  
+  const [beltAtasDelay, setBeltAtasDelay] = useState(() => {
+    const saved = localStorage.getItem('belt_atas_delay');
+    return saved || '1000'; // Default: 1000ms
   });
   
   const { toast } = useToast();
@@ -44,10 +55,12 @@ export default function Settings() {
       
       localStorage.setItem('batch_plant_system', selectedSystem);
       localStorage.setItem('batch_plant_accessories', JSON.stringify(selectedAccessories));
+      localStorage.setItem('klakson_duration', klaksonDuration);
+      localStorage.setItem('belt_atas_delay', beltAtasDelay);
       
       toast({
         title: '✅ Berhasil',
-        description: 'Sistem batch plant telah disimpan. Refresh halaman untuk menerapkan perubahan.',
+        description: 'Pengaturan sistem dan timing telah disimpan.',
       });
     } catch (error) {
       console.error('Error saving settings:', error);
@@ -159,6 +172,62 @@ export default function Settings() {
                 {selectedSystem !== '1' && ' (Tidak tersedia - hanya untuk System 1)'}
               </div>
             </Label>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* TIMING SETTINGS */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Pengaturan Timing Produksi</CardTitle>
+          <CardDescription>Atur durasi klakson dan delay belt atas (System 1)</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-3">
+            <Label htmlFor="klakson-duration" className="text-base font-medium">
+              Durasi Klakson (ms)
+            </Label>
+            <div className="flex items-center gap-4">
+              <Input
+                id="klakson-duration"
+                type="number"
+                min="500"
+                max="10000"
+                step="100"
+                value={klaksonDuration}
+                onChange={(e) => setKlaksonDuration(e.target.value)}
+                className="max-w-[200px]"
+              />
+              <span className="text-sm text-muted-foreground">
+                Lama klakson berbunyi setelah produksi selesai ({(Number(klaksonDuration) / 1000).toFixed(1)} detik)
+              </span>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <Label htmlFor="belt-delay" className="text-base font-medium">
+              Delay Belt Atas OFF (ms) - System 1 Only
+            </Label>
+            <div className="flex items-center gap-4">
+              <Input
+                id="belt-delay"
+                type="number"
+                min="500"
+                max="10000"
+                step="100"
+                value={beltAtasDelay}
+                onChange={(e) => setBeltAtasDelay(e.target.value)}
+                className="max-w-[200px]"
+              />
+              <span className="text-sm text-muted-foreground">
+                Waktu tunggu setelah klakson mulai berbunyi sampai belt atas mati ({(Number(beltAtasDelay) / 1000).toFixed(1)} detik)
+              </span>
+            </div>
+            {selectedSystem !== '1' && (
+              <p className="text-sm text-yellow-600 dark:text-yellow-400">
+                ⚠️ Pengaturan ini hanya berlaku untuk System 1
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
