@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Printer, Eye } from 'lucide-react';
 import farikaLogo from '@/assets/farika-logo.png';
-import { AggregateNoteDialog } from '@/components/BatchPlant/AggregateNoteDialog';
 
 export interface TicketData {
   id?: string;
@@ -48,20 +47,11 @@ interface PrintTicketDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   ticketData: TicketData;
-  onUpdateAggregateNote?: (notes: TicketData['aggregateNote']) => void;
 }
 
-export function PrintTicketDialog({ open, onOpenChange, ticketData, onUpdateAggregateNote }: PrintTicketDialogProps) {
-  const [showAggregateNote, setShowAggregateNote] = useState(false);
-
+export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicketDialogProps) {
   const handlePrint = () => {
     window.print();
-  };
-
-  const handleSaveAggregateNote = (notes: TicketData['aggregateNote']) => {
-    if (onUpdateAggregateNote) {
-      onUpdateAggregateNote(notes);
-    }
   };
 
   return (
@@ -327,11 +317,6 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData, onUpdateAggr
 
           {/* Print Button - Hidden when printing */}
           <div className="mt-4 flex justify-center gap-2 print:hidden">
-            {ticketData.productionType === 'MANUAL' && (
-              <Button variant="outline" onClick={() => setShowAggregateNote(true)}>
-                Query Aggregate
-              </Button>
-            )}
             <Button onClick={handlePrint} className="gap-2">
               <Printer className="w-4 h-4" />
               Print Tiket
@@ -342,14 +327,6 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData, onUpdateAggr
           </div>
         </div>
       </DialogContent>
-
-      {/* Aggregate Note Dialog */}
-      <AggregateNoteDialog
-        open={showAggregateNote}
-        onOpenChange={setShowAggregateNote}
-        currentNotes={ticketData.aggregateNote}
-        onSave={handleSaveAggregateNote}
-      />
     </Dialog>
   );
 }
