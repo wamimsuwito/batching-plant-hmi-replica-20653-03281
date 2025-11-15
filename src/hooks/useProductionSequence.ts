@@ -215,6 +215,8 @@ export const useProductionSequence = (
   const isPausedRef = useRef(false);
   // Ref to avoid stale reads in async callbacks (race-safe gate)
   const isWaitingForMixerRef = useRef(false);
+  // ✅ Idempotency guard for discharge sequence
+  const isDischargingRef = useRef(false);
   // ✅ Cumulative weights tracker across all mixings
   const cumulativeActualWeights = useRef({ pasir: 0, batu: 0, semen: 0, air: 0 });
   const pausedStateSnapshot = useRef<{
@@ -537,6 +539,10 @@ export const useProductionSequence = (
     }
 
     clearAllTimers();
+    
+    // ✅ Enhanced logging untuk debugging
+    console.log(`🎯 ACTIVE SYSTEM: System ${systemConfig}`);
+    console.log(`📊 Multi-mixing: ${config.currentMixing}/${config.jumlahMixing}`);
     
     // ✅ SYSTEM 3: Initialize aggregate weights (SIMULATION MODE ONLY)
     if (systemConfig === 3 && raspberryPi?.productionMode !== 'production') {
@@ -1437,6 +1443,15 @@ export const useProductionSequence = (
       return;
     }
     
+    // ✅ Idempotency guard: prevent double discharge calls
+    if (isDischargingRef.current && !opts?.force) {
+      console.log('⚠️ Discharge already in progress - skipping duplicate call');
+      return;
+    }
+    
+    isDischargingRef.current = true;
+    console.log(`🔄 Starting discharge sequence for mixing ${productionState.currentMixing}/${productionState.jumlahMixing}`);
+    
     // Capture final weights BEFORE discharge starts
     setProductionState(prev => {
       finalSnapshotRef.current = {
@@ -1908,6 +1923,8 @@ export const useProductionSequence = (
             
             if (newCount >= prev.totalMaterialsToDischarge) {
               console.log(`🎯 All materials discharged! Starting weighing for next mixing in parallel`);
+              // ✅ Reset discharge guard
+              isDischargingRef.current = false;
               setTimeout(() => checkAndStartNextMixingWeighing(), 500);
             }
             
@@ -2209,6 +2226,8 @@ export const useProductionSequence = (
         setProductionState(prev => {
           if (prev.dischargedMaterialsCount >= prev.totalMaterialsToDischarge) {
             console.log(`🎯 All materials discharged! Starting weighing for next mixing in parallel`);
+            // ✅ Reset discharge guard
+            isDischargingRef.current = false;
             setTimeout(() => checkAndStartNextMixingWeighing(), 500);
           }
           return prev;
@@ -2354,6 +2373,8 @@ export const useProductionSequence = (
           // 🚀 If all materials discharged, start weighing for next mixing (PARALLEL)
           if (newCount >= prev.totalMaterialsToDischarge) {
             console.log(`🎯 All materials discharged! Starting weighing for next mixing in parallel`);
+            // ✅ Reset discharge guard
+            isDischargingRef.current = false;
             setTimeout(() => checkAndStartNextMixingWeighing(), 500);
           }
           
@@ -2432,6 +2453,8 @@ export const useProductionSequence = (
           // 🚀 If all materials discharged, start weighing for next mixing (PARALLEL)
           if (newCount >= prev.totalMaterialsToDischarge) {
             console.log(`🎯 All materials discharged! Starting weighing for next mixing in parallel`);
+            // ✅ Reset discharge guard
+            isDischargingRef.current = false;
             setTimeout(() => checkAndStartNextMixingWeighing(), 500);
           }
           
@@ -2504,6 +2527,8 @@ export const useProductionSequence = (
           // 🚀 If all materials discharged, start weighing for next mixing (PARALLEL)
           if (newCount >= prev.totalMaterialsToDischarge) {
             console.log(`🎯 All materials discharged! Starting weighing for next mixing in parallel`);
+            // ✅ Reset discharge guard
+            isDischargingRef.current = false;
             setTimeout(() => checkAndStartNextMixingWeighing(), 500);
           }
           
@@ -2693,14 +2718,15 @@ export const useProductionSequence = (
           
           // ✅ NEW: Add watchdog timer (60 seconds timeout)
           const watchdogTimer = setTimeout(() => {
-            console.error('⚠️ WATCHDOG: Weighing timeout detected after 60s!');
+            console.error(`⚠️ WATCHDOG: Weighing timeout detected after 60s at mixing ${currentMixing}/${jumlahMixing}!`);
             console.error('🔧 FORCING discharge to prevent stuck state');
             
             setProductionState(check => {
               if (check.currentStep === 'weighing' || check.isWaitingForMixer) {
-                console.error('🔧 Detected stuck in weighing or waiting state');
+                console.error(`🔧 Detected stuck in weighing or waiting state (mixing ${check.currentMixing}/${check.jumlahMixing})`);
                 // Force reset flags
                 isWaitingForMixerRef.current = false;
+                isDischargingRef.current = false;
                 
                 // Force discharge
                 if (lastConfigRef.current) {
@@ -2817,9 +2843,12 @@ export const useProductionSequence = (
           }, 1000);
           
           // Return updated state for next mixing
+          const newMixing = prev.currentMixing + 1;
+          console.log(`🔄 Moving to mixing ${newMixing}/${prev.jumlahMixing}`);
+          
           return {
             ...prev,
-            currentMixing: prev.currentMixing + 1,
+            currentMixing: newMixing,
             currentStep: 'discharging',
             dischargedMaterialsCount: 0, // Reset counter for next cycle
             isWaitingForMixer: false, // No longer waiting
@@ -2873,9 +2902,12 @@ export const useProductionSequence = (
           }, 1000);
           
           // Return updated state for next mixing
+          const newMixing = prev.currentMixing + 1;
+          console.log(`🔄 Moving to mixing ${newMixing}/${prev.jumlahMixing}`);
+          
           return {
             ...prev,
-            currentMixing: prev.currentMixing + 1,
+            currentMixing: newMixing,
             currentStep: 'weighing',
             dischargedMaterialsCount: 0, // Reset counter for next cycle
             weighingComplete: {

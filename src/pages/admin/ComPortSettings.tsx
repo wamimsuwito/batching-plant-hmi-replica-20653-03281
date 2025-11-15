@@ -90,6 +90,16 @@ export default function ComPortSettings() {
           <CardDescription>WebSocket connection ke controller untuk load cell dan relay</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Simulation mode banner */}
+          {productionMode === 'simulation' && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Mode Simulasi</strong> - Koneksi controller dinonaktifkan secara otomatis
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label className="text-sm text-muted-foreground">Status</Label>
@@ -106,10 +116,18 @@ export default function ComPortSettings() {
           </div>
 
           <div className="flex gap-2">
-            <Button onClick={reconnect} disabled={isConnected}>
+            <Button 
+              onClick={reconnect} 
+              variant="outline"
+              disabled={productionMode === 'simulation' || isConnected}
+            >
               Reconnect
             </Button>
-            <Button onClick={disconnect} variant="outline" disabled={!isConnected}>
+            <Button 
+              onClick={disconnect} 
+              variant="outline"
+              disabled={!isConnected}
+            >
               Disconnect
             </Button>
             <Button 

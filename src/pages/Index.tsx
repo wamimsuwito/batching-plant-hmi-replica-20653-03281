@@ -371,6 +371,18 @@ const Index = () => {
       return () => clearTimeout(timer);
     }
   }, [printTicketOpen, raspberryPi, relaySettings]);
+  
+  // Show simulation mode notification (once per session)
+  useEffect(() => {
+    const hasShownSimulationToast = sessionStorage.getItem('simulation_toast_shown');
+    if (raspberryPi?.productionMode === 'simulation' && !hasShownSimulationToast) {
+      toast({
+        title: "🎮 Mode Simulasi Aktif",
+        description: "Controller tidak terhubung (normal untuk simulasi)",
+      });
+      sessionStorage.setItem('simulation_toast_shown', 'true');
+    }
+  }, [raspberryPi?.productionMode, toast]);
 
   // Production sequence hook with Raspberry Pi integration and auto mode
   const { productionState, componentStates, productionStartTimestamp, productionEndTimestamp, systemConfig, accessories, startProduction, stopProduction, pauseProduction, resumeProduction } = useProductionSequence(

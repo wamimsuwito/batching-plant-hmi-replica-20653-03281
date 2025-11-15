@@ -61,6 +61,14 @@ export const useRaspberryPi = () => {
 
   const connect = useCallback(() => {
     try {
+      // ✅ Skip WebSocket connection in simulation mode
+      if (productionMode === 'simulation') {
+        console.log('🎮 Simulation Mode - WebSocket dinonaktifkan');
+        setIsConnected(false);
+        setCurrentWsUrl('');
+        return;
+      }
+      
       // WebSocket connection to Autonics controller (PC-based)
       // Read URL from localStorage or use default
       const savedUrl = localStorage.getItem('controller_ws_url');
@@ -134,9 +142,15 @@ export const useRaspberryPi = () => {
       console.error('Failed to create WebSocket:', error);
       setIsConnected(false);
     }
-  }, [toast]);
+  }, [toast, productionMode]);
 
   const sendRelayCommand = useCallback((relay: string, state: boolean, modbusCoil?: number) => {
+    if (productionMode === 'simulation') {
+      // ✅ Friendly log for simulation mode (no warning)
+      console.log(`🎮 Simulation Mode - relay command: ${relay} = ${state ? 'ON' : 'OFF'}`);
+      return;
+    }
+    
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       const command: RelayCommand = {
         type: 'relay_control',
@@ -150,7 +164,7 @@ export const useRaspberryPi = () => {
     } else {
       console.warn('⚠️ Controller not connected, command ignored:', relay, state);
     }
-  }, []);
+  }, [productionMode]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
@@ -164,15 +178,20 @@ export const useRaspberryPi = () => {
     setIsConnected(false);
   }, []);
 
-  // Auto-connect on mount
+  // Auto-connect on mount and when production mode changes
   useEffect(() => {
-    connect();
+    if (productionMode === 'production') {
+      connect();
+    } else {
+      // Simulation mode: disconnect and stop reconnect attempts
+      disconnect();
+    }
 
     // Cleanup on unmount
     return () => {
       disconnect();
     };
-  }, [connect, disconnect]);
+  }, [productionMode, connect, disconnect]);
 
   return {
     isConnected,
