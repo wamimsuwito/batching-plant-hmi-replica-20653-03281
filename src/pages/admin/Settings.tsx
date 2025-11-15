@@ -23,11 +23,6 @@ export default function Settings() {
     return saved || '1500'; // Default: 1500ms
   });
   
-  const [beltAtasDelay, setBeltAtasDelay] = useState(() => {
-    const saved = localStorage.getItem('belt_atas_delay');
-    return saved || '1000'; // Default: 1000ms
-  });
-  
   const { toast } = useToast();
 
   const handleAccessoryToggle = (accessoryId: string) => {
@@ -56,7 +51,6 @@ export default function Settings() {
       localStorage.setItem('batch_plant_system', selectedSystem);
       localStorage.setItem('batch_plant_accessories', JSON.stringify(selectedAccessories));
       localStorage.setItem('klakson_duration', klaksonDuration);
-      localStorage.setItem('belt_atas_delay', beltAtasDelay);
       
       toast({
         title: '✅ Berhasil',
@@ -180,7 +174,7 @@ export default function Settings() {
       <Card>
         <CardHeader>
           <CardTitle>Pengaturan Timing Produksi</CardTitle>
-          <CardDescription>Atur durasi klakson dan delay belt atas (System 1)</CardDescription>
+          <CardDescription>Atur durasi klakson (Horn) saat produksi selesai</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-3">
@@ -202,32 +196,6 @@ export default function Settings() {
                 Lama klakson berbunyi setelah produksi selesai ({(Number(klaksonDuration) / 1000).toFixed(1)} detik)
               </span>
             </div>
-          </div>
-
-          <div className="space-y-3">
-            <Label htmlFor="belt-delay" className="text-base font-medium">
-              Delay Belt Atas OFF (ms) - System 1 Only
-            </Label>
-            <div className="flex items-center gap-4">
-              <Input
-                id="belt-delay"
-                type="number"
-                min="500"
-                max="10000"
-                step="100"
-                value={beltAtasDelay}
-                onChange={(e) => setBeltAtasDelay(e.target.value)}
-                className="max-w-[200px]"
-              />
-              <span className="text-sm text-muted-foreground">
-                Waktu tunggu setelah klakson mulai berbunyi sampai belt atas mati ({(Number(beltAtasDelay) / 1000).toFixed(1)} detik)
-              </span>
-            </div>
-            {selectedSystem !== '1' && (
-              <p className="text-sm text-yellow-600 dark:text-yellow-400">
-                ⚠️ Pengaturan ini hanya berlaku untuk System 1
-              </p>
-            )}
           </div>
         </CardContent>
       </Card>
