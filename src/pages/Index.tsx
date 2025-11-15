@@ -975,7 +975,7 @@ const Index = () => {
                   />
                   
                   {/* Angled Conveyor to mixer */}
-                  <ConveyorBelt x={320} y={713} width={180} angle={32} isRunning={componentStates.beltBawah} />
+                  <ConveyorBelt x={320} y={713} width={180} angle={32} isRunning={componentStates.beltAtas} />
                 </>
               )}
               
@@ -1040,7 +1040,7 @@ const Index = () => {
                   <ConveyorBelt x={50} y={669} width={260} angle={0} isRunning={componentStates.beltBawah} />
 
                   {/* Conveyor Belt 2 - From bottom left, angled upward to mixer */}
-                  <ConveyorBelt x={320} y={713} width={180} angle={32} isRunning={componentStates.beltBawah} />
+                  <ConveyorBelt x={320} y={713} width={180} angle={32} isRunning={componentStates.beltAtas} />
                 </>
               )}
               
@@ -1101,7 +1101,7 @@ const Index = () => {
                   />
                   
                   {/* Angled Conveyor to mixer - SAME POSITION as other systems */}
-                  <ConveyorBelt x={320} y={713} width={180} angle={32} isRunning={componentStates.beltBawah} />
+                  <ConveyorBelt x={320} y={713} width={180} angle={32} isRunning={componentStates.beltAtas} />
                 </>
               )}
               
