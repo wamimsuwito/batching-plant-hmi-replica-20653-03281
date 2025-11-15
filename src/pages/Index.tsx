@@ -346,9 +346,6 @@ const Index = () => {
 
   // Raspberry Pi connection
   const raspberryPi = useRaspberryPi();
-  
-  // Manual production hook
-  const manualProduction = useManualProduction(raspberryPi?.actualWeights || { pasir: 0, batu: 0, semen: 0, air: 0 });
 
   // ✅ CRITICAL: Klakson bunyi saat print ticket muncul (alert driver)
   useEffect(() => {
@@ -552,6 +549,21 @@ const Index = () => {
     handleAggregateBinsRefill // ✅ NEW: Pass refill callback for System 3
   );
 
+  // Manual production hook - transform weights and relay states
+  const manualProduction = useManualProduction(
+    {
+      aggregate: (raspberryPi?.actualWeights?.pasir || 0) + (raspberryPi?.actualWeights?.batu || 0),
+      semen: raspberryPi?.actualWeights?.semen || 0,
+      air: raspberryPi?.actualWeights?.air || 0,
+    },
+    {
+      pintu_pasir_1: componentStates.sandBin1Valve || false,
+      pintu_pasir_2: componentStates.sandBin2Valve || false,
+      pintu_batu_1: componentStates.stoneBin1Valve || false,
+      pintu_batu_2: componentStates.stoneBin2Valve || false,
+    }
+  );
+
   // ✅ NEW: Stabilize weight display to prevent flickering during mixing transitions
   useEffect(() => {
     const currentWeights = productionState.currentWeights;
@@ -671,16 +683,14 @@ const Index = () => {
     const finalSession = manualProduction.stopManualSession();
     
     if (finalSession) {
-      // ✅ NEW: Generate serial number for manual production
       const prefix = getBPPrefix();
       const serialNumber = prefix ? generateSerialNumber(prefix, 7) : undefined;
 
-      // Generate ticket from manual session
       const ticket: TicketData = {
         id: finalSession.sessionId,
         jobOrder: 'MANUAL',
-        productionType: 'MANUAL', // Mark as manual production
-        serialNumber, // ✅ NEW: Add serial number
+        productionType: 'MANUAL',
+        serialNumber,
         nomorPO: '-',
         tanggal: finalSession.endTime?.toLocaleDateString('id-ID') || new Date().toLocaleDateString('id-ID'),
         jamMulai: finalSession.startTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
@@ -696,30 +706,40 @@ const Index = () => {
         nomorRitasi: '-',
         totalVolume: '-',
         materials: {
-          pasir: { 
-            target: 0, 
-            realisasi: Math.round(finalSession.materials.pasir.totalDischarged), 
-            deviasi: 0 
+          pasir1: { 
+            target: Math.round(finalSession.materials.pasir1.target || 0), 
+            realisasi: Math.round(finalSession.materials.pasir1.totalDischarged), 
+            deviasi: Math.round(finalSession.materials.pasir1.totalDischarged - (finalSession.materials.pasir1.target || 0))
           },
-          batu: { 
-            target: 0, 
-            realisasi: Math.round(finalSession.materials.batu.totalDischarged), 
-            deviasi: 0 
+          pasir2: { 
+            target: Math.round(finalSession.materials.pasir2.target || 0), 
+            realisasi: Math.round(finalSession.materials.pasir2.totalDischarged), 
+            deviasi: Math.round(finalSession.materials.pasir2.totalDischarged - (finalSession.materials.pasir2.target || 0))
+          },
+          batu1: { 
+            target: Math.round(finalSession.materials.batu1.target || 0), 
+            realisasi: Math.round(finalSession.materials.batu1.totalDischarged), 
+            deviasi: Math.round(finalSession.materials.batu1.totalDischarged - (finalSession.materials.batu1.target || 0))
+          },
+          batu2: { 
+            target: Math.round(finalSession.materials.batu2.target || 0), 
+            realisasi: Math.round(finalSession.materials.batu2.totalDischarged), 
+            deviasi: Math.round(finalSession.materials.batu2.totalDischarged - (finalSession.materials.batu2.target || 0))
           },
           semen: { 
-            target: 0, 
+            target: Math.round(finalSession.materials.semen.target || 0), 
             realisasi: Math.round(finalSession.materials.semen.totalDischarged), 
-            deviasi: 0 
+            deviasi: Math.round(finalSession.materials.semen.totalDischarged - (finalSession.materials.semen.target || 0))
           },
           air: { 
-            target: 0, 
+            target: Math.round(finalSession.materials.air.target || 0), 
             realisasi: Math.round(finalSession.materials.air.totalDischarged), 
-            deviasi: 0 
+            deviasi: Math.round(finalSession.materials.air.totalDischarged - (finalSession.materials.air.target || 0))
           },
         },
+        aggregateNote: finalSession.aggregateNote,
       };
 
-      // Save to production tickets
       const saved = localStorage.getItem('production_tickets');
       const tickets = saved ? JSON.parse(saved) : [];
       tickets.push(ticket);
@@ -887,11 +907,17 @@ const Index = () => {
         onFill={handleSiloFill}
       />
       {ticketData && (
-        <PrintTicketDialog
-          open={printTicketOpen}
-          onOpenChange={setPrintTicketOpen}
-          ticketData={ticketData}
-        />
+      <PrintTicketDialog 
+        open={printTicketOpen} 
+        onOpenChange={setPrintTicketOpen} 
+        ticketData={ticketData}
+        onUpdateAggregateNote={(notes) => {
+          if (manualProduction.currentSession) {
+            manualProduction.updateAggregateNote(notes);
+          }
+          setTicketData(prev => ({ ...prev, aggregateNote: notes }));
+        }}
+      />
       )}
 
       {/* Manual Production Form Dialog */}

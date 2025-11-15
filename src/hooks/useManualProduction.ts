@@ -11,6 +11,7 @@ interface MaterialWeighing {
 interface MaterialRecord {
   weighings: MaterialWeighing[];
   totalDischarged: number;
+  target?: number;
 }
 
 export interface ManualProductionSession {
@@ -28,55 +29,144 @@ export interface ManualProductionSession {
     nomorMobil: string;
   };
   materials: {
-    pasir: MaterialRecord;
-    batu: MaterialRecord;
+    pasir1: MaterialRecord;
+    pasir2: MaterialRecord;
+    batu1: MaterialRecord;
+    batu2: MaterialRecord;
     semen: MaterialRecord;
     air: MaterialRecord;
   };
-  activeSilo?: number; // Track which silo was used during production
+  aggregateNote?: {
+    pasir1?: string;
+    pasir2?: string;
+    batu1?: string;
+    batu2?: string;
+  };
+  activeSilo?: number;
 }
 
-export const useManualProduction = (actualWeights: { pasir: number; batu: number; semen: number; air: number }) => {
+const DISCHARGE_THRESHOLDS = {
+  pasir1: 100,
+  pasir2: 100,
+  batu1: 100,
+  batu2: 100,
+  semen: 5,
+  air: 3,
+};
+
+export const useManualProduction = (
+  actualWeights: { aggregate: number; semen: number; air: number },
+  relayStates: Record<string, boolean>
+) => {
   const [isManualSessionActive, setIsManualSessionActive] = useState(false);
   const [currentSession, setCurrentSession] = useState<ManualProductionSession | null>(null);
   const { toast } = useToast();
   
-  // Track peak weights for discharge detection
   const peakWeightsRef = useRef({
-    pasir: 0,
-    batu: 0,
+    aggregate: 0,
     semen: 0,
     air: 0,
   });
 
-  // Previous weights for comparison
   const prevWeightsRef = useRef({
-    pasir: 0,
-    batu: 0,
+    aggregate: 0,
     semen: 0,
     air: 0,
   });
 
-  // Start manual production session
+  const activeRelayRef = useRef<{
+    pasir1: boolean;
+    pasir2: boolean;
+    batu1: boolean;
+    batu2: boolean;
+  }>({
+    pasir1: false,
+    pasir2: false,
+    batu1: false,
+    batu2: false,
+  });
+
+  useEffect(() => {
+    if (!isManualSessionActive) return;
+
+    activeRelayRef.current = {
+      pasir1: relayStates['pintu_pasir_1'] || false,
+      pasir2: relayStates['pintu_pasir_2'] || false,
+      batu1: relayStates['pintu_batu_1'] || false,
+      batu2: relayStates['pintu_batu_2'] || false,
+    };
+
+    console.log('🎯 Active relays:', activeRelayRef.current);
+  }, [relayStates, isManualSessionActive]);
+
+  const determineActiveMaterial = useCallback((): 'pasir1' | 'pasir2' | 'batu1' | 'batu2' | null => {
+    const states = activeRelayRef.current;
+
+    if (states.pasir1 && states.pasir2) {
+      console.log('🔀 Multiple pasir relays active - using pasir1');
+      return 'pasir1';
+    }
+    if (states.batu1 && states.batu2) {
+      console.log('🔀 Multiple batu relays active - using batu1');
+      return 'batu1';
+    }
+
+    if (states.pasir1) return 'pasir1';
+    if (states.pasir2) return 'pasir2';
+    if (states.batu1) return 'batu1';
+    if (states.batu2) return 'batu2';
+
+    return null;
+  }, []);
+
+  const calculateTargets = useCallback((mutuBeton: string, volume: number) => {
+    const jmfData = localStorage.getItem('job_mix_formulas');
+    if (!jmfData) {
+      console.warn('⚠️ No JMF data found');
+      return null;
+    }
+
+    const jmfList = JSON.parse(jmfData);
+    const jmf = jmfList.find((f: any) => f.mutuBeton === mutuBeton);
+
+    if (!jmf) {
+      console.warn(`⚠️ JMF not found for ${mutuBeton}`);
+      return null;
+    }
+
+    return {
+      pasir1: parseFloat(jmf.pasir1 || '0') * volume,
+      pasir2: parseFloat(jmf.pasir2 || '0') * volume,
+      batu1: parseFloat(jmf.batu1 || '0') * volume,
+      batu2: parseFloat(jmf.batu2 || '0') * volume,
+      semen: parseFloat(jmf.semen || '0') * volume,
+      air: parseFloat(jmf.air || '0') * volume,
+    };
+  }, []);
+
   const startManualSession = useCallback((formData: ManualProductionSession['formData']) => {
+    const volume = parseFloat(formData.targetProduksi);
+    const targets = calculateTargets(formData.mutuBeton, volume);
+
     const session: ManualProductionSession = {
       sessionId: `MANUAL-${Date.now()}`,
       startTime: new Date(),
       formData,
       materials: {
-        pasir: { weighings: [], totalDischarged: 0 },
-        batu: { weighings: [], totalDischarged: 0 },
-        semen: { weighings: [], totalDischarged: 0 },
-        air: { weighings: [], totalDischarged: 0 },
+        pasir1: { weighings: [], totalDischarged: 0, target: targets?.pasir1 || 0 },
+        pasir2: { weighings: [], totalDischarged: 0, target: targets?.pasir2 || 0 },
+        batu1: { weighings: [], totalDischarged: 0, target: targets?.batu1 || 0 },
+        batu2: { weighings: [], totalDischarged: 0, target: targets?.batu2 || 0 },
+        semen: { weighings: [], totalDischarged: 0, target: targets?.semen || 0 },
+        air: { weighings: [], totalDischarged: 0, target: targets?.air || 0 },
       },
     };
 
     setCurrentSession(session);
     setIsManualSessionActive(true);
     
-    // Reset peak weights
-    peakWeightsRef.current = { pasir: 0, batu: 0, semen: 0, air: 0 };
-    prevWeightsRef.current = { pasir: 0, batu: 0, semen: 0, air: 0 };
+    peakWeightsRef.current = { aggregate: 0, semen: 0, air: 0 };
+    prevWeightsRef.current = { aggregate: 0, semen: 0, air: 0 };
 
     toast({
       title: '✅ Manual Session Started',
@@ -84,17 +174,17 @@ export const useManualProduction = (actualWeights: { pasir: number; batu: number
     });
 
     console.log('🟢 Manual production session started:', session.sessionId);
-  }, [toast]);
+  }, [toast, calculateTargets]);
 
-  // Record discharge for a material
-  const recordDischarge = useCallback((materialName: keyof ManualProductionSession['materials'], peakWeight: number, remainingWeight: number) => {
+  const recordDischarge = useCallback((
+    materialName: keyof ManualProductionSession['materials'], 
+    peakWeight: number, 
+    remainingWeight: number
+  ) => {
     if (!currentSession) return;
 
     const dischargedWeight = peakWeight - remainingWeight;
     
-    // Only record if discharged weight is significant (> 10kg)
-    if (dischargedWeight < 10) return;
-
     const weighing: MaterialWeighing = {
       timestamp: Date.now(),
       peakWeight,
@@ -108,6 +198,7 @@ export const useManualProduction = (actualWeights: { pasir: number; batu: number
       const updatedMaterials = {
         ...prev.materials,
         [materialName]: {
+          ...prev.materials[materialName],
           weighings: [...prev.materials[materialName].weighings, weighing],
           totalDischarged: prev.materials[materialName].totalDischarged + dischargedWeight,
         },
@@ -127,44 +218,98 @@ export const useManualProduction = (actualWeights: { pasir: number; batu: number
     });
   }, [currentSession]);
 
-  // Monitor weights and detect discharge
   useEffect(() => {
     if (!isManualSessionActive || !currentSession) return;
 
-    const materials: Array<keyof typeof actualWeights> = ['pasir', 'batu', 'semen', 'air'];
+    const currentAggWeight = actualWeights.aggregate;
+    const peakAggWeight = peakWeightsRef.current.aggregate;
 
-    materials.forEach(material => {
-      const currentWeight = actualWeights[material];
-      const prevWeight = prevWeightsRef.current[material];
-      const peakWeight = peakWeightsRef.current[material];
+    if (currentAggWeight > peakAggWeight) {
+      peakWeightsRef.current.aggregate = currentAggWeight;
+    }
 
-      // Update peak weight if current weight is higher
-      if (currentWeight > peakWeight) {
-        peakWeightsRef.current[material] = currentWeight;
-      }
-
-      // Detect discharge: weight drops significantly (> 50kg) from peak
-      const weightDrop = peakWeight - currentWeight;
-      if (weightDrop > 50 && peakWeight > 100) {
-        // Discharge detected!
-        console.log(`🔻 ${material.toUpperCase()} discharge detected:`, {
-          peak: peakWeight,
-          current: currentWeight,
+    const weightDrop = peakAggWeight - currentAggWeight;
+    if (weightDrop > 100 && peakAggWeight > 100) {
+      const activeMaterial = determineActiveMaterial();
+      
+      if (activeMaterial) {
+        console.log(`🔻 ${activeMaterial.toUpperCase()} discharge detected:`, {
+          peak: peakAggWeight,
+          current: currentAggWeight,
           drop: weightDrop,
         });
 
-        recordDischarge(material, peakWeight, currentWeight);
-
-        // Reset peak for next weighing
-        peakWeightsRef.current[material] = currentWeight;
+        recordDischarge(activeMaterial, peakAggWeight, currentAggWeight);
+      } else {
+        console.warn('⚠️ Aggregate discharge detected but no relay active!');
       }
 
-      // Update previous weight
-      prevWeightsRef.current[material] = currentWeight;
-    });
-  }, [actualWeights, isManualSessionActive, currentSession, recordDischarge]);
+      peakWeightsRef.current.aggregate = currentAggWeight;
+    }
 
-  // Stop manual production session
+    prevWeightsRef.current.aggregate = currentAggWeight;
+  }, [actualWeights.aggregate, isManualSessionActive, currentSession, determineActiveMaterial, recordDischarge]);
+
+  useEffect(() => {
+    if (!isManualSessionActive || !currentSession) return;
+
+    const currentSemenWeight = actualWeights.semen;
+    const peakSemenWeight = peakWeightsRef.current.semen;
+
+    if (currentSemenWeight > peakSemenWeight) {
+      peakWeightsRef.current.semen = currentSemenWeight;
+    }
+
+    const semenDrop = peakSemenWeight - currentSemenWeight;
+    if (semenDrop > 5 && peakSemenWeight > 10) {
+      console.log(`🔻 SEMEN discharge detected:`, {
+        peak: peakSemenWeight,
+        current: currentSemenWeight,
+        drop: semenDrop,
+      });
+      
+      recordDischarge('semen', peakSemenWeight, currentSemenWeight);
+      peakWeightsRef.current.semen = currentSemenWeight;
+    }
+
+    prevWeightsRef.current.semen = currentSemenWeight;
+  }, [actualWeights.semen, isManualSessionActive, currentSession, recordDischarge]);
+
+  useEffect(() => {
+    if (!isManualSessionActive || !currentSession) return;
+
+    const currentAirWeight = actualWeights.air;
+    const peakAirWeight = peakWeightsRef.current.air;
+
+    if (currentAirWeight > peakAirWeight) {
+      peakWeightsRef.current.air = currentAirWeight;
+    }
+
+    const airDrop = peakAirWeight - currentAirWeight;
+    if (airDrop > 3 && peakAirWeight > 5) {
+      console.log(`🔻 AIR discharge detected:`, {
+        peak: peakAirWeight,
+        current: currentAirWeight,
+        drop: airDrop,
+      });
+      
+      recordDischarge('air', peakAirWeight, currentAirWeight);
+      peakWeightsRef.current.air = currentAirWeight;
+    }
+
+    prevWeightsRef.current.air = currentAirWeight;
+  }, [actualWeights.air, isManualSessionActive, currentSession, recordDischarge]);
+
+  const updateAggregateNote = useCallback((notes: ManualProductionSession['aggregateNote']) => {
+    setCurrentSession(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        aggregateNote: notes,
+      };
+    });
+  }, []);
+
   const stopManualSession = useCallback((): ManualProductionSession | null => {
     if (!currentSession) return null;
 
@@ -175,7 +320,6 @@ export const useManualProduction = (actualWeights: { pasir: number; batu: number
 
     setIsManualSessionActive(false);
     
-    // Save to localStorage
     const saved = localStorage.getItem('manual_production_history');
     const history = saved ? JSON.parse(saved) : [];
     history.push(finalSession);
@@ -188,13 +332,14 @@ export const useManualProduction = (actualWeights: { pasir: number; batu: number
 
     console.log('🔴 Manual production session stopped:', finalSession);
     console.log('📋 Final material totals:', {
-      pasir: finalSession.materials.pasir.totalDischarged,
-      batu: finalSession.materials.batu.totalDischarged,
+      pasir1: finalSession.materials.pasir1.totalDischarged,
+      pasir2: finalSession.materials.pasir2.totalDischarged,
+      batu1: finalSession.materials.batu1.totalDischarged,
+      batu2: finalSession.materials.batu2.totalDischarged,
       semen: finalSession.materials.semen.totalDischarged,
       air: finalSession.materials.air.totalDischarged,
     });
 
-    // Clear session
     setCurrentSession(null);
 
     return finalSession;
@@ -205,5 +350,6 @@ export const useManualProduction = (actualWeights: { pasir: number; batu: number
     currentSession,
     startManualSession,
     stopManualSession,
+    updateAggregateNote,
   };
 };
