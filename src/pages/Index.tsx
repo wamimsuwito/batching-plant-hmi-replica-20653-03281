@@ -205,6 +205,18 @@ const Index = () => {
     }
   }, []);
 
+  // Load saved aggregate notes on mount
+  useEffect(() => {
+    const savedNotes = localStorage.getItem('aggregate_notes');
+    if (savedNotes) {
+      try {
+        setCurrentAggregateNotes(JSON.parse(savedNotes));
+      } catch (error) {
+        console.error('Error loading aggregate notes:', error);
+      }
+    }
+  }, []);
+
   const handleActivationSuccess = () => {
     setActivationOpen(false);
     setIsLicenseValid(true);
@@ -500,6 +512,29 @@ const Index = () => {
       const prefix = getBPPrefix();
       const serialNumber = prefix ? generateSerialNumber(prefix, 7) : undefined;
 
+      // ✅ Calculate individual material targets from targetWeights
+      const pasir1Target = Math.round((targetWeights.pasir1 || 0) * jumlahMixing);
+      const pasir2Target = Math.round((targetWeights.pasir2 || 0) * jumlahMixing);
+      const batu1Target = Math.round((targetWeights.batu1 || 0) * jumlahMixing);
+      const batu2Target = Math.round((targetWeights.batu2 || 0) * jumlahMixing);
+
+      // ✅ Calculate individual material realisasi (proportional split from cumulative)
+      const totalPasirTarget = pasir1Target + pasir2Target;
+      const totalBatuTarget = batu1Target + batu2Target;
+      
+      const pasir1Realisasi = totalPasirTarget > 0 
+        ? Math.round(realisasiPasir * (pasir1Target / totalPasirTarget))
+        : 0;
+      const pasir2Realisasi = totalPasirTarget > 0
+        ? Math.round(realisasiPasir * (pasir2Target / totalPasirTarget))
+        : 0;
+      const batu1Realisasi = totalBatuTarget > 0
+        ? Math.round(realisasiBatu * (batu1Target / totalBatuTarget))
+        : 0;
+      const batu2Realisasi = totalBatuTarget > 0
+        ? Math.round(realisasiBatu * (batu2Target / totalBatuTarget))
+        : 0;
+
       const ticket: TicketData = {
         id: `TICKET-${Date.now()}`,
         jobOrder: `${productionState.currentMixing}`,
@@ -520,15 +555,25 @@ const Index = () => {
         nomorRitasi: "",
         totalVolume: "",
         materials: {
-          pasir: {
-            target: targetPasir,
-            realisasi: realisasiPasir,
-            deviasi: realisasiPasir - targetPasir
+          pasir1: {
+            target: pasir1Target,
+            realisasi: pasir1Realisasi,
+            deviasi: pasir1Realisasi - pasir1Target
           },
-          batu: {
-            target: targetBatu,
-            realisasi: realisasiBatu,
-            deviasi: realisasiBatu - targetBatu
+          pasir2: {
+            target: pasir2Target,
+            realisasi: pasir2Realisasi,
+            deviasi: pasir2Realisasi - pasir2Target
+          },
+          batu1: {
+            target: batu1Target,
+            realisasi: batu1Realisasi,
+            deviasi: batu1Realisasi - batu1Target
+          },
+          batu2: {
+            target: batu2Target,
+            realisasi: batu2Realisasi,
+            deviasi: batu2Realisasi - batu2Target
           },
           semen: {
             target: targetSemen,
@@ -540,7 +585,8 @@ const Index = () => {
             realisasi: realisasiAir,
             deviasi: realisasiAir - targetAir
           }
-        }
+        },
+        aggregateNote: currentAggregateNotes, // Include persistent aggregate notes
       };
       
       // Save to localStorage
@@ -756,8 +802,8 @@ const Index = () => {
       setTicketData(ticket);
       setPrintTicketOpen(true);
       
-      // Clear aggregate notes after session
-      setCurrentAggregateNotes({});
+      // DO NOT clear aggregate notes - keep for next production (persistent)
+      // setCurrentAggregateNotes({});
     }
   };
 
@@ -940,9 +986,18 @@ const Index = () => {
         currentNotes={currentAggregateNotes}
         onSave={(notes) => {
           setCurrentAggregateNotes(notes);
+          
+          // Persist to localStorage
+          localStorage.setItem('aggregate_notes', JSON.stringify(notes));
+          
           if (manualProduction.currentSession) {
             manualProduction.updateAggregateNote(notes);
           }
+          
+          toast({
+            title: "Aggregate Note Tersimpan",
+            description: "Note akan digunakan untuk produksi berikutnya",
+          });
         }}
       />
 
