@@ -118,13 +118,9 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
               <thead>
                 <tr className="bg-gray-100">
                   <th className="border-[2.5px] border-black p-1.5 print:p-1 text-left font-bold">Material</th>
-                  {ticketData.productionType !== 'MANUAL' && (
-                    <th className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold">Target</th>
-                  )}
+                  <th className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold">Target</th>
                   <th className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold">Realisasi</th>
-                  {ticketData.productionType !== 'MANUAL' && (
-                    <th className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold">Deviasi</th>
-                  )}
+                  <th className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold">Deviasi</th>
                 </tr>
               </thead>
               <tbody>
@@ -224,64 +220,39 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
                   </tr>
                 )}
 
-                {/* Legacy Pasir (for AUTO mode) */}
-                {ticketData.materials.pasir && (
-                  <tr>
-                    <td className="border-[2.5px] border-black p-1.5 print:p-1 font-semibold">Pasir</td>
-                    {ticketData.productionType !== 'MANUAL' && (
-                      <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.pasir.target}</td>
-                    )}
-                    <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.pasir.realisasi}</td>
-                    {ticketData.productionType !== 'MANUAL' && (
-                      <td className={`border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.pasir.deviasi < 0 ? 'text-red-600' : ''}`}>
-                        {ticketData.materials.pasir.deviasi > 0 ? '+' : ''}{ticketData.materials.pasir.deviasi}
-                      </td>
-                    )}
-                  </tr>
-                )}
-
-                {/* Legacy Batu (for AUTO mode) */}
-                {ticketData.materials.batu && (
-                  <tr>
-                    <td className="border-[2.5px] border-black p-1.5 print:p-1 font-semibold">Batu</td>
-                    {ticketData.productionType !== 'MANUAL' && (
-                      <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.batu.target}</td>
-                    )}
-                    <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.batu.realisasi}</td>
-                    {ticketData.productionType !== 'MANUAL' && (
-                      <td className={`border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.batu.deviasi < 0 ? 'text-red-600' : ''}`}>
-                        {ticketData.materials.batu.deviasi > 0 ? '+' : ''}{ticketData.materials.batu.deviasi}
-                      </td>
-                    )}
-                  </tr>
-                )}
 
                 {/* Semen */}
                 <tr>
                   <td className="border-[2.5px] border-black p-1.5 print:p-1 font-semibold">Semen</td>
-                  {ticketData.productionType !== 'MANUAL' && (
-                    <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.semen.target}</td>
-                  )}
-                  <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.semen.realisasi}</td>
-                  {ticketData.productionType !== 'MANUAL' && (
-                    <td className={`border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.semen.deviasi < 0 ? 'text-red-600' : ''}`}>
-                      {ticketData.materials.semen.deviasi > 0 ? '+' : ''}{ticketData.materials.semen.deviasi}
-                    </td>
-                  )}
+                  <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">
+                    {ticketData.materials.semen.target.toFixed(0)}
+                  </td>
+                  <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">
+                    {ticketData.materials.semen.realisasi.toFixed(0)}
+                  </td>
+                  <td className={`border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold ${
+                    ticketData.materials.semen.deviasi < 0 ? 'text-red-600' : 
+                    ticketData.materials.semen.deviasi > 0 ? 'text-green-600' : ''
+                  }`}>
+                    {ticketData.materials.semen.deviasi > 0 ? '+' : ''}{ticketData.materials.semen.deviasi.toFixed(0)}
+                  </td>
                 </tr>
 
                 {/* Air */}
                 <tr>
                   <td className="border-[2.5px] border-black p-1.5 print:p-1 font-semibold">Air</td>
-                  {ticketData.productionType !== 'MANUAL' && (
-                    <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.air.target}</td>
-                  )}
-                  <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">{ticketData.materials.air.realisasi}</td>
-                  {ticketData.productionType !== 'MANUAL' && (
-                    <td className={`border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold ${ticketData.materials.air.deviasi < 0 ? 'text-red-600' : ''}`}>
-                      {ticketData.materials.air.deviasi > 0 ? '+' : ''}{ticketData.materials.air.deviasi}
-                    </td>
-                  )}
+                  <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">
+                    {ticketData.materials.air.target.toFixed(0)}
+                  </td>
+                  <td className="border-[2.5px] border-black p-1.5 print:p-1 text-center font-medium">
+                    {ticketData.materials.air.realisasi.toFixed(0)}
+                  </td>
+                  <td className={`border-[2.5px] border-black p-1.5 print:p-1 text-center font-bold ${
+                    ticketData.materials.air.deviasi < 0 ? 'text-red-600' : 
+                    ticketData.materials.air.deviasi > 0 ? 'text-green-600' : ''
+                  }`}>
+                    {ticketData.materials.air.deviasi > 0 ? '+' : ''}{ticketData.materials.air.deviasi.toFixed(0)}
+                  </td>
                 </tr>
               </tbody>
             </table>
