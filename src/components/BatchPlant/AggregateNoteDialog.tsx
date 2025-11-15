@@ -44,7 +44,7 @@ export function AggregateNoteDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Query Aggregate</DialogTitle>
+          <DialogTitle>QUARRY AGGREGATE</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div>

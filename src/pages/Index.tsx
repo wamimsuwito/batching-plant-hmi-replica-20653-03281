@@ -1506,14 +1506,14 @@ const Index = () => {
               </button>
             </div>
             
-            {/* Query Aggregate Button - Only in Manual Mode */}
+            {/* Quarry Aggregate Button - Only in Manual Mode */}
             {!isAutoMode && (
               <button
                 onClick={() => setAggregateNoteDialogOpen(true)}
                 className="w-32 h-16 border-4 rounded-lg transition-all shadow-lg flex flex-col items-center justify-center gap-1 bg-blue-600 border-blue-800 hover:bg-blue-700"
               >
                 <div className="text-white text-xs font-bold">
-                  QUERY
+                  QUARRY
                 </div>
                 <div className="text-white text-xs font-bold">
                   AGGREGATE
