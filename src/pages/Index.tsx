@@ -32,6 +32,7 @@ import { useRaspberryPi } from "@/hooks/useRaspberryPi";
 import { useManualProduction } from "@/hooks/useManualProduction";
 import { ManualProductionPanel } from "@/components/ManualProductionPanel";
 import { ManualFormDialog } from "@/components/BatchPlant/ManualFormDialog";
+import { AggregateNoteDialog } from "@/components/BatchPlant/AggregateNoteDialog";
 import { PhysicalButtonLED } from "@/components/BatchPlant/PhysicalButtonLED";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,6 +42,13 @@ const Index = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isAutoMode, setIsAutoMode] = useState(false); // Auto mode toggle
+  const [aggregateNoteDialogOpen, setAggregateNoteDialogOpen] = useState(false);
+  const [currentAggregateNotes, setCurrentAggregateNotes] = useState<{
+    pasir1?: string;
+    pasir2?: string;
+    batu1?: string;
+    batu2?: string;
+  }>({});
   const [binGates, setBinGates] = useState([false, false, false, false]);
   const [loginOpen, setLoginOpen] = useState(false);
   const [activationOpen, setActivationOpen] = useState(false);
@@ -737,7 +745,7 @@ const Index = () => {
             deviasi: Math.round(finalSession.materials.air.totalDischarged - (finalSession.materials.air.target || 0))
           },
         },
-        aggregateNote: finalSession.aggregateNote,
+        aggregateNote: currentAggregateNotes, // Use notes from main screen
       };
 
       const saved = localStorage.getItem('production_tickets');
@@ -747,6 +755,9 @@ const Index = () => {
 
       setTicketData(ticket);
       setPrintTicketOpen(true);
+      
+      // Clear aggregate notes after session
+      setCurrentAggregateNotes({});
     }
   };
 
@@ -911,12 +922,6 @@ const Index = () => {
         open={printTicketOpen} 
         onOpenChange={setPrintTicketOpen} 
         ticketData={ticketData}
-        onUpdateAggregateNote={(notes) => {
-          if (manualProduction.currentSession) {
-            manualProduction.updateAggregateNote(notes);
-          }
-          setTicketData(prev => ({ ...prev, aggregateNote: notes }));
-        }}
       />
       )}
 
@@ -926,6 +931,19 @@ const Index = () => {
         onOpenChange={setManualFormOpen}
         onStart={handleManualFormSubmit}
         silos={silos}
+      />
+
+      {/* Aggregate Note Dialog - Main Screen */}
+      <AggregateNoteDialog
+        open={aggregateNoteDialogOpen}
+        onOpenChange={setAggregateNoteDialogOpen}
+        currentNotes={currentAggregateNotes}
+        onSave={(notes) => {
+          setCurrentAggregateNotes(notes);
+          if (manualProduction.currentSession) {
+            manualProduction.updateAggregateNote(notes);
+          }
+        }}
       />
 
       {/* Main HMI Panel */}
@@ -1432,6 +1450,21 @@ const Index = () => {
                 <span className="text-white font-bold text-sm">STOP</span>
               </button>
             </div>
+            
+            {/* Query Aggregate Button - Only in Manual Mode */}
+            {!isAutoMode && (
+              <button
+                onClick={() => setAggregateNoteDialogOpen(true)}
+                className="w-32 h-16 border-4 rounded-lg transition-all shadow-lg flex flex-col items-center justify-center gap-1 bg-blue-600 border-blue-800 hover:bg-blue-700"
+              >
+                <div className="text-white text-xs font-bold">
+                  QUERY
+                </div>
+                <div className="text-white text-xs font-bold">
+                  AGGREGATE
+                </div>
+              </button>
+            )}
             
             {/* Auto/Manual Button */}
             <button
