@@ -2945,7 +2945,7 @@ export const useProductionSequence = (
           console.error('❌ Error saving production record:', error);
         }
         
-        // AKTIVASI KLAKSON - 3 detik
+        // AKTIVASI KLAKSON - 1500ms
         console.log('📢 Turning ON klakson (horn) - production complete');
         controlRelay('klakson', true);
         setComponentStates(prevComp => ({ ...prevComp, klakson: true }));
@@ -2958,7 +2958,7 @@ export const useProductionSequence = (
           controlRelay('klakson', false);
           setComponentStates(prevComp => ({ ...prevComp, klakson: false }));
           addActivityLog('📢 Klakson OFF');
-        }, 3000); // 3 detik
+        }, 1500); // 1500ms
         addTimer(klaksonTimer);
         
         // System 1: Turn OFF belt atas 1 detik setelah klakson mulai berbunyi
