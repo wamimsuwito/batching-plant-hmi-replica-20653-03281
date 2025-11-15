@@ -2961,14 +2961,14 @@ export const useProductionSequence = (
         }, 3000); // 3 detik
         addTimer(klaksonTimer);
         
-        // System 1: Turn OFF belt atas AFTER klakson
+        // System 1: Turn OFF belt atas 1 detik setelah klakson mulai berbunyi
         if (systemConfig === 1) {
           const beltOffTimer = setTimeout(() => {
-            console.log('🔴 SYSTEM 1: Turning OFF Belt Atas (after klakson)');
+            console.log('🔴 SYSTEM 1: Turning OFF Belt Atas (1 detik setelah klakson)');
             setComponentStates(prevComp => ({ ...prevComp, beltAtas: false }));
             controlRelay('konveyor_atas', false);
-            addActivityLog('🔴 Belt Atas OFF (after klakson)');
-          }, 3500); // 500ms setelah klakson OFF
+            addActivityLog('🔴 Belt Atas OFF (1 detik setelah klakson)');
+          }, 1000); // 1 detik setelah klakson ON (klakson masih bunyi)
           addTimer(beltOffTimer);
         }
         
