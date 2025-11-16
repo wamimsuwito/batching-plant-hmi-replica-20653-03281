@@ -1722,7 +1722,7 @@ const Index = () => {
           </div>
 
           {/* Stok Semen Silo Display - Positioned above Quarry Aggregate button */}
-          <div className="absolute bottom-[136px] right-2 bg-black/80 backdrop-blur-sm border-2 border-blue-500/70 rounded-lg p-4 shadow-xl z-40 min-w-[300px]">
+          <div className="absolute bottom-[240px] right-2 bg-black/80 backdrop-blur-sm border-2 border-blue-500/70 rounded-lg p-4 shadow-xl z-40 min-w-[300px]">
             {/* Header */}
             <div className="text-blue-300 font-bold text-base mb-3 text-center border-b border-blue-500/50 pb-2">
               STOK SEMEN SILO
