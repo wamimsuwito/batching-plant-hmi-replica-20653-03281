@@ -2710,7 +2710,13 @@ export const useProductionSequence = (
       // 2. Not already started weighing for next mixing
       // 3. There's a next mixing to do
       // 4. We're not in complete state
-      if (dischargedMaterialsCount >= totalMaterialsToDischarge && !nextMixingReady && currentStep !== 'complete') {
+      // 5. Not currently mixing (wait for door cycle to finish)
+      // 6. Not in door cycle (wait for door to close completely)
+      if (dischargedMaterialsCount >= totalMaterialsToDischarge && 
+          !nextMixingReady && 
+          currentStep !== 'complete' &&
+          currentStep !== 'mixing' &&
+          currentStep !== 'door_cycle') {
         if (currentMixing < jumlahMixing) {
           console.log(`🔄 All materials discharged for Mixing ${currentMixing}!`);
           console.log(`🚀 Starting PARALLEL WEIGHING for Mixing ${currentMixing + 1}`);
@@ -2795,6 +2801,15 @@ export const useProductionSequence = (
               air: false,
             },
           };
+        }
+      } else {
+        // Debug: Log why parallel weighing is not starting
+        if (currentStep === 'door_cycle') {
+          console.log(`⏭️ Skipping parallel weighing - door cycle in progress (Mixing ${currentMixing})`);
+        } else if (currentStep === 'mixing') {
+          console.log(`⏭️ Skipping parallel weighing - mixing in progress (Mixing ${currentMixing})`);
+        } else if (nextMixingReady) {
+          console.log(`⏭️ Parallel weighing already started for Mixing ${currentMixing + 1}`);
         }
       }
       
