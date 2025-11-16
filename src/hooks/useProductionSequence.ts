@@ -217,6 +217,10 @@ export const useProductionSequence = (
   const isWaitingForMixerRef = useRef(false);
   // ✅ Idempotency guard for discharge sequence
   const isDischargingRef = useRef(false);
+  // 🛡️ Per-material discharge guard to prevent duplicates in a sequence
+  const dischargeGuardsRef = useRef<Record<string, boolean>>({});
+  // 🆔 Sequence id to invalidate old discharge timers
+  const dischargeSeqIdRef = useRef(0);
   // ✅ Cumulative weights tracker across all mixings
   const cumulativeActualWeights = useRef({ pasir: 0, batu: 0, semen: 0, air: 0 });
   const pausedStateSnapshot = useRef<{
@@ -1458,6 +1462,11 @@ export const useProductionSequence = (
     isDischargingRef.current = true;
     console.log('🔒 DISCHARGE FLAG: SET to TRUE (discharge starting)');
     console.log(`🔄 Starting discharge sequence for mixing ${productionState.currentMixing}/${productionState.jumlahMixing}`);
+    // 🆔 Start new discharge sequence id and reset per-material guards
+    dischargeSeqIdRef.current += 1;
+    const mySeqId = dischargeSeqIdRef.current;
+    console.log('🆔 Discharge sequence id =', mySeqId);
+    dischargeGuardsRef.current = {};
     
     // ✅ Safety timeout to prevent stuck state
     const safetyTimeout = setTimeout(() => {
@@ -1586,6 +1595,10 @@ export const useProductionSequence = (
         const pasirDuration = Math.max(10000, pasirTarget * 30);
         
         const pasirTimer = setTimeout(() => {
+          if (mySeqId !== dischargeSeqIdRef.current) {
+            console.warn('⏭️ Skip timer from old sequence (pasir)', mySeqId);
+            return;
+          }
           console.log('💧 SYSTEM 3: Discharging PASIR from storage bin');
           dischargeMaterial('pasir', pasirTarget, config);
         }, aggregateDelay);
@@ -1601,6 +1614,10 @@ export const useProductionSequence = (
         const batuDuration = Math.max(10000, batuTarget * 30);
         
         const batuTimer = setTimeout(() => {
+          if (mySeqId !== dischargeSeqIdRef.current) {
+            console.warn('⏭️ Skip timer from old sequence (batu)', mySeqId);
+            return;
+          }
           console.log('💧 SYSTEM 3: Discharging BATU from storage bin (2s after pasir)');
           dischargeMaterial('batu', batuTarget, config);
         }, aggregateDelay);
@@ -1669,6 +1686,10 @@ export const useProductionSequence = (
         }
         
         const dischargeTimer = setTimeout(() => {
+          if (mySeqId !== dischargeSeqIdRef.current) {
+            console.warn('⏭️ Skip timer from old sequence (group)', mySeqId);
+            return;
+          }
           console.log(`💧 Discharging ${material} from group ${groupNum}`);
           dischargeMaterial(material, targetWeight, config);
         }, totalDelay);
@@ -1861,6 +1882,14 @@ export const useProductionSequence = (
   };
 
   const dischargeMaterial = (material: string, targetWeight: number, config: ProductionConfig) => {
+    // 🛡️ Per-material guard: prevent duplicate discharge in the same sequence
+    if (dischargeGuardsRef.current[material]) {
+      console.warn('⛔ Skip duplicate discharge for', material);
+      return;
+    }
+    dischargeGuardsRef.current[material] = true;
+    console.log('🔒 GUARD set for material', material);
+
     // ✅ SYSTEM 3: Discharge from storage bin with timer-based ON/OFF cycles
     if (systemConfig === 3 && (material === 'pasir' || material === 'batu')) {
       console.log(`🚚 SYSTEM 3: Discharging ${material} from storage bin with TIMER DUMPING`);
@@ -1963,6 +1992,9 @@ export const useProductionSequence = (
               dischargedMaterialsCount: newCount,
             };
           });
+          // 🔓 Clear per-material guard
+          dischargeGuardsRef.current[material] = false;
+          console.log('🔓 GUARD cleared for material', material);
           
           return;
         }
@@ -2144,16 +2176,16 @@ export const useProductionSequence = (
       let capturedInitialBatuWeight = 0;
       
       setProductionState(prev => {
-        const sumAgg = (prev.currentWeights.pasir || 0) + (prev.currentWeights.batu || 0);
-        const initialAgg = (prev.currentWeights.aggregate && prev.currentWeights.aggregate > 0)
-          ? prev.currentWeights.aggregate
-          : sumAgg;
+        const snap = finalSnapshotRef.current || { pasir: 0, batu: 0, semen: 0, air: 0 };
+        const snapAgg = (snap.pasir || 0) + (snap.batu || 0);
+        const stateAgg = (prev.currentWeights.pasir || 0) + (prev.currentWeights.batu || 0);
+        const initialAgg = snapAgg > 0 ? snapAgg : stateAgg;
         
         capturedInitialAggregateWeight = initialAgg;
-        capturedInitialPasirWeight = prev.currentWeights.pasir || 0;
-        capturedInitialBatuWeight = prev.currentWeights.batu || 0;
+        capturedInitialPasirWeight = snap.pasir || (prev.currentWeights.pasir || 0);
+        capturedInitialBatuWeight = snap.batu || (prev.currentWeights.batu || 0);
         
-        console.log(`🚚 System 1 discharge starting: initial aggregate = ${initialAgg}kg (pasir: ${capturedInitialPasirWeight}, batu: ${capturedInitialBatuWeight})`);
+        console.log(`🚚 System 1 discharge starting: initial aggregate = ${initialAgg}kg (pasir: ${capturedInitialPasirWeight}, batu: ${capturedInitialBatuWeight}) [source=${snapAgg > 0 ? 'SNAPSHOT' : 'STATE'}]`);
         
         return {
           ...prev,
@@ -2251,6 +2283,9 @@ export const useProductionSequence = (
         }
         
         console.log(`✅ ${material} discharged via conveyor (System 1)`);
+        // 🔓 Clear per-material guard
+        dischargeGuardsRef.current[material] = false;
+        console.log('🔓 GUARD cleared for material', material);
         
         // Check if all materials discharged
         setProductionState(prev => {
@@ -2476,6 +2511,9 @@ export const useProductionSequence = (
         console.log('🔴 CEMENT DISCHARGE END (hopper empty) - cementValve = FALSE');
         setComponentStates(prev => ({ ...prev, cementValve: false }));
         addActivityLog('🔴 Dump Semen OFF');
+        // 🔓 Clear per-material guard
+        dischargeGuardsRef.current['semen'] = false;
+        console.log('🔓 GUARD cleared for material', 'semen');
         
         // 🆕 INCREMENT COUNTER AND CHECK IF ALL DISCHARGED
         setProductionState(prev => {
@@ -2551,6 +2589,10 @@ export const useProductionSequence = (
         
         // Deduct water from tank AFTER discharge complete
         onWaterDeduction(targetWeight);
+        
+        // 🔓 Clear per-material guard
+        dischargeGuardsRef.current['air'] = false;
+        console.log('🔓 GUARD cleared for material', 'air');
         
         // 🆕 INCREMENT COUNTER AND CHECK IF ALL DISCHARGED
         setProductionState(prev => {
