@@ -540,6 +540,12 @@ export const useProductionSequence = (
 
     clearAllTimers();
     
+    // ✅ DEFENSIVE: Reset discharge flags to prevent stuck from previous cycle
+    isDischargingRef.current = false;
+    isWaitingForMixerRef.current = false;
+    console.log('🔄 Reset discharge flags before starting new production');
+    console.log('🔓 DISCHARGE FLAG: RESET to FALSE (new production start)');
+    
     // ✅ Enhanced logging untuk debugging
     console.log(`🎯 ACTIVE SYSTEM: System ${systemConfig}`);
     console.log(`📊 Multi-mixing: ${config.currentMixing}/${config.jumlahMixing}`);
@@ -1450,7 +1456,30 @@ export const useProductionSequence = (
     }
     
     isDischargingRef.current = true;
+    console.log('🔒 DISCHARGE FLAG: SET to TRUE (discharge starting)');
     console.log(`🔄 Starting discharge sequence for mixing ${productionState.currentMixing}/${productionState.jumlahMixing}`);
+    
+    // ✅ Safety timeout to prevent stuck state
+    const safetyTimeout = setTimeout(() => {
+      if (isDischargingRef.current) {
+        console.error('⚠️ SAFETY TIMEOUT: Discharge took too long (>120s), forcing reset');
+        isDischargingRef.current = false;
+        console.log('🔓 DISCHARGE FLAG: RESET to FALSE (safety timeout)');
+        
+        // Try to force complete if stuck in discharge
+        setProductionState(prev => {
+          if (prev.currentStep === 'discharging') {
+            console.error('🔧 Forcing state recovery from stuck discharge');
+            return {
+              ...prev,
+              currentStep: 'complete', // Mark as complete to allow next cycle
+            };
+          }
+          return prev;
+        });
+      }
+    }, 120000); // 120 seconds timeout
+    addTimer(safetyTimeout);
     
     // Capture final weights BEFORE discharge starts
     setProductionState(prev => {
@@ -1925,6 +1954,7 @@ export const useProductionSequence = (
               console.log(`🎯 All materials discharged! Starting weighing for next mixing in parallel`);
               // ✅ Reset discharge guard
               isDischargingRef.current = false;
+              console.log('🔓 DISCHARGE FLAG: RESET to FALSE (all materials discharged)');
               setTimeout(() => checkAndStartNextMixingWeighing(), 500);
             }
             
@@ -2228,6 +2258,7 @@ export const useProductionSequence = (
             console.log(`🎯 All materials discharged! Starting weighing for next mixing in parallel`);
             // ✅ Reset discharge guard
             isDischargingRef.current = false;
+            console.log('🔓 DISCHARGE FLAG: RESET to FALSE (all materials discharged)');
             setTimeout(() => checkAndStartNextMixingWeighing(), 500);
           }
           return prev;
@@ -2375,6 +2406,7 @@ export const useProductionSequence = (
             console.log(`🎯 All materials discharged! Starting weighing for next mixing in parallel`);
             // ✅ Reset discharge guard
             isDischargingRef.current = false;
+            console.log('🔓 DISCHARGE FLAG: RESET to FALSE (all materials discharged)');
             setTimeout(() => checkAndStartNextMixingWeighing(), 500);
           }
           
@@ -2455,6 +2487,7 @@ export const useProductionSequence = (
             console.log(`🎯 All materials discharged! Starting weighing for next mixing in parallel`);
             // ✅ Reset discharge guard
             isDischargingRef.current = false;
+            console.log('🔓 DISCHARGE FLAG: RESET to FALSE (all materials discharged)');
             setTimeout(() => checkAndStartNextMixingWeighing(), 500);
           }
           
@@ -2529,6 +2562,7 @@ export const useProductionSequence = (
             console.log(`🎯 All materials discharged! Starting weighing for next mixing in parallel`);
             // ✅ Reset discharge guard
             isDischargingRef.current = false;
+            console.log('🔓 DISCHARGE FLAG: RESET to FALSE (all materials discharged)');
             setTimeout(() => checkAndStartNextMixingWeighing(), 500);
           }
           
@@ -2729,12 +2763,13 @@ export const useProductionSequence = (
             
             setProductionState(check => {
               if (check.currentStep === 'weighing' || check.isWaitingForMixer) {
-                console.error(`🔧 Detected stuck in weighing or waiting state (mixing ${check.currentMixing}/${check.jumlahMixing})`);
-                // Force reset flags
-                isWaitingForMixerRef.current = false;
-                isDischargingRef.current = false;
-                
-                // Force discharge
+              console.error(`🔧 Detected stuck in weighing or waiting state (mixing ${check.currentMixing}/${check.jumlahMixing})`);
+              // Force reset flags
+              isWaitingForMixerRef.current = false;
+              isDischargingRef.current = false;
+              console.log('🔓 DISCHARGE FLAG: RESET to FALSE (force recovery from stuck)');
+              
+              // Force discharge
                 if (lastConfigRef.current) {
                   startDischargeSequence(lastConfigRef.current, { force: true });
                 }
@@ -2818,6 +2853,13 @@ export const useProductionSequence = (
   };
 
   const completeProduction = () => {
+    // ✅ DEFENSIVE: Always reset discharge flag when completing
+    if (isDischargingRef.current) {
+      console.log('🔧 Resetting discharge flag in completeProduction (was stuck)');
+      isDischargingRef.current = false;
+      console.log('🔓 DISCHARGE FLAG: RESET to FALSE (complete production - was stuck)');
+    }
+    
     // ✅ NEW FIX: Use setState callback to get latest state
     setProductionState(prev => {
       const { currentMixing, jumlahMixing, nextMixingWeighingComplete } = prev;
