@@ -36,8 +36,22 @@ export default function MixingSequence() {
       } catch (error) {
         console.error('Error loading mixing sequence:', error);
       }
+    } else {
+      // Save initial defaults to localStorage on first load
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sequence));
+      console.log('✅ Mixing sequence initialized with defaults');
     }
   }, []);
+
+  // Auto-save whenever sequence changes
+  useEffect(() => {
+    // Skip on initial mount (handled by first useEffect)
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sequence));
+      console.log('✅ Mixing sequence auto-saved:', sequence);
+    }
+  }, [sequence]);
 
   const handleChange = (material: keyof MixingSequence, field: keyof MixingData, value: string) => {
     const numValue = parseInt(value) || 0;
