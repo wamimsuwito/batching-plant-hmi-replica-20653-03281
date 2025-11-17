@@ -307,18 +307,25 @@ export const useProductionSequence = (
     const saved = localStorage.getItem('mixing_sequence_settings');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        console.log('✅ Loaded mixing sequence from localStorage:', parsed);
+        return parsed;
       } catch (error) {
-        console.error('Error loading mixing sequence:', error);
+        console.error('❌ Error loading mixing sequence:', error);
       }
     }
-    // Default: all materials in group 1, no timer delays
-    return {
+    
+    // Fallback: use defaults and save them to localStorage
+    const defaults = {
       pasir: { mixing: 1, timer: 0 },
       batu: { mixing: 1, timer: 0 },
       semen: { mixing: 1, timer: 0 },
       air: { mixing: 1, timer: 0 },
     };
+    
+    console.warn('⚠️ No mixing sequence found in localStorage, using and saving defaults:', defaults);
+    localStorage.setItem('mixing_sequence_settings', JSON.stringify(defaults));
+    return defaults;
   };
 
   // Helper to get relay name for aggregate bins

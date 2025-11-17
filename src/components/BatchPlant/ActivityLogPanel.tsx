@@ -23,7 +23,7 @@ export const ActivityLogPanel = ({ logs }: ActivityLogPanelProps) => {
           {filledLogs.map((log, index) => (
             <div
               key={`log-${index}`}
-              className="text-green-400 text-sm font-mono min-h-[18px] leading-relaxed"
+              className="text-green-400 text-sm font-mono min-h-[18px] leading-relaxed flex items-center"
               style={{
                 opacity: log ? 1 : 0,
               }}
