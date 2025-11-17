@@ -217,6 +217,8 @@ export const useProductionSequence = (
   const isWaitingForMixerRef = useRef(false);
   // ✅ Idempotency guard for discharge sequence
   const isDischargingRef = useRef(false);
+  // ✅ NEW: Idempotency guard for weighing sequence
+  const isWeighingRef = useRef(false);
   // 🛡️ Per-material discharge guard to prevent duplicates in a sequence
   const dischargeGuardsRef = useRef<Record<string, boolean>>({});
   // 🆔 Sequence id to invalidate old discharge timers
@@ -644,6 +646,14 @@ export const useProductionSequence = (
   };
 
   const startWeighingWithJogging = async (config: ProductionConfig) => {
+    // ✅ NEW: Idempotency guard - prevent double weighing
+    if (isWeighingRef.current) {
+      console.warn('⚠️ Weighing already in progress - skipping duplicate call');
+      return;
+    }
+    
+    isWeighingRef.current = true;
+    console.log('🔒 WEIGHING FLAG: SET to TRUE (weighing starting)');
     console.log('🚀 Starting PARALLEL weighing for all materials');
     console.log('Target weights:', config.targetWeights);
     console.log('Selected bins:', config.selectedBins);
@@ -865,6 +875,10 @@ export const useProductionSequence = (
     
     // Toast removed - silent operation
     
+    // ✅ NEW: Reset weighing flag when complete
+    isWeighingRef.current = false;
+    console.log('🔓 WEIGHING FLAG: RESET to FALSE (weighing complete)');
+    
     // ✅ Check if we're waiting for mixer to finish before discharging
     if (isWaitingForMixerRef.current) {
       console.log('⏸️  Weighing complete, but WAITING for mixer door to close before discharge');
@@ -877,7 +891,13 @@ export const useProductionSequence = (
       console.log('🔍 Current state: isWaitingForMixer =', isWaitingForMixerRef.current); // ✅ NEW LOG
     } else {
       console.log('✅ Starting discharge sequence');
-      setTimeout(() => startDischargeSequence(config), 1000);
+      setTimeout(() => {
+        if (!isDischargingRef.current) {
+          startDischargeSequence(config);
+        } else {
+          console.log('⚠️ Discharge already in progress, skipping startDischargeSequence call');
+        }
+      }, 1000);
     }
   };
 
@@ -1446,6 +1466,38 @@ export const useProductionSequence = (
   };
 
   const startDischargeSequence = (config: ProductionConfig, opts?: { force?: boolean }) => {
+    // ✅ NEW: Strengthen guard - check if all materials are weighed BEFORE allowing discharge
+    if (!opts?.force) {
+      let canProceed = true;
+      
+      setProductionState(prev => {
+        const { weighingComplete } = prev;
+        
+        // Verify all materials with target > 0 are weighed
+        const allMaterialsReady = 
+          (config.targetWeights.pasir1 === 0 || weighingComplete.pasir1) &&
+          (config.targetWeights.pasir2 === 0 || weighingComplete.pasir2) &&
+          (config.targetWeights.batu1 === 0 || weighingComplete.batu1) &&
+          (config.targetWeights.batu2 === 0 || weighingComplete.batu2) &&
+          (config.targetWeights.semen === 0 || weighingComplete.semen) &&
+          (config.targetWeights.air === 0 || weighingComplete.air);
+        
+        if (!allMaterialsReady) {
+          canProceed = false;
+          console.log('⏸️ Discharge ditahan: penimbangan belum selesai');
+          console.log('Weighing status:', weighingComplete);
+          console.log('Target weights:', config.targetWeights);
+          addActivityLog('⏸️ Discharge ditahan: menunggu penimbangan selesai');
+        }
+        
+        return prev;
+      });
+      
+      if (!canProceed) {
+        return; // Exit early - weighing not complete
+      }
+    }
+    
     // ⛔ GUARD: Block discharge if waiting for mixer (unless forced)
     if (!opts?.force && isWaitingForMixerRef.current) {
       console.log('⛔ Discharge diblokir: menunggu mixer door tertutup');
@@ -2798,28 +2850,9 @@ export const useProductionSequence = (
           console.log(`🚀 Starting PARALLEL WEIGHING for Mixing ${currentMixing + 1}`);
           console.log(`⏸️  Discharge will wait until Mixing ${currentMixing} completes and door closes`);
           
-          // ✅ NEW: Add watchdog timer (60 seconds timeout)
-          const watchdogTimer = setTimeout(() => {
-            console.error(`⚠️ WATCHDOG: Weighing timeout detected after 60s at mixing ${currentMixing}/${jumlahMixing}!`);
-            console.error('🔧 FORCING discharge to prevent stuck state');
-            
-            setProductionState(check => {
-              if (check.currentStep === 'weighing' || check.isWaitingForMixer) {
-              console.error(`🔧 Detected stuck in weighing or waiting state (mixing ${check.currentMixing}/${check.jumlahMixing})`);
-              // Force reset flags
-              isWaitingForMixerRef.current = false;
-              isDischargingRef.current = false;
-              console.log('🔓 DISCHARGE FLAG: RESET to FALSE (force recovery from stuck)');
-              
-              // Force discharge
-                if (lastConfigRef.current) {
-                  startDischargeSequence(lastConfigRef.current, { force: true });
-                }
-              }
-              return check;
-            });
-          }, 60000); // 60 seconds timeout
-          addTimer(watchdogTimer);
+          // ✅ REMOVED: Watchdog timer that was forcing premature discharge
+          // The watchdog was causing discharge to start before weighing completed on large volumes
+          // Now discharge will ONLY start when weighing is confirmed complete
           
           // Refill aggregate bins for next mixing
           console.log('🔄 Refilling aggregate bins for next mixing...');
@@ -2963,7 +2996,25 @@ export const useProductionSequence = (
             },
           };
         } else {
-          // Weighing not done yet, start it now (old behavior for safety)
+          // ✅ NEW FIX: Check if weighing for next mixing already started (nextMixingReady = true)
+          if (prev.nextMixingReady) {
+            console.log('⏸️ Weighing mixing berikutnya sudah berjalan — tidak di-start ulang.');
+            console.log('💡 Menunggu weighing loop yang sudah berjalan menyelesaikan pekerjaannya.');
+            
+            // ✅ Just update state to move to next mixing, but DON'T start weighing again
+            return {
+              ...prev,
+              currentMixing: prev.currentMixing + 1,
+              currentStep: 'weighing',
+              isWaitingForMixer: false,
+              nextMixingWeighingComplete: false,
+              nextMixingReady: false,
+              dischargedMaterialsCount: 0,
+              // DON'T reset weighingComplete - the running weighing loop will update it
+            };
+          }
+          
+          // Weighing not done yet AND not started - start it now (rare edge case)
           console.log(`⚠️  Next mixing weighing NOT complete yet, starting now`);
           
           // Refill aggregate bins SEBELUM penimbangan berikutnya
