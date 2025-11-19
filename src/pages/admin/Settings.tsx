@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { forceResetStorage } from '@/utils/storageVersioning';
 
 export default function Settings() {
   const [selectedSystem, setSelectedSystem] = useState(() => {
@@ -63,6 +64,19 @@ export default function Settings() {
         description: 'Gagal menyimpan pengaturan',
         variant: 'destructive',
       });
+    }
+  };
+
+  const handleResetAllSettings = () => {
+    if (window.confirm('⚠️ PERINGATAN: Ini akan menghapus SEMUA pengaturan aplikasi dan reload aplikasi.\n\nGunakan ini jika aplikasi bermasalah setelah update.\n\nLanjutkan?')) {
+      forceResetStorage();
+      toast({
+        title: '🔄 Reset Selesai',
+        description: 'Semua pengaturan telah dihapus. Aplikasi akan reload...',
+      });
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     }
   };
 
@@ -200,7 +214,15 @@ export default function Settings() {
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
+      <div className="flex justify-between items-center gap-4">
+        <Button 
+          variant="destructive" 
+          onClick={handleResetAllSettings}
+          size="lg"
+        >
+          🗑️ Reset Semua Pengaturan
+        </Button>
+        
         <Button onClick={handleSave} size="lg">
           Simpan Setting
         </Button>
