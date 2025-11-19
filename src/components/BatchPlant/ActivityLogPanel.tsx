@@ -18,12 +18,12 @@ export const ActivityLogPanel = ({ logs }: ActivityLogPanelProps) => {
       </div>
       
       {/* Log Box */}
-      <div className="w-full h-[140px] bg-black/90 border-2 border-red-500 rounded-lg p-2 overflow-hidden shadow-lg">
-        <div className="h-full flex flex-col-reverse gap-1.5">
+      <div className="w-full h-[168px] bg-black/90 border-2 border-red-500 rounded-lg py-3 px-2 overflow-hidden shadow-lg">
+        <div className="h-full flex flex-col-reverse justify-center gap-2">
           {filledLogs.map((log, index) => (
             <div
               key={`log-${index}`}
-              className="text-green-400 text-sm font-mono min-h-[18px] leading-relaxed flex items-center"
+              className="text-green-400 text-sm font-mono h-[20px] leading-tight flex items-center"
               style={{
                 opacity: log ? 1 : 0,
               }}
