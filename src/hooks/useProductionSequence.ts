@@ -437,21 +437,49 @@ export const useProductionSequence = (
     
     console.log('📸 Saved state on pause:', pausedStateSnapshot.current);
     
-    // Matikan semua relay
-    setComponentStates(initialComponentStates);
+    // Reset weighing flag agar resume bisa jalan
+    if (isWeighingRef.current) {
+      console.log('🔓 PAUSE: Resetting isWeighingRef to allow resume');
+      isWeighingRef.current = false;
+    }
     
-    // Turn off all relays
-    controlRelay('mixer', false);
-    controlRelay('konveyor_atas', false);
+    // Matikan HANYA relay yang aman dimatikan
+    // MIXER dan KONVEYOR ATAS TETAP HIDUP untuk keamanan mesin!
+    setComponentStates(prev => ({
+      ...prev,
+      // Matikan valve material (stop penimbangan)
+      siloValves: [false, false, false, false],
+      waterValve: false,
+      cementValve: false,
+      waterHopperValve: false,
+      
+      // Matikan discharge valve
+      hopperValvePasir: false,
+      hopperValveBatu: false,
+      hopperValveSemen: false,
+      
+      // Matikan konveyor bawah dan vibrator (aman dimatikan)
+      beltBawah: false,
+      vibrator: false,
+      
+      // MIXER dan BELT ATAS TETAP HIDUP!
+      mixer: prev.mixer,
+      beltAtas: prev.beltAtas,
+    }));
+    
+    // Relay control - hanya matikan yang aman
     controlRelay('konveyor_bawah', false);
     controlRelay('vibrator', false);
+    // TIDAK matikan mixer dan konveyor_atas!
+    
+    console.log('🔒 PAUSE: Mixer dan Konveyor Atas TETAP HIDUP untuk melindungi mesin');
     
     // Stop semua timer
     clearAllTimers();
     
     isPausedRef.current = true;
     
-    addActivityLog('⏸️ Produksi di-PAUSE');
+    addActivityLog('⏸️ Produksi di-PAUSE (Mixer & Konveyor Atas tetap hidup)');
   };
 
   const resumeProduction = () => {
@@ -471,6 +499,14 @@ export const useProductionSequence = (
     const snapshot = pausedStateSnapshot.current;
     const config = lastConfigRef.current;
     
+    // Log state validation saat resume
+    console.log('🔍 RESUME - State saat resume:', {
+      step: snapshot.step,
+      weights: snapshot.weights,
+      weighingComplete: snapshot.weighingComplete,
+      currentMixing: snapshot.timers.currentMixing,
+    });
+    
     // Restore state with saved weighing progress
     setProductionState(prev => ({
       ...prev,
@@ -483,15 +519,14 @@ export const useProductionSequence = (
     
     addActivityLog('▶️ Produksi di-RESUME');
     
-    // Restart mixer dan belt atas
+    // Mixer dan konveyor atas sudah ON dari pause, pastikan mereka tetap ON
+    console.log('✅ RESUME: Mixer dan Konveyor Atas sudah aktif (tidak perlu restart)');
     setComponentStates(prev => ({ ...prev, mixer: true, beltAtas: true }));
-    controlRelay('mixer', true);
-    controlRelay('konveyor_atas', true);
     
     // Continue dari step terakhir
     switch (snapshot.step) {
       case 'weighing':
-        console.log('▶️ Resuming weighing - weights preserved, continuing');
+        console.log('▶️ Resuming weighing - weights preserved, continuing from:', snapshot.weights);
         // Just restart weighing - the currentWeights are already restored
         // Note: This will continue accumulating from current weights
         startWeighingWithJogging(config);
@@ -2349,11 +2384,22 @@ export const useProductionSequence = (
         // Check if all materials discharged
         setProductionState(prev => {
           if (prev.dischargedMaterialsCount >= prev.totalMaterialsToDischarge) {
-            console.log(`🎯 All materials discharged! Starting weighing for next mixing in parallel`);
+            const dischargeCompleteTime = Date.now();
+            console.log(`⏱️ [${new Date().toISOString()}] 🎯 All materials discharged!`);
+            console.log(`🚀 EFISIENSI: Memulai penimbangan mixing berikutnya SEGERA (tidak tunggu pintu mixer tutup)`);
+            
             // ✅ Reset discharge guard
             isDischargingRef.current = false;
             console.log('🔓 DISCHARGE FLAG: RESET to FALSE (all materials discharged)');
-            setTimeout(() => checkAndStartNextMixingWeighing(), 500);
+            
+            // ⚡ PERBAIKAN EFISIENSI: Panggil weighing mixing berikutnya SEGERA!
+            // Tidak perlu tunggu pintu mixer tutup - weighing bisa jalan paralel!
+            setTimeout(() => {
+              const weighingStartTime = Date.now();
+              const deltaMs = weighingStartTime - dischargeCompleteTime;
+              console.log(`⚡ DELTA TIME: Discharge selesai → Weighing dimulai = ${deltaMs}ms`);
+              checkAndStartNextMixingWeighing();
+            }, 100);
           }
           return prev;
         });
@@ -2840,18 +2886,15 @@ export const useProductionSequence = (
     setProductionState(prev => {
       const { dischargedMaterialsCount, totalMaterialsToDischarge, currentMixing, jumlahMixing, nextMixingReady, currentStep } = prev;
       
-      // Only start next weighing if:
-      // 1. All materials for current mixing are discharged
-      // 2. Not already started weighing for next mixing
-      // 3. There's a next mixing to do
-      // 4. We're not in complete state
-      // 5. Not currently mixing (wait for door cycle to finish)
-      // 6. Not in door cycle (wait for door to close completely)
+      // ✅ PERBAIKAN EFISIENSI: Longgarkan kondisi agar weighing bisa dimulai lebih awal
+      // Weighing bisa dimulai kapan saja setelah discharge selesai, bahkan saat:
+      // - discharging (setelah semua material kosong)
+      // - mixing (pintu mixer masih tertutup, mixer masih jalan)
+      // - door_cycle (pintu mixer sedang dumping)
+      // HANYA cek: semua material discharged + belum mulai weighing + ada mixing berikutnya
       if (dischargedMaterialsCount >= totalMaterialsToDischarge && 
           !nextMixingReady && 
-          currentStep !== 'complete' &&
-          currentStep !== 'mixing' &&
-          currentStep !== 'door_cycle') {
+          currentStep !== 'complete') {
         if (currentMixing < jumlahMixing) {
           console.log(`🔄 All materials discharged for Mixing ${currentMixing}!`);
           console.log(`🚀 Starting PARALLEL WEIGHING for Mixing ${currentMixing + 1}`);
