@@ -529,10 +529,17 @@ export const Mixer = ({
             strokeWidth="12"
             strokeLinecap="round"
             strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
+            strokeDashoffset={
+              // Snap ke 0 atau circumference untuk precision
+              progressPercentage >= 99.5 
+                ? (isDoorMode ? circumference : 0)  
+                : progressPercentage <= 0.5 
+                  ? (isDoorMode ? 0 : circumference)  
+                  : strokeDashoffset
+            }
             transform="rotate(-90)"
             style={{ 
-              transition: (isTimerActive || isDoorMode) ? 'stroke-dashoffset 1s linear' : 'none',
+              transition: 'stroke-dashoffset 0.3s ease-out',
               filter: (isTimerActive || isDoorMode) 
                 ? isDoorMode 
                   ? 'drop-shadow(0 0 12px rgba(239, 68, 68, 0.6))' 
@@ -552,7 +559,10 @@ export const Mixer = ({
               fontFamily: 'monospace'
             }}
           >
-            {isDoorMode ? doorTimeRemaining : (isTimerActive ? mixingTimeRemaining : 0)}
+            {isDoorMode 
+              ? Math.ceil(doorTimeRemaining)
+              : (isTimerActive ? Math.ceil(mixingTimeRemaining) : 0)
+            }
           </text>
           
           {/* Label above circle - ENLARGED 50% */}
@@ -575,23 +585,19 @@ export const Mixer = ({
             Mix {currentMixing} Dari {totalMixing}
           </text>
           
-          {/* Indicator dot - animate only when active - ENLARGED 50% */}
+          {/* Indicator dot - animate only when active - ENLARGED 50% - SYNCED WITH PROGRESS */}
           {(isTimerActive || isDoorMode) && (
             <circle
               cx="38"
               cy="-8"
               r="6"
               className={isDoorMode ? "fill-red-400" : "fill-yellow-400"}
-            >
-              <animateTransform
-                attributeName="transform"
-                type="rotate"
-                from="0 0 0"
-                to={isDoorMode ? "-360 0 0" : "360 0 0"}
-                dur="2s"
-                repeatCount="indefinite"
-              />
-            </circle>
+              transform={`rotate(${isDoorMode ? -progressPercentage * 3.6 : progressPercentage * 3.6} 0 0)`}
+              style={{
+                transition: 'transform 0.3s ease-out',
+                filter: 'drop-shadow(0 0 6px currentColor)'
+              }}
+            />
           )}
         </g>
       )}

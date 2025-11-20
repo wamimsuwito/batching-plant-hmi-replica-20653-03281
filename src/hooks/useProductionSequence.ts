@@ -225,6 +225,22 @@ export const useProductionSequence = (
   const dischargeSeqIdRef = useRef(0);
   // ✅ Cumulative weights tracker across all mixings
   const cumulativeActualWeights = useRef({ pasir: 0, batu: 0, semen: 0, air: 0 });
+  
+  // Watchdog state untuk monitor stuck material
+  const watchdogTimersRef = useRef<Record<string, NodeJS.Timeout | null>>({
+    pasir: null,
+    batu: null,
+    semen: null,
+    air: null,
+  });
+  
+  const lastWeightRef = useRef<Record<string, number>>({
+    pasir: 0,
+    batu: 0,
+    semen: 0,
+    air: 0,
+  });
+  
   const pausedStateSnapshot = useRef<{
     step: string;
     weights: any;
@@ -477,6 +493,13 @@ export const useProductionSequence = (
     // Stop semua timer
     clearAllTimers();
     
+    // Clear all watchdog timers
+    Object.values(watchdogTimersRef.current).forEach(timer => {
+      if (timer) clearTimeout(timer);
+    });
+    watchdogTimersRef.current = { pasir: null, batu: null, semen: null, air: null };
+    console.log('🐕 All watchdog timers cleared on pause');
+    
     isPausedRef.current = true;
     
     addActivityLog('⏸️ Produksi di-PAUSE (Mixer & Konveyor Atas tetap hidup)');
@@ -556,6 +579,13 @@ export const useProductionSequence = (
 
   const stopProduction = () => {
     clearAllTimers();
+    
+    // Clear all watchdog timers
+    Object.values(watchdogTimersRef.current).forEach(timer => {
+      if (timer) clearTimeout(timer);
+    });
+    watchdogTimersRef.current = { pasir: null, batu: null, semen: null, air: null };
+    console.log('🐕 All watchdog timers cleared on stop');
     
     // Clear mixer idle timer if exists
     if (mixerIdleTimerRef.current) {
@@ -1779,12 +1809,14 @@ export const useProductionSequence = (
           maxGroupDuration = materialEndTime;
         }
         
+        const dischargeCompletionTime = totalDelay + dischargeDuration;
+        
         const dischargeTimer = setTimeout(() => {
           if (mySeqId !== dischargeSeqIdRef.current) {
             console.warn('⏭️ Skip timer from old sequence (group)', mySeqId);
             return;
           }
-          console.log(`💧 Discharging ${material} from group ${groupNum}`);
+          console.log(`💧 Discharging ${material} from group ${groupNum} (will complete at +${dischargeCompletionTime}ms)`);
           dischargeMaterial(material, targetWeight, config);
         }, totalDelay);
         addTimer(dischargeTimer);
@@ -2269,6 +2301,15 @@ export const useProductionSequence = (
       let capturedInitialPasirWeight = 0;
       let capturedInitialBatuWeight = 0;
       
+      // Start watchdog monitor after 5 seconds
+      setTimeout(() => {
+        setProductionState(prev => {
+          startWatchdogMonitor('pasir', prev.currentWeights.pasir || 0);
+          startWatchdogMonitor('batu', prev.currentWeights.batu || 0);
+          return prev;
+        });
+      }, 5000);
+      
       setProductionState(prev => {
         const snap = finalSnapshotRef.current || { pasir: 0, batu: 0, semen: 0, air: 0 };
         const snapAgg = (snap.pasir || 0) + (snap.batu || 0);
@@ -2562,6 +2603,14 @@ export const useProductionSequence = (
       setComponentStates(prev => ({ ...prev, cementValve: true }));
       addActivityLog('🟢 Dump Semen ON');
       
+      // Start watchdog monitor after 5 seconds
+      setTimeout(() => {
+        setProductionState(prev => {
+          startWatchdogMonitor('semen', prev.currentWeights.semen || 0);
+          return prev;
+        });
+      }, 5000);
+      
       // Animate semen weight reduction (150kg → 0kg)
       const dischargeDuration = Math.max(8000, targetWeight * 40);
       const animationSteps = 20;
@@ -2571,9 +2620,13 @@ export const useProductionSequence = (
       
       const animationInterval = setInterval(() => {
         setProductionState(prev => {
-          const currentWeight = prev.currentWeights.semen;
+          const currentCementWeight = prev.currentWeights.semen;
+          
+          // Update watchdog
+          updateWatchdog('semen', currentCementWeight);
+          
           const currentFill = prev.hopperFillLevels.semen || 0;
-          const newWeight = Math.max(0, currentWeight - (targetWeight / animationSteps));
+          const newWeight = Math.max(0, currentCementWeight - (targetWeight / animationSteps));
           const newFill = Math.max(0, currentFill - (100 / animationSteps));
           
           if (Math.round(newWeight) % 20 === 0) {
@@ -2648,6 +2701,14 @@ export const useProductionSequence = (
       controlRelay('water_hopper_discharge', true);
       addActivityLog('🟢 Dump Air ON');
       
+      // Start watchdog monitor after 5 seconds
+      setTimeout(() => {
+        setProductionState(prev => {
+          startWatchdogMonitor('air', prev.currentWeights.air || 0);
+          return prev;
+        });
+      }, 5000);
+      
       // Animate weigh hopper depletion (fill level 100% → 0%)
       const dischargeDuration = Math.max(3000, targetWeight * 30);
       const animationSteps = 20;
@@ -2655,10 +2716,14 @@ export const useProductionSequence = (
       
       const animationInterval = setInterval(() => {
         setProductionState(prev => {
+          const currentWaterWeight = prev.currentWeights.air;
+          
+          // Update watchdog
+          updateWatchdog('air', currentWaterWeight);
+          
           const currentFill = prev.hopperFillLevels.air;
-          const currentWeight = prev.currentWeights.air;
           const newFill = Math.max(0, currentFill - (100 / animationSteps));
-          const newWeight = Math.max(0, currentWeight - (targetWeight / animationSteps));
+          const newWeight = Math.max(0, currentWaterWeight - (targetWeight / animationSteps));
           
           return {
             ...prev,
@@ -2726,6 +2791,112 @@ export const useProductionSequence = (
     // NOTE: Cement valve is now closed in its own clearTimer (line 798) after animation completes
     // Water valve is already closed in its clearTimer (line 880)
     // Aggregate hopper valves are closed in their clearTimer (line 744)
+  };
+
+  /**
+   * ⏱️ WATCHDOG: Monitor material stuck di weighing hopper
+   * Jika material tidak berkurang selama threshold time, anggap discharge selesai
+   */
+  const startWatchdogMonitor = (material: 'pasir' | 'batu' | 'semen' | 'air', currentWeight: number) => {
+    // Threshold berdasarkan material type
+    const threshold = (material === 'pasir' || material === 'batu') ? 30 : 5; // kg
+    const timeoutDuration = 60000; // 60 detik
+    
+    // Clear existing watchdog jika ada
+    if (watchdogTimersRef.current[material]) {
+      clearTimeout(watchdogTimersRef.current[material]!);
+      watchdogTimersRef.current[material] = null;
+    }
+    
+    // Hanya start watchdog jika weight di bawah threshold
+    if (currentWeight <= threshold && currentWeight > 0.1) {
+      console.log(`🐕 WATCHDOG START: ${material} at ${currentWeight}kg (threshold: ${threshold}kg)`);
+      
+      lastWeightRef.current[material] = currentWeight;
+      
+      watchdogTimersRef.current[material] = setTimeout(() => {
+        // Cek apakah weight masih stuck
+        const latestWeight = lastWeightRef.current[material];
+        
+        if (latestWeight > 0.1 && latestWeight <= threshold) {
+          console.warn(`⚠️ WATCHDOG TRIGGERED: ${material} stuck at ${latestWeight}kg for 60s → FORCE to 0kg`);
+          addActivityLog(`⚠️ ${material.toUpperCase()} stuck di hopper → paksa selesai`);
+          
+          // Force weight to 0
+          setProductionState(prev => ({
+            ...prev,
+            currentWeights: {
+              ...prev.currentWeights,
+              [material]: 0,
+            },
+            hopperFillLevels: {
+              ...prev.hopperFillLevels,
+              [material]: 0,
+            }
+          }));
+          
+          // Check if all materials discharged now
+          setTimeout(() => {
+            checkAllMaterialsDischargedAfterWatchdog();
+          }, 500);
+        }
+      }, timeoutDuration);
+    }
+  };
+
+  /**
+   * Update watchdog saat weight berubah
+   */
+  const updateWatchdog = (material: 'pasir' | 'batu' | 'semen' | 'air', newWeight: number) => {
+    const threshold = (material === 'pasir' || material === 'batu') ? 30 : 5;
+    
+    // Jika weight turun signifikan (>0.5kg), restart watchdog
+    const lastWeight = lastWeightRef.current[material];
+    if (Math.abs(lastWeight - newWeight) > 0.5) {
+      lastWeightRef.current[material] = newWeight;
+      
+      // Clear old watchdog
+      if (watchdogTimersRef.current[material]) {
+        clearTimeout(watchdogTimersRef.current[material]!);
+        watchdogTimersRef.current[material] = null;
+      }
+      
+      // Restart if still in threshold range
+      if (newWeight > 0.1 && newWeight <= threshold) {
+        startWatchdogMonitor(material, newWeight);
+      }
+    }
+  };
+
+  /**
+   * Check completion setelah watchdog force material ke 0
+   */
+  const checkAllMaterialsDischargedAfterWatchdog = () => {
+    setProductionState(prev => {
+      const allDischarged = 
+        prev.currentWeights.pasir <= 0.1 &&
+        prev.currentWeights.batu <= 0.1 &&
+        prev.currentWeights.semen <= 0.1 &&
+        prev.currentWeights.air <= 0.1;
+      
+      if (allDischarged && prev.currentStep === 'discharging') {
+        console.log('✅ WATCHDOG: All materials now discharged → continue to next step');
+        addActivityLog('✅ Semua material selesai (watchdog assist)');
+        
+        // Clear discharge guard
+        isDischargingRef.current = false;
+        
+        // Lanjut ke mixing atau door cycle
+        if (prev.currentMixing < (lastConfigRef.current?.jumlahMixing || 1)) {
+          setTimeout(() => checkAndStartNextMixingWeighing(), 500);
+        } else {
+          // Last mixing - prepare for door cycle
+          console.log('🚪 Ready for door cycle after watchdog');
+        }
+      }
+      
+      return prev;
+    });
   };
 
   const startMixing = (config: ProductionConfig) => {
