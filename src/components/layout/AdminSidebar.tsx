@@ -10,7 +10,8 @@ import {
   LayoutDashboard,
   ListOrdered,
   Cable,
-  FileText
+  FileText,
+  Activity
 } from 'lucide-react';
 import {
   Sidebar,
@@ -39,6 +40,7 @@ const menuItems = [
   { title: 'Joging Material', url: '/admin/material-jogging', icon: PackageSearch },
   { title: 'Database Produksi', url: '/admin/production-database', icon: Database },
   { title: 'Print Tiket', url: '/admin/print-ticket', icon: Printer },
+  { title: 'Kalibrasi Slump', url: '/admin/slump-calibration', icon: Activity },
 ];
 
 export function AdminSidebar() {

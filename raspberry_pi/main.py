@@ -22,6 +22,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 from scale_reader import ScaleReader
 from modbus_controller import ModbusController
 from websocket_server import WebSocketServer
+from ampere_reader import AmpereReader
 from utils.logger import setup_logger
 
 class BatchPlantController:
@@ -44,10 +45,21 @@ class BatchPlantController:
         
         self.scale_reader = ScaleReader(self.config)
         self.modbus_controller = ModbusController(self.config)
+        
+        # Initialize ampere meter (optional)
+        self.ampere_reader = None
+        if self.config.get('ampere_meter', {}).get('enabled', False):
+            try:
+                self.ampere_reader = AmpereReader(self.config)
+                print("✅ Ampere meter (PZEM-016) initialized")
+            except Exception as e:
+                print(f"⚠️ Ampere meter disabled: {e}")
+        
         self.websocket_server = WebSocketServer(
             self.config,
             self.scale_reader,
-            self.modbus_controller
+            self.modbus_controller,
+            self.ampere_reader
         )
         
         # Setup signal handlers for graceful shutdown

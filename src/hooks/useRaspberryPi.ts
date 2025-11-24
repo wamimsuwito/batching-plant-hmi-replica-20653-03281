@@ -28,6 +28,16 @@ interface PhysicalButtonUpdateMessage {
   timestamp: number;
 }
 
+interface AmpereUpdateMessage {
+  type: 'ampere_update';
+  timestamp: number;
+  data: {
+    voltage: number;
+    ampere: number;
+    power: number;
+  };
+}
+
 export const useRaspberryPi = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [actualWeights, setActualWeights] = useState<ActualWeights>({
@@ -41,6 +51,14 @@ export const useRaspberryPi = () => {
   
   // Physical button states from ESP32
   const [physicalButtonStates, setPhysicalButtonStates] = useState<Record<string, boolean>>({});
+  
+  // Ampere meter data from PZEM-016
+  const [ampereData, setAmpereData] = useState({
+    voltage: 0,
+    ampere: 0,
+    power: 0,
+    lastUpdate: 0,
+  });
   
   // Production mode: "production" or "simulation" (default)
   const [productionMode, setProductionModeState] = useState<'production' | 'simulation'>(() => {
@@ -112,6 +130,13 @@ export const useRaspberryPi = () => {
                 [msg.relay]: false,
               }));
             }, 3000);
+          } else if (data.type === 'ampere_update') {
+            // Handle ampere meter data from PZEM-016
+            const msg = data as AmpereUpdateMessage;
+            setAmpereData({
+              ...msg.data,
+              lastUpdate: Date.now(),
+            });
           } else if (data.type === 'error') {
             console.error('Raspberry Pi error:', data.message);
           }
@@ -204,5 +229,6 @@ export const useRaspberryPi = () => {
     productionMode,
     setProductionMode,
     physicalButtonStates,
+    ampereData,
   };
 };

@@ -34,6 +34,7 @@ import { ManualProductionPanel } from "@/components/ManualProductionPanel";
 import { ManualFormDialog } from "@/components/BatchPlant/ManualFormDialog";
 import { AggregateNoteDialog } from "@/components/BatchPlant/AggregateNoteDialog";
 import { PhysicalButtonLED } from "@/components/BatchPlant/PhysicalButtonLED";
+import { AmpereMeterDisplay } from "@/components/BatchPlant/AmpereMeterDisplay";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import farikaLogo from "@/assets/farika-logo.png";
@@ -1474,6 +1475,10 @@ const Index = () => {
 
           </svg>
 
+          {/* Ampere Meter and Slump Estimation Display */}
+          <div className="absolute bottom-4 left-4 w-[600px]">
+            <AmpereMeterDisplay />
+          </div>
           
           {/* Control Buttons - Right Side */}
           <div className="absolute bottom-4 right-[200px] flex flex-col gap-4 items-center">

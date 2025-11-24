@@ -55,5 +55,11 @@
     "watchdog_timeout_seconds": 5,
     "max_door_open_seconds": 30,
     "weight_spike_threshold_kg": 50
+  },
+  "ampere_meter": {
+    "port": "COM6",
+    "slave_id": 10,
+    "baudrate": 9600,
+    "enabled": true
   }
 }

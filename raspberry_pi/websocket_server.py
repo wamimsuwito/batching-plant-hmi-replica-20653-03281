@@ -11,10 +11,11 @@ import time
 from typing import Set
 
 class WebSocketServer:
-    def __init__(self, config: dict, scale_reader, modbus_controller):
+    def __init__(self, config: dict, scale_reader, modbus_controller, ampere_reader=None):
         self.config = config
         self.scale_reader = scale_reader
         self.modbus_controller = modbus_controller
+        self.ampere_reader = ampere_reader
         self.host = config['websocket_host']
         self.port = config['websocket_port']
         self.clients: Set[websockets.WebSocketServerProtocol] = set()
@@ -116,6 +117,39 @@ class WebSocketServer:
             
             await asyncio.sleep(update_interval)
     
+    async def broadcast_ampere(self):
+        """Broadcast ampere meter data to all connected clients"""
+        if not self.ampere_reader:
+            return  # Ampere meter not available
+        
+        update_interval = 0.5  # 500ms update rate
+        
+        while self.running:
+            if self.clients:
+                # Get current ampere data
+                ampere_data = self.ampere_reader.get_all_data()
+                
+                if ampere_data:
+                    # Create message
+                    message = {
+                        'type': 'ampere_update',
+                        'timestamp': int(time.time() * 1000),
+                        'data': ampere_data
+                    }
+                    
+                    # Broadcast to all clients
+                    disconnected = set()
+                    for client in self.clients:
+                        try:
+                            await client.send(json.dumps(message))
+                        except:
+                            disconnected.add(client)
+                    
+                    # Remove disconnected clients
+                    self.clients -= disconnected
+            
+            await asyncio.sleep(update_interval)
+    
     async def start_server(self):
         """Start WebSocket server"""
         self.running = True
@@ -124,8 +158,15 @@ class WebSocketServer:
         async with websockets.serve(self.handle_client, self.host, self.port):
             print(f"✅ WebSocket server started on ws://{self.host}:{self.port}")
             
-            # Start broadcasting weights
-            await self.broadcast_weights()
+            # Start broadcasting tasks
+            if self.ampere_reader:
+                print("✅ Ampere meter broadcasting enabled")
+                await asyncio.gather(
+                    self.broadcast_weights(),
+                    self.broadcast_ampere()
+                )
+            else:
+                await self.broadcast_weights()
     
     def start(self):
         """Start server (blocking)"""
