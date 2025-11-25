@@ -10,55 +10,44 @@ export const AmpereMeterDisplay = () => {
   const isDataAvailable = productionMode === 'production' && isConnected;
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="flex flex-col gap-2 w-[220px]">
       {/* Ampere Display */}
-      <Card className="p-6 bg-card border-cyan-500/30 border-2">
+      <Card className="p-3 bg-card border-cyan-500/30 border-2">
         <div className="text-center">
-          <p className="text-muted-foreground text-sm mb-2 font-medium">Konsumsi Listrik Mixer</p>
-          <div className="relative">
-            <p className="text-7xl font-bold text-cyan-400 tabular-nums">
-              {isDataAvailable ? ampereData.ampere.toFixed(1) : '--'}
-            </p>
-            <p className="text-muted-foreground text-lg mt-2">Ampere</p>
-          </div>
-          
-          {/* Additional info */}
-          {isDataAvailable && (
-            <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-              <div className="text-left">
-                <span className="text-muted-foreground">Tegangan:</span>
-                <span className="ml-2 text-foreground font-semibold">{ampereData.voltage.toFixed(0)}V</span>
-              </div>
-              <div className="text-right">
-                <span className="text-muted-foreground">Daya:</span>
-                <span className="ml-2 text-foreground font-semibold">{(ampereData.power / 1000).toFixed(1)}kW</span>
-              </div>
-            </div>
-          )}
+          <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide mb-1">
+            Ampere Mixer
+          </p>
+          <p className="text-4xl font-bold text-cyan-400 tabular-nums">
+            {isDataAvailable ? ampereData.ampere.toFixed(1) : '--'}
+          </p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">A</p>
           
           {/* Progress bar */}
-          <div className="mt-4 bg-muted h-3 rounded-full overflow-hidden">
+          <div className="mt-2 bg-muted h-1.5 rounded-full overflow-hidden">
             <div 
               className="h-full bg-gradient-to-r from-cyan-500 to-yellow-500 transition-all duration-500 rounded-full"
               style={{ width: `${isDataAvailable ? Math.min((ampereData.ampere / 150) * 100, 100) : 0}%` }}
             />
           </div>
           
-          <div className="flex justify-between text-xs text-muted-foreground mt-2">
-            <span>80A (encer)</span>
-            <span>130A (kental)</span>
-          </div>
+          {/* Compact info */}
+          {isDataAvailable && (
+            <div className="mt-1.5 flex justify-between text-[9px] text-muted-foreground">
+              <span>{ampereData.voltage.toFixed(0)}V</span>
+              <span>{(ampereData.power / 1000).toFixed(1)}kW</span>
+            </div>
+          )}
 
           {!isDataAvailable && (
-            <p className="text-xs text-muted-foreground mt-3">
-              {productionMode === 'simulation' ? '🎮 Mode Simulasi' : '⚠️ Tidak terhubung'}
+            <p className="text-[9px] text-muted-foreground mt-2">
+              {productionMode === 'simulation' ? '🎮 Simulasi' : '⚠️ N/A'}
             </p>
           )}
         </div>
       </Card>
 
       {/* Slump Estimation */}
-      <Card className={`p-6 border-2 transition-colors ${
+      <Card className={`p-3 border-2 transition-colors ${
         !isDataAvailable ? 'bg-card border-border' :
         slumpStatus.color === 'green' ? 'bg-green-950/20 border-green-500/50' :
         slumpStatus.color === 'yellow' ? 'bg-yellow-950/20 border-yellow-500/50' :
@@ -66,31 +55,31 @@ export const AmpereMeterDisplay = () => {
         'bg-red-950/20 border-red-500/50'
       }`}>
         <div className="text-center">
-          <p className="text-muted-foreground text-sm mb-2 font-medium">Estimasi Slump Beton</p>
-          <div className="text-6xl mb-3">
+          <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide mb-1">
+            Estimasi Slump
+          </p>
+          <div className="text-3xl mb-1">
             {isDataAvailable ? slumpStatus.icon : '❓'}
           </div>
-          <p className="text-7xl font-bold text-foreground tabular-nums">
+          <p className="text-4xl font-bold text-foreground tabular-nums">
             {isDataAvailable ? estimatedSlump : '--'}
           </p>
-          <p className="text-muted-foreground text-lg mt-2">cm</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">cm</p>
           
           {isDataAvailable && (
-            <div className="mt-4">
-              <p className={`text-xl font-semibold ${
-                slumpStatus.color === 'green' ? 'text-green-400' :
-                slumpStatus.color === 'yellow' ? 'text-yellow-400' :
-                slumpStatus.color === 'orange' ? 'text-orange-400' :
-                'text-red-400'
-              }`}>
-                {slumpStatus.label}
-              </p>
-            </div>
+            <p className={`text-sm font-semibold mt-1.5 ${
+              slumpStatus.color === 'green' ? 'text-green-400' :
+              slumpStatus.color === 'yellow' ? 'text-yellow-400' :
+              slumpStatus.color === 'orange' ? 'text-orange-400' :
+              'text-red-400'
+            }`}>
+              {slumpStatus.label}
+            </p>
           )}
 
           {!isDataAvailable && (
-            <p className="text-xs text-muted-foreground mt-4">
-              Data tidak tersedia
+            <p className="text-[9px] text-muted-foreground mt-1">
+              {productionMode === 'simulation' ? '🎮 Simulasi' : '⚠️ N/A'}
             </p>
           )}
         </div>
