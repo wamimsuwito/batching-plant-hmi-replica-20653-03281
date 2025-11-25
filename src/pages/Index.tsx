@@ -1475,8 +1475,8 @@ const Index = () => {
 
           </svg>
 
-          {/* Ampere Meter and Slump Estimation Display */}
-          <div className="absolute bottom-4 left-4 w-[600px]">
+          {/* Ampere Meter and Slump Estimation Display - TOP RIGHT */}
+          <div className="absolute top-2 left-[700px]">
             <AmpereMeterDisplay />
           </div>
           
