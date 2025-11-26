@@ -35,6 +35,7 @@ import { ManualFormDialog } from "@/components/BatchPlant/ManualFormDialog";
 import { AggregateNoteDialog } from "@/components/BatchPlant/AggregateNoteDialog";
 import { PhysicalButtonLED } from "@/components/BatchPlant/PhysicalButtonLED";
 import { AmpereMeterDisplay } from "@/components/BatchPlant/AmpereMeterDisplay";
+import { MoistureControlDialog } from "@/components/BatchPlant/MoistureControlDialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import farikaLogo from "@/assets/farika-logo.png";
@@ -72,6 +73,8 @@ const Index = () => {
   const [stableWeights, setStableWeights] = useState({ pasir: 0, batu: 0, semen: 0, air: 0, aggregate: 0 });
   const weightStabilizationTimer = useRef<NodeJS.Timeout | null>(null);
   const [bpNaming, setBpNaming] = useState<{inisialBP?: string; nomorBP?: string}>({});
+  const [moistureControlDialogOpen, setMoistureControlDialogOpen] = useState(false);
+  const [moistureSettings, setMoistureSettings] = useState({ pasir: 0, batu: 0, air: 0 });
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -180,6 +183,19 @@ const Index = () => {
   useEffect(() => {
     localStorage.setItem('auto_print_enabled', JSON.stringify(autoPrintEnabled));
   }, [autoPrintEnabled]);
+
+  // Load moisture control settings on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('moisture_control_settings');
+    if (saved) {
+      try {
+        const settings = JSON.parse(saved);
+        setMoistureSettings(settings);
+      } catch (error) {
+        console.error('Error loading moisture control settings:', error);
+      }
+    }
+  }, []);
 
   // Check license on mount (only in Electron)
   useEffect(() => {
@@ -1002,6 +1018,15 @@ const Index = () => {
         }}
       />
 
+      {/* Moisture Control Dialog */}
+      <MoistureControlDialog
+        open={moistureControlDialogOpen}
+        onOpenChange={setMoistureControlDialogOpen}
+        onSettingsChange={(settings) => {
+          setMoistureSettings(settings);
+        }}
+      />
+
       {/* Main HMI Panel */}
       <main className="flex-1 p-4">
         <div className="w-full h-[calc(100vh-100px)] border-4 border-hmi-border bg-hmi-panel relative overflow-hidden">
@@ -1726,6 +1751,23 @@ const Index = () => {
             )}
           </div>
 
+
+          {/* Moisture Control Button - Above Quarry Aggregate button */}
+          <button
+            onClick={() => setMoistureControlDialogOpen(true)}
+            className={`absolute bottom-[140px] right-2 w-32 h-16 border-4 rounded-lg transition-all shadow-lg flex flex-col items-center justify-center gap-1 z-40 ${
+              moistureSettings.pasir !== 0 || moistureSettings.batu !== 0 || moistureSettings.air !== 0
+                ? 'bg-teal-600 border-teal-800 hover:bg-teal-700 ring-2 ring-teal-400/50'
+                : 'bg-teal-600 border-teal-800 hover:bg-teal-700'
+            }`}
+          >
+            <div className="text-white text-xs font-bold">
+              MOISTURE
+            </div>
+            <div className="text-white text-xs font-bold">
+              CONTROL
+            </div>
+          </button>
 
           {/* Quarry Aggregate Button - Positioned above Print button - Shows in both Manual and Auto modes */}
           <button
