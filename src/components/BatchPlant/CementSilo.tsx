@@ -92,7 +92,7 @@ export const CementSilo = ({
         x="20"
         y="75"
         textAnchor="middle"
-        className="fill-white text-[9px] font-bold"
+        className="fill-white text-[11px] font-bold"
         style={{ 
           textShadow: '0 0 2px black, 0 0 2px black',
           pointerEvents: 'none'
