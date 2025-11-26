@@ -158,6 +158,23 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
       additive: (parseFloat(selectedFormula.additive) || 0) * batchVolume,
     };
     
+    // Load moisture control settings and apply to water
+    const moistureSettings = JSON.parse(
+      localStorage.getItem('moisture_control_settings') || 
+      '{"pasir":0,"batu":0,"air":0}'
+    );
+    
+    // Calculate total moisture adjustment
+    const totalMoistureAdjustment = 
+      moistureSettings.pasir + 
+      moistureSettings.batu + 
+      moistureSettings.air;
+    
+    // Apply moisture adjustment to water
+    const adjustedWater = Math.round(
+      totalWeights.air * (1 + totalMoistureAdjustment / 100)
+    );
+    
     // Divide equally per mixing
     const targetWeights = {
       semen: totalWeights.semen / mixingCount,
@@ -165,7 +182,7 @@ export function BatchStartDialog({ open, onOpenChange, onStart, silos }: BatchSt
       pasir2: totalWeights.pasir2 / mixingCount,
       batu1: totalWeights.batu1 / mixingCount,
       batu2: totalWeights.batu2 / mixingCount,
-      air: totalWeights.air / mixingCount,
+      air: adjustedWater / mixingCount,
       additive: totalWeights.additive / mixingCount,
     };
 
