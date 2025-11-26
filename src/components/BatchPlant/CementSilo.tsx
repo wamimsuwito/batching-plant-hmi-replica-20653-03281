@@ -21,6 +21,10 @@ export const CementSilo = ({
   const percentage = capacity > 0 ? (currentVolume / capacity) * 100 : 0;
   const calculatedFillLevel = (percentage / 100) * 108; // 108 is the height of silo body
 
+  // Convert kg to tons and format with comma (Indonesian locale)
+  const volumeInTons = currentVolume / 1000;
+  const formattedVolume = volumeInTons.toFixed(2).replace('.', ',');
+
   return (
     <g transform={`translate(${x}, ${y})`}>
       {/* Silo body */}
@@ -82,6 +86,20 @@ export const CementSilo = ({
         className="fill-equipment-conveyor stroke-hmi-border"
         strokeWidth="1"
       />
+      
+      {/* Volume Display - Inside Silo Body */}
+      <text
+        x="20"
+        y="75"
+        textAnchor="middle"
+        className="fill-white text-[9px] font-bold"
+        style={{ 
+          textShadow: '0 0 2px black, 0 0 2px black',
+          pointerEvents: 'none'
+        }}
+      >
+        {formattedVolume}
+      </text>
       
       {/* Label */}
       {label && (
