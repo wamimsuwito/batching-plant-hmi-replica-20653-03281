@@ -3317,10 +3317,42 @@ export const useProductionSequence = (
           const existingData = localStorage.getItem(storageKey);
           const existingRecords = existingData ? JSON.parse(existingData) : [];
           
+          // Get operator name from localStorage
+          let operatorName: string | undefined;
+          try {
+            const savedOperator = localStorage.getItem('logged_operator');
+            if (savedOperator) {
+              const operator = JSON.parse(savedOperator);
+              operatorName = operator.namaUser;
+            }
+          } catch (error) {
+            console.error('Error loading operator name:', error);
+          }
+
+          // Get serial number from the batch config saved in Index.tsx
+          let serialNumber: string | undefined;
+          try {
+            // Try to access the serialNumber that was saved when starting production
+            // This is typically stored in the batchConfig or can be accessed from parent scope
+            const bpNaming = localStorage.getItem('bp_naming');
+            if (bpNaming) {
+              const naming = JSON.parse(bpNaming);
+              if (naming.inisialBP && naming.nomorBP) {
+                // Generate a simple counter-based serial for now
+                const counter = Date.now().toString().slice(-7);
+                serialNumber = `${naming.inisialBP}-${naming.nomorBP}-${counter}`;
+              }
+            }
+          } catch (error) {
+            console.error('Error generating serial number:', error);
+          }
+
           // Create production record
           const productionRecord = {
             id: `prod_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             timestamp: new Date().toISOString(),
+            serialNumber,
+            operatorName,
             mixingNumber: jumlahMixing,
             totalMixings: jumlahMixing,
             materials: {

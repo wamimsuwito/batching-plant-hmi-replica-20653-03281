@@ -8,6 +8,8 @@ import { Calendar, Download, Search } from 'lucide-react';
 interface ProductionRecord {
   id: string;
   timestamp: string;
+  serialNumber?: string;
+  operatorName?: string;
   mixingNumber: number;
   totalMixings: number;
   materials: {
@@ -96,6 +98,8 @@ export default function ProductionDatabase() {
 
     const headers = [
       'Timestamp',
+      'No. Seri',
+      'Nama Operator',
       'Mixing',
       'Total Mixing',
       'Pasir 1 (kg)',
@@ -115,6 +119,8 @@ export default function ProductionDatabase() {
         // Create array of values in exact order as headers
         const row = [
           escapeCSV(record.timestamp),
+          escapeCSV(record.serialNumber || '-'),
+          escapeCSV(record.operatorName || '-'),
           escapeCSV(record.mixingNumber),
           escapeCSV(record.totalMixings),
           escapeCSV(record.materials.pasir1 || 0),

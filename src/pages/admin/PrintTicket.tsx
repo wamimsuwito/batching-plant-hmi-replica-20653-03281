@@ -11,6 +11,7 @@ export interface TicketData {
   jobOrder: string;
   productionType?: 'AUTO' | 'MANUAL';
   serialNumber?: string;
+  operatorName?: string;
   nomorPO: string;
   tanggal: string;
   jamMulai: string;
@@ -278,7 +279,11 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
             </div>
             <div className="text-center">
               <p className="text-xs print:text-[10px] mb-12 print:mb-10 font-semibold">Operator,</p>
-              <div className="border-t border-black pt-1 w-32 mx-auto"></div>
+              <div className="border-t border-black pt-1 w-32 mx-auto">
+                {ticketData.operatorName && (
+                  <p className="text-xs print:text-[10px] font-medium mt-1">{ticketData.operatorName}</p>
+                )}
+              </div>
             </div>
             <div className="text-center">
               <p className="text-xs print:text-[10px] mb-12 print:mb-10 font-semibold">Quality Control,</p>
