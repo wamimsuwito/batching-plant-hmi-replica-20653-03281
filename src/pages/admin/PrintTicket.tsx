@@ -54,6 +54,13 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
     window.print();
   };
 
+  // Extract BP code from serial number (e.g., "PKU-BP#1-0000002" → "BP#1")
+  const extractBPCode = (serialNumber?: string) => {
+    if (!serialNumber) return 'BP#1';
+    const match = serialNumber.match(/BP#\d+/);
+    return match ? match[0] : 'BP#1';
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto print:max-w-full print:h-auto">
@@ -84,7 +91,7 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
 
           {/* Title */}
           <h2 className="text-center text-base print:text-sm font-bold mb-3 print:mb-2 bg-gray-100 py-1.5 print:py-1">
-            BUKTI TIMBANG (BP-1)
+            BUKTI TIMBANG ({extractBPCode(ticketData.serialNumber)})
             {ticketData.productionType && (
               <span className={`ml-2 text-xs px-2 py-0.5 rounded ${
                 ticketData.productionType === 'MANUAL' 
@@ -267,21 +274,15 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
           <div className="grid grid-cols-3 gap-4 print:gap-3 mb-2 print:mb-1.5 signature-section">
             <div className="text-center">
               <p className="text-xs print:text-[10px] mb-12 print:mb-10 font-semibold">Penerima,</p>
-              <div className="border-t-2 border-black pt-1">
-                <p className="text-xs print:text-[10px]">(_________________)</p>
-              </div>
+              <div className="border-t border-black pt-1 w-32 mx-auto"></div>
             </div>
             <div className="text-center">
               <p className="text-xs print:text-[10px] mb-12 print:mb-10 font-semibold">Operator,</p>
-              <div className="border-t-2 border-black pt-1">
-                <p className="text-xs print:text-[10px]">(_________________)</p>
-              </div>
+              <div className="border-t border-black pt-1 w-32 mx-auto"></div>
             </div>
             <div className="text-center">
               <p className="text-xs print:text-[10px] mb-12 print:mb-10 font-semibold">Quality Control,</p>
-              <div className="border-t-2 border-black pt-1">
-                <p className="text-xs print:text-[10px]">(_________________)</p>
-              </div>
+              <div className="border-t border-black pt-1 w-32 mx-auto"></div>
             </div>
           </div>
 
