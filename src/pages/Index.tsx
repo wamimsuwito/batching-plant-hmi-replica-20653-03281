@@ -25,7 +25,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { PrintTicketDialog, TicketData } from "@/pages/admin/PrintTicket";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogIn, Settings, Package, Wifi, WifiOff, HelpCircle } from "lucide-react";
+import { LogIn, Settings, Package, Wifi, WifiOff, HelpCircle, User, LogOut } from "lucide-react";
+import { OperatorLoginDialog } from "@/components/BatchPlant/OperatorLoginDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { useProductionSequence } from "@/hooks/useProductionSequence";
 import { useRaspberryPi } from "@/hooks/useRaspberryPi";
@@ -75,9 +82,28 @@ const Index = () => {
   const [bpNaming, setBpNaming] = useState<{inisialBP?: string; nomorBP?: string}>({});
   const [moistureControlDialogOpen, setMoistureControlDialogOpen] = useState(false);
   const [moistureSettings, setMoistureSettings] = useState({ pasir: 0, batu: 0, air: 0 });
+  const [loggedOperator, setLoggedOperator] = useState<{
+    id: string;
+    namaUser: string;
+    nik: string;
+    jabatan: string;
+  } | null>(null);
+  const [operatorLoginOpen, setOperatorLoginOpen] = useState(false);
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Load operator from localStorage on mount
+  useEffect(() => {
+    const savedOperator = localStorage.getItem('logged_operator');
+    if (savedOperator) {
+      try {
+        setLoggedOperator(JSON.parse(savedOperator));
+      } catch (error) {
+        console.error('Error loading operator:', error);
+      }
+    }
+  }, []);
 
   // Helper function to format volume (remove .00 for whole numbers)
   const formatVolume = (value: number): string => {
@@ -92,6 +118,20 @@ const Index = () => {
       return value.toFixed(1);
     }
     return value.toFixed(2);
+  };
+
+  const handleOperatorLogin = (operator: { id: string; namaUser: string; nik: string; jabatan: string }) => {
+    setLoggedOperator(operator);
+    localStorage.setItem('logged_operator', JSON.stringify(operator));
+  };
+
+  const handleOperatorLogout = () => {
+    setLoggedOperator(null);
+    localStorage.removeItem('logged_operator');
+    toast({
+      title: "Logout Berhasil",
+      description: "Operator telah keluar",
+    });
   };
 
   // Initialize 6 cement silos with 120,000 kg capacity each
@@ -557,6 +597,7 @@ const Index = () => {
         jobOrder: `${productionState.currentMixing}`,
         productionType: 'AUTO', // Mark as auto production
         serialNumber, // ✅ NEW: Add serial number
+        operatorName: loggedOperator?.namaUser, // ✅ NEW: Add operator name
         nomorPO: "-",
         tanggal: endTime.toLocaleDateString('id-ID'),
         jamMulai: jamMulai,
@@ -701,6 +742,14 @@ const Index = () => {
   }, [productionState.currentWeights, stableWeights, productionState.isWaitingForMixer, productionState.currentStep, productionState.nextMixingReady]);
 
   const handleStart = () => {
+    if (!loggedOperator) {
+      toast({
+        title: "Operator Belum Login",
+        description: "Harap login operator terlebih dahulu sebelum memulai produksi",
+        variant: "destructive",
+      });
+      return;
+    }
     if (isPaused) {
       // Resume dari pause
       setIsPaused(false);
@@ -762,6 +811,7 @@ const Index = () => {
         jobOrder: 'MANUAL',
         productionType: 'MANUAL',
         serialNumber,
+        operatorName: loggedOperator?.namaUser,
         nomorPO: '-',
         tanggal: finalSession.endTime?.toLocaleDateString('id-ID') || new Date().toLocaleDateString('id-ID'),
         jamMulai: finalSession.startTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
@@ -833,6 +883,34 @@ const Index = () => {
           BATCHING PLANT CONTROL SYSTEM
         </h1>
         <div className="flex-1 flex justify-end items-center gap-2">
+          {/* Operator Login/Display */}
+          {loggedOperator ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="outline" className="gap-2">
+                  <User className="w-4 h-4" />
+                  Operator: {loggedOperator.namaUser}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={handleOperatorLogout}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout Operator
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={() => setOperatorLoginOpen(true)}
+              className="gap-2"
+            >
+              <User className="w-4 h-4" />
+              Login Operator
+            </Button>
+          )}
+
           <Button
             size="sm"
             variant="outline"
@@ -887,6 +965,12 @@ const Index = () => {
       </header>
 
       <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
+
+      <OperatorLoginDialog
+        open={operatorLoginOpen}
+        onOpenChange={setOperatorLoginOpen}
+        onLoginSuccess={handleOperatorLogin}
+      />
 
       <ActivationDialog
         open={activationOpen}
