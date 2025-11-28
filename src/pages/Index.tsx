@@ -1112,7 +1112,16 @@ const Index = () => {
       />
 
       {/* Main HMI Panel */}
-      <main className="flex-1 p-4">
+      <main className="flex-1 p-4 relative">
+        {/* Logo Perusahaan - Top Right (Outside overflow-hidden) */}
+        <div className="absolute top-6 right-6 z-20 flex flex-col items-center bg-black/30 backdrop-blur-sm border border-white/30 rounded-lg p-3 shadow-lg">
+          <img 
+            src={farikaLogo} 
+            alt="PT Farika Riau Perkasa Indonesia" 
+            className="w-24 h-24 object-contain"
+          />
+        </div>
+        
         <div className="w-full h-[calc(100vh-100px)] border-4 border-hmi-border bg-hmi-panel relative overflow-hidden">
           {/* Activity Log Panel - BOTTOM LEFT (dikembalikan) */}
           <ActivityLogPanel logs={productionState.activityLog} />
@@ -1634,14 +1643,6 @@ const Index = () => {
                 AUTO: {isAutoMode ? 'ON' : 'OFF'}
               </div>
             </button>
-          </div>
-          {/* Logo Perusahaan - Top Right */}
-          <div className="absolute top-4 right-4 flex flex-col items-center bg-black/20 backdrop-blur-sm border border-white/20 rounded-lg p-2">
-            <img 
-              src={farikaLogo} 
-              alt="PT Farika Riau Perkasa Indonesia" 
-              className="w-20 h-20 object-contain"
-            />
           </div>
           
           {/* Material Weight Indicators - Horizontal on Top Left - ENLARGED & STANDARDIZED */}
