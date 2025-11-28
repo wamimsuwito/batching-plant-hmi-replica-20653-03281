@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,6 +27,8 @@ export function OperatorLoginDialog({ open, onOpenChange, onLoginSuccess }: Oper
   const { toast } = useToast();
 
   const handleLogin = () => {
+    console.log('🔐 Login attempt:', { nik: nik.trim(), passwordLength: password.length });
+    
     // Validate inputs
     if (!nik.trim() || !password.trim()) {
       toast({
@@ -39,6 +41,8 @@ export function OperatorLoginDialog({ open, onOpenChange, onLoginSuccess }: Oper
 
     // Load users from localStorage
     const usersData = localStorage.getItem('app_users');
+    console.log('📦 Raw users data:', usersData);
+    
     if (!usersData) {
       toast({
         title: "Login Gagal",
@@ -49,9 +53,12 @@ export function OperatorLoginDialog({ open, onOpenChange, onLoginSuccess }: Oper
     }
 
     const users: User[] = JSON.parse(usersData);
+    console.log('👥 Parsed users:', users);
+    console.log('🔍 Looking for NIK:', nik.trim());
     
     // Find user by NIK
     const user = users.find(u => u.nik === nik.trim());
+    console.log('✅ Found user:', user);
     
     if (!user) {
       toast({
@@ -103,8 +110,9 @@ export function OperatorLoginDialog({ open, onOpenChange, onLoginSuccess }: Oper
     onOpenChange(false);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
+      e.preventDefault();
       handleLogin();
     }
   };
@@ -114,6 +122,9 @@ export function OperatorLoginDialog({ open, onOpenChange, onLoginSuccess }: Oper
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center">Login Operator</DialogTitle>
+          <DialogDescription className="text-center text-sm text-muted-foreground">
+            Masukkan NIK dan Password untuk login
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4 py-4">
@@ -124,7 +135,7 @@ export function OperatorLoginDialog({ open, onOpenChange, onLoginSuccess }: Oper
               placeholder="Masukkan NIK"
               value={nik}
               onChange={(e) => setNik(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyDown}
               autoFocus
             />
           </div>
@@ -138,7 +149,7 @@ export function OperatorLoginDialog({ open, onOpenChange, onLoginSuccess }: Oper
                 placeholder="Masukkan Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyDown}
               />
               <Button
                 type="button"
