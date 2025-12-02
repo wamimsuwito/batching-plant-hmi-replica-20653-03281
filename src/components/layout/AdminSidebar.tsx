@@ -11,7 +11,8 @@ import {
   ListOrdered,
   Cable,
   FileText,
-  Activity
+  Activity,
+  Building2
 } from 'lucide-react';
 import {
   Sidebar,
@@ -41,6 +42,7 @@ const menuItems = [
   { title: 'Database Produksi', url: '/admin/production-database', icon: Database },
   { title: 'Print Tiket', url: '/admin/print-ticket', icon: Printer },
   { title: 'Kalibrasi Slump', url: '/admin/slump-calibration', icon: Activity },
+  { title: 'Pengaturan Perusahaan', url: '/admin/company-settings', icon: Building2 },
 ];
 
 export function AdminSidebar() {
