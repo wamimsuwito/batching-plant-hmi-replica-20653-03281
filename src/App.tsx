@@ -20,6 +20,7 @@ import MaterialJogging from "./pages/admin/MaterialJogging";
 import ProductionDatabase from "./pages/admin/ProductionDatabase";
 import PrintTicket from "./pages/admin/PrintTicket";
 import SlumpCalibration from "./pages/admin/SlumpCalibration";
+import CompanySettings from "./pages/admin/CompanySettings";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,7 @@ const App = () => {
               <Route path="production-database" element={<ProductionDatabase />} />
               <Route path="print-ticket" element={<PrintTicket />} />
               <Route path="slump-calibration" element={<SlumpCalibration />} />
+              <Route path="company-settings" element={<CompanySettings />} />
             </Route>
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

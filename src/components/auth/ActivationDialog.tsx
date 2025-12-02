@@ -113,7 +113,7 @@ export function ActivationDialog({ open, onActivationSuccess }: ActivationDialog
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Send this Hardware ID to PT Farika to get your license key
+              Send this Hardware ID to the application provider to get your license key
             </p>
           </div>
 

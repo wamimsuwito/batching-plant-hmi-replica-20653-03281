@@ -45,7 +45,8 @@ import { AmpereMeterDisplay } from "@/components/BatchPlant/AmpereMeterDisplay";
 import { MoistureControlDialog } from "@/components/BatchPlant/MoistureControlDialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import farikaLogo from "@/assets/farika-logo.png";
+import defaultLogo from "@/assets/default-company-logo.png";
+import { useCompanySettings } from "@/hooks/useCompanySettings";
 
 const Index = () => {
   const [isRunning, setIsRunning] = useState(false);
@@ -90,6 +91,7 @@ const Index = () => {
   } | null>(null);
   const [operatorLoginOpen, setOperatorLoginOpen] = useState(false);
   const { user, logout, isAdmin } = useAuth();
+  const { companySettings } = useCompanySettings();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -1116,8 +1118,8 @@ const Index = () => {
         {/* Logo Perusahaan - Top Right (Outside overflow-hidden) */}
         <div className="absolute top-6 right-6 z-20 flex flex-col items-center bg-black/30 backdrop-blur-sm border border-white/30 rounded-lg p-3 shadow-lg">
           <img 
-            src={farikaLogo} 
-            alt="PT Farika Riau Perkasa Indonesia" 
+            src={companySettings.logo || defaultLogo} 
+            alt={companySettings.name} 
             className="w-24 h-24 object-contain"
           />
         </div>

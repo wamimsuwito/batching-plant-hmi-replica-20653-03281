@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Printer, Eye } from 'lucide-react';
-import farikaLogo from '@/assets/farika-logo.png';
+import defaultLogo from '@/assets/default-company-logo.png';
+import { useCompanySettings } from '@/hooks/useCompanySettings';
 
 export interface TicketData {
   id?: string;
@@ -51,6 +52,8 @@ interface PrintTicketDialogProps {
 }
 
 export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicketDialogProps) {
+  const { companySettings } = useCompanySettings();
+  
   const handlePrint = () => {
     window.print();
   };
@@ -70,16 +73,16 @@ export function PrintTicketDialog({ open, onOpenChange, ticketData }: PrintTicke
           {/* Header */}
           <div className="flex items-center gap-3 border-b-[3px] border-black pb-2 mb-3 print:pb-2 print:mb-2">
             <img 
-              src={farikaLogo} 
-              alt="PT Farika Logo" 
+              src={companySettings.logo || defaultLogo} 
+              alt={`${companySettings.name} Logo`}
               className="w-16 h-16 print:w-14 print:h-14"
               style={{ imageRendering: '-webkit-optimize-contrast' }}
             />
             <div className="flex-1">
-              <h1 className="text-lg print:text-base font-bold">PT. FARIKA RIAU PERKASA</h1>
-              <p className="text-xs print:text-[10px] font-semibold">READYMIX & PRECAST CONCRETE</p>
+              <h1 className="text-lg print:text-base font-bold">{companySettings.name}</h1>
+              <p className="text-xs print:text-[10px] font-semibold">{companySettings.tagline}</p>
               <p className="text-[10px] print:text-[9px] mt-0.5">
-                Jl. Soekarno Hatta Komp. SKA No. 62 E Pekanbaru Telp. (0761) 7090228 - 571662
+                {companySettings.address} Telp. {companySettings.phone}
               </p>
             </div>
             {ticketData.serialNumber && (
