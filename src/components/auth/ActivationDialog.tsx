@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Copy, CheckCircle, AlertCircle, Key } from "lucide-react";
 import { toast } from "sonner";
+import { useCompanySettings } from "@/hooks/useCompanySettings";
 
 interface ActivationDialogProps {
   open: boolean;
@@ -22,6 +23,7 @@ export function ActivationDialog({ open, onActivationSuccess }: ActivationDialog
   const [licenseKey, setLicenseKey] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
+  const { companySettings } = useCompanySettings();
 
   useEffect(() => {
     if (open && window.licensing) {
@@ -78,6 +80,8 @@ export function ActivationDialog({ open, onActivationSuccess }: ActivationDialog
       handleActivate();
     }
   };
+
+  const { developer } = companySettings;
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
@@ -144,15 +148,15 @@ export function ActivationDialog({ open, onActivationSuccess }: ActivationDialog
             )}
           </div>
 
-          {/* Contact Info */}
+          {/* Contact Info - Dynamic from settings */}
           <div className="bg-muted/50 border rounded-lg p-4 space-y-2">
             <p className="text-sm font-medium">Need a license key?</p>
             <p className="text-xs text-muted-foreground">
-              Contact: Wamin Suwito
+              Contact: {developer.developerName}
             </p>
             <div className="text-xs space-y-1 text-muted-foreground">
-              <p>📧 Email: waminsuwito@yahoo.com</p>
-              <p>📱 HP/WhatsApp: 081271963847</p>
+              <p>📧 Email: {developer.supportEmail}</p>
+              <p>📱 HP/WhatsApp: {developer.supportPhone}</p>
             </div>
           </div>
         </div>

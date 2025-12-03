@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -7,6 +7,23 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { forceResetStorage } from '@/utils/storageVersioning';
+import { Download, Upload, FileJson } from 'lucide-react';
+
+// Keys to backup/restore
+const BACKUP_KEYS = [
+  'company-settings',
+  'job_mix_formulas',
+  'relay_settings',
+  'mixing_sequence_timers',
+  'bp_naming',
+  'batch_plant_system',
+  'batch_plant_accessories',
+  'klakson_duration',
+  'slump_calibration_data',
+  'moisture_control',
+  'com_port_settings',
+  'users_data'
+];
 
 export default function Settings() {
   const [selectedSystem, setSelectedSystem] = useState(() => {
@@ -25,6 +42,7 @@ export default function Settings() {
   });
   
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAccessoryToggle = (accessoryId: string) => {
     setSelectedAccessories(prev => {
@@ -80,8 +98,141 @@ export default function Settings() {
     }
   };
 
+  const handleExportSettings = () => {
+    try {
+      const backup: Record<string, unknown> = {};
+      
+      BACKUP_KEYS.forEach(key => {
+        const value = localStorage.getItem(key);
+        if (value) {
+          try {
+            backup[key] = JSON.parse(value);
+          } catch {
+            backup[key] = value;
+          }
+        }
+      });
+
+      backup._exportDate = new Date().toISOString();
+      backup._appVersion = '1.0.0';
+
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `batching-plant-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: '✅ Export Berhasil',
+        description: 'File backup telah diunduh.',
+      });
+    } catch (error) {
+      console.error('Error exporting settings:', error);
+      toast({
+        title: '❌ Error',
+        description: 'Gagal mengexport pengaturan',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleImportSettings = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const backup = JSON.parse(e.target?.result as string);
+        
+        if (!backup._exportDate) {
+          throw new Error('Invalid backup file format');
+        }
+
+        if (!window.confirm(`⚠️ Import akan mengganti semua pengaturan saat ini.\n\nFile backup dari: ${new Date(backup._exportDate).toLocaleString('id-ID')}\n\nLanjutkan?`)) {
+          return;
+        }
+
+        BACKUP_KEYS.forEach(key => {
+          if (backup[key] !== undefined) {
+            const value = typeof backup[key] === 'string' ? backup[key] : JSON.stringify(backup[key]);
+            localStorage.setItem(key, value);
+          }
+        });
+
+        toast({
+          title: '✅ Import Berhasil',
+          description: 'Pengaturan telah diimport. Aplikasi akan reload...',
+        });
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+
+      } catch (error) {
+        console.error('Error importing settings:', error);
+        toast({
+          title: '❌ Error',
+          description: 'File backup tidak valid atau rusak',
+          variant: 'destructive',
+        });
+      }
+    };
+    reader.readAsText(file);
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
+      {/* BACKUP & RESTORE */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileJson className="w-5 h-5" />
+            Backup & Restore Konfigurasi
+          </CardTitle>
+          <CardDescription>Export atau import semua pengaturan aplikasi</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap gap-4">
+            <Button onClick={handleExportSettings} variant="outline" className="gap-2">
+              <Download className="w-4 h-4" />
+              Export Semua Pengaturan
+            </Button>
+            
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleImportSettings}
+                className="hidden"
+                id="import-file"
+              />
+              <Button 
+                variant="outline" 
+                className="gap-2"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="w-4 h-4" />
+                Import Pengaturan
+              </Button>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Backup mencakup: Company settings, Job Mix Formula, Relay settings, Mixing sequence, BP naming, Slump calibration, dll.
+          </p>
+        </CardContent>
+      </Card>
+
       {/* MAIN SYSTEMS (Radio Group - Single Selection) */}
       <Card>
         <CardHeader>
