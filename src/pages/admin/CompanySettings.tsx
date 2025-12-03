@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Building2, Upload, RotateCcw } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Building2, Upload, RotateCcw, Wrench } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,9 +9,16 @@ import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { toast } from 'sonner';
 
 export default function CompanySettings() {
-  const { companySettings, updateSettings, resetToDefault } = useCompanySettings();
+  const { companySettings, updateSettings, updateDeveloperSettings, resetToDefault, DEFAULT_SETTINGS } = useCompanySettings();
   const [formData, setFormData] = useState(companySettings);
   const [logoPreview, setLogoPreview] = useState(companySettings.logo);
+  const [developerForm, setDeveloperForm] = useState(companySettings.developer);
+
+  useEffect(() => {
+    setFormData(companySettings);
+    setLogoPreview(companySettings.logo);
+    setDeveloperForm(companySettings.developer);
+  }, [companySettings]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -36,11 +43,17 @@ export default function CompanySettings() {
     toast.success('Pengaturan perusahaan berhasil disimpan');
   };
 
+  const handleSaveDeveloper = () => {
+    updateDeveloperSettings(developerForm);
+    toast.success('Pengaturan developer berhasil disimpan');
+  };
+
   const handleReset = () => {
     if (confirm('Reset ke pengaturan default? Semua data perusahaan akan dihapus.')) {
       resetToDefault();
-      setFormData(resetToDefault as any);
-      setLogoPreview('/src/assets/default-company-logo.png');
+      setFormData(DEFAULT_SETTINGS);
+      setLogoPreview(DEFAULT_SETTINGS.logo);
+      setDeveloperForm(DEFAULT_SETTINGS.developer);
       toast.success('Pengaturan direset ke default');
     }
   };
@@ -150,6 +163,70 @@ export default function CompanySettings() {
               Reset Default
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Developer/Support Info */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Wrench className="w-5 h-5" />
+            Informasi Developer / Support
+          </CardTitle>
+          <CardDescription>
+            Data kontak untuk aktivasi lisensi dan dukungan teknis
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Developer Name */}
+          <div className="space-y-2">
+            <Label htmlFor="developer-name">Nama Developer / Support</Label>
+            <Input
+              id="developer-name"
+              value={developerForm.developerName}
+              onChange={(e) => setDeveloperForm(prev => ({ ...prev, developerName: e.target.value }))}
+              placeholder="Technical Support"
+            />
+          </div>
+
+          {/* Support Email */}
+          <div className="space-y-2">
+            <Label htmlFor="support-email">Email Support</Label>
+            <Input
+              id="support-email"
+              type="email"
+              value={developerForm.supportEmail}
+              onChange={(e) => setDeveloperForm(prev => ({ ...prev, supportEmail: e.target.value }))}
+              placeholder="support@example.com"
+            />
+          </div>
+
+          {/* Support Phone */}
+          <div className="space-y-2">
+            <Label htmlFor="support-phone">HP/WhatsApp Support</Label>
+            <Input
+              id="support-phone"
+              value={developerForm.supportPhone}
+              onChange={(e) => setDeveloperForm(prev => ({ ...prev, supportPhone: e.target.value }))}
+              placeholder="081234567890"
+            />
+          </div>
+
+          {/* App Version */}
+          <div className="space-y-2">
+            <Label htmlFor="app-version">Versi Aplikasi</Label>
+            <Input
+              id="app-version"
+              value={developerForm.appVersion}
+              onChange={(e) => setDeveloperForm(prev => ({ ...prev, appVersion: e.target.value }))}
+              placeholder="1.0.0"
+            />
+          </div>
+
+          {/* Save Developer Info */}
+          <Button onClick={handleSaveDeveloper} variant="secondary" className="w-full">
+            Simpan Info Developer
+          </Button>
         </CardContent>
       </Card>
 

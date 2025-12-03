@@ -250,11 +250,11 @@ const Index = () => {
           setIsLicenseValid(false);
           setActivationOpen(true);
           if (result.expired) {
-            toast({
-              variant: "destructive",
-              title: "⚠️ License Expired",
-              description: "Please contact PT Farika to renew your license.",
-            });
+              toast({
+                variant: "destructive",
+                title: "⚠️ License Expired",
+                description: "Please contact the application provider to renew your license.",
+              });
           }
         }
       });
