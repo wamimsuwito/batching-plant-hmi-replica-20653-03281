@@ -51,7 +51,7 @@ import { useCompanySettings } from "@/hooks/useCompanySettings";
 const Index = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [isAutoMode, setIsAutoMode] = useState(false); // Auto mode toggle
+  const [isAutoMode, setIsAutoMode] = useState(true); // Auto mode toggle - default ON
   const [aggregateNoteDialogOpen, setAggregateNoteDialogOpen] = useState(false);
   const [currentAggregateNotes, setCurrentAggregateNotes] = useState<{
     pasir1?: string;
