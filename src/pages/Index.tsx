@@ -47,6 +47,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import defaultLogo from "@/assets/default-company-logo.png";
 import { useCompanySettings } from "@/hooks/useCompanySettings";
+import { AlertNotificationCenter } from "@/components/AlertNotificationCenter";
+import { useAlertMonitor } from "@/hooks/useAlertMonitor";
 
 const Index = () => {
   const [isRunning, setIsRunning] = useState(false);
@@ -425,6 +427,13 @@ const Index = () => {
 
   // Raspberry Pi connection
   const raspberryPi = useRaspberryPi();
+
+  // Alert monitoring system
+  const alertMonitor = useAlertMonitor(
+    silos,
+    raspberryPi?.isConnected || false,
+    raspberryPi?.productionMode || 'simulation'
+  );
 
   // ✅ CRITICAL: Klakson bunyi saat print ticket muncul (alert driver)
   useEffect(() => {
@@ -922,6 +931,15 @@ const Index = () => {
             <Package className="w-4 h-4" />
             Isi Silo
           </Button>
+
+          {/* Alert Notification Center */}
+          <AlertNotificationCenter
+            alerts={alertMonitor.alerts}
+            unacknowledgedCount={alertMonitor.unacknowledgedCount}
+            onAcknowledge={alertMonitor.acknowledgeAlert}
+            onAcknowledgeAll={alertMonitor.acknowledgeAll}
+            onClear={alertMonitor.clearAlerts}
+          />
           
           {bpNaming.inisialBP && bpNaming.nomorBP && (
             <span className="text-sm font-semibold text-white/90 px-3 py-1 bg-primary/20 rounded-md border border-primary/30">

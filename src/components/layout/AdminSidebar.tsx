@@ -12,7 +12,8 @@ import {
   Cable,
   FileText,
   Activity,
-  Building2
+  Building2,
+  Bell
 } from 'lucide-react';
 import {
   Sidebar,
@@ -42,6 +43,7 @@ const menuItems = [
   { title: 'Database Produksi', url: '/admin/production-database', icon: Database },
   { title: 'Print Tiket', url: '/admin/print-ticket', icon: Printer },
   { title: 'Kalibrasi Slump', url: '/admin/slump-calibration', icon: Activity },
+  { title: 'Pengaturan Alert', url: '/admin/alert-settings', icon: Bell },
   { title: 'Pengaturan Perusahaan', url: '/admin/company-settings', icon: Building2 },
 ];
 
