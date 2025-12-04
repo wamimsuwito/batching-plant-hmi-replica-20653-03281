@@ -21,6 +21,7 @@ import ProductionDatabase from "./pages/admin/ProductionDatabase";
 import PrintTicket from "./pages/admin/PrintTicket";
 import SlumpCalibration from "./pages/admin/SlumpCalibration";
 import CompanySettings from "./pages/admin/CompanySettings";
+import AlertSettings from "./pages/admin/AlertSettings";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => {
               <Route path="production-database" element={<ProductionDatabase />} />
               <Route path="print-ticket" element={<PrintTicket />} />
               <Route path="slump-calibration" element={<SlumpCalibration />} />
+              <Route path="alert-settings" element={<AlertSettings />} />
               <Route path="company-settings" element={<CompanySettings />} />
             </Route>
 
