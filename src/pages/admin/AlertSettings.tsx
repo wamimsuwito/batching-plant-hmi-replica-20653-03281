@@ -6,7 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { useToast } from '@/hooks/use-toast';
-import { Bell, Volume2, Clock, AlertTriangle, Trash2, Save } from 'lucide-react';
+import { Bell, Volume2, Clock, AlertTriangle, Trash2, Save, Monitor, CheckCircle, XCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,7 @@ const DEFAULT_SETTINGS: AlertSettingsType = {
   checkInterval: 5000,
   enableSound: true,
   enableToastNotification: true,
+  enableDesktopNotification: false,
   maxAlertsHistory: 50,
 };
 
@@ -37,6 +38,9 @@ export default function AlertSettings() {
   });
 
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(
+    typeof Notification !== 'undefined' ? Notification.permission : 'denied'
+  );
 
   // Load alert history
   useEffect(() => {
@@ -50,6 +54,48 @@ export default function AlertSettings() {
       }
     }
   }, []);
+
+  const handleRequestPermission = async () => {
+    if (typeof Notification === 'undefined') {
+      toast({
+        title: "Tidak Didukung",
+        description: "Browser Anda tidak mendukung desktop notification.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const permission = await Notification.requestPermission();
+    setNotificationPermission(permission);
+    
+    if (permission === 'granted') {
+      toast({
+        title: "Permission Diberikan",
+        description: "Desktop notification berhasil diaktifkan.",
+      });
+      // Test notification
+      new Notification("Test Notification", {
+        body: "Desktop notification aktif!",
+        icon: "/favicon.ico",
+      });
+    } else if (permission === 'denied') {
+      toast({
+        title: "Permission Ditolak",
+        description: "Silakan aktifkan notifikasi di pengaturan browser.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDesktopNotificationToggle = async (checked: boolean) => {
+    if (checked && notificationPermission !== 'granted') {
+      await handleRequestPermission();
+      if (Notification.permission !== 'granted') {
+        return; // Don't enable if permission not granted
+      }
+    }
+    setSettings(s => ({ ...s, enableDesktopNotification: checked }));
+  };
 
   const handleSave = () => {
     localStorage.setItem('alert_settings', JSON.stringify(settings));
@@ -214,6 +260,44 @@ export default function AlertSettings() {
                 checked={settings.enableToastNotification}
                 onCheckedChange={(checked) => setSettings(s => ({ ...s, enableToastNotification: checked }))}
               />
+            </div>
+
+            <Separator />
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="flex items-center gap-2">
+                  <Monitor className="w-4 h-4" />
+                  Desktop Notification
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Notifikasi muncul di desktop saat aplikasi tidak fokus
+                </p>
+                {notificationPermission === 'denied' && (
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <XCircle className="w-3 h-3" />
+                    Permission ditolak. Aktifkan di pengaturan browser.
+                  </p>
+                )}
+                {notificationPermission === 'granted' && (
+                  <p className="text-xs text-green-600 flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" />
+                    Permission diberikan
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {notificationPermission !== 'granted' && (
+                  <Button size="sm" variant="outline" onClick={handleRequestPermission}>
+                    Izinkan
+                  </Button>
+                )}
+                <Switch
+                  checked={settings.enableDesktopNotification}
+                  onCheckedChange={handleDesktopNotificationToggle}
+                  disabled={notificationPermission === 'denied'}
+                />
+              </div>
             </div>
 
             <Separator />
