@@ -17,6 +17,7 @@ export interface AlertSettings {
   checkInterval: number;         // Default: 5000ms (5 seconds)
   enableSound: boolean;          // Audio alert
   enableToastNotification: boolean; // Show toast for new alerts
+  enableDesktopNotification: boolean; // Browser notification when app not focused
   maxAlertsHistory: number;      // Max alerts to keep
 }
 
@@ -26,6 +27,7 @@ const DEFAULT_SETTINGS: AlertSettings = {
   checkInterval: 5000,
   enableSound: true,
   enableToastNotification: true,
+  enableDesktopNotification: false,
   maxAlertsHistory: 50,
 };
 
@@ -85,6 +87,32 @@ export function useAlertMonitor(
     }
   }, [settings.enableSound]);
 
+  // Send desktop notification when app is not focused
+  const sendDesktopNotification = useCallback((alert: Alert) => {
+    if (!settings.enableDesktopNotification) return;
+    if (!document.hidden) return; // Window is focused, skip desktop notification
+    if (typeof Notification === 'undefined') return;
+    if (Notification.permission !== 'granted') return;
+
+    const notification = new Notification(alert.title.replace(/[🚨⚠️✅🔌]/g, '').trim(), {
+      body: alert.message,
+      icon: '/favicon.ico',
+      tag: alert.id, // Prevent duplicate notifications
+      requireInteraction: alert.type === 'error', // Stay visible for critical alerts
+    });
+
+    // Click notification to focus app
+    notification.onclick = () => {
+      window.focus();
+      notification.close();
+    };
+
+    // Auto-close after 10 seconds for non-critical
+    if (alert.type !== 'error') {
+      setTimeout(() => notification.close(), 10000);
+    }
+  }, [settings.enableDesktopNotification]);
+
   const addAlert = useCallback((alert: Omit<Alert, 'id' | 'timestamp' | 'acknowledged'>) => {
     const newAlert: Alert = {
       ...alert,
@@ -126,7 +154,12 @@ export function useAlertMonitor(
         toast.info(alert.title, { description: alert.message, duration: 5000 });
       }
     }
-  }, [settings.enableToastNotification, settings.maxAlertsHistory, playAlertSound]);
+
+    // Send desktop notification for warning/error when app not focused
+    if (alert.type === 'error' || alert.type === 'warning') {
+      sendDesktopNotification(newAlert);
+    }
+  }, [settings.enableToastNotification, settings.maxAlertsHistory, playAlertSound, sendDesktopNotification]);
 
   const acknowledgeAlert = useCallback((alertId: string) => {
     setAlerts(prev => prev.map(a => 
@@ -225,6 +258,29 @@ export function useAlertMonitor(
     setSettings(prev => ({ ...prev, ...newSettings }));
   }, []);
 
+  // Request notification permission
+  const requestNotificationPermission = useCallback(async (): Promise<boolean> => {
+    if (typeof Notification === 'undefined') {
+      console.warn('Browser tidak mendukung desktop notification');
+      return false;
+    }
+    
+    if (Notification.permission === 'granted') {
+      return true;
+    }
+    
+    if (Notification.permission !== 'denied') {
+      const permission = await Notification.requestPermission();
+      return permission === 'granted';
+    }
+    
+    return false;
+  }, []);
+
+  const notificationPermission = typeof Notification !== 'undefined' 
+    ? Notification.permission 
+    : 'denied';
+
   const unacknowledgedCount = alerts.filter(a => !a.acknowledged).length;
 
   return {
@@ -236,5 +292,7 @@ export function useAlertMonitor(
     acknowledgeAll,
     clearAlerts,
     updateSettings,
+    requestNotificationPermission,
+    notificationPermission,
   };
 }
