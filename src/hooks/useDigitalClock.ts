@@ -28,9 +28,16 @@ export function useDigitalClock() {
     });
   };
 
+  const formatDay = (date: Date) => {
+    return date.toLocaleDateString('id-ID', {
+      weekday: 'long'
+    });
+  };
+
   return {
     time,
     formattedTime: formatTime(time),
     formattedDate: formatDate(time),
+    formattedDay: formatDay(time),
   };
 }

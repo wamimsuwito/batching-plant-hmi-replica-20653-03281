@@ -95,7 +95,7 @@ const Index = () => {
   const [operatorLoginOpen, setOperatorLoginOpen] = useState(false);
   const { user, logout, isAdmin } = useAuth();
   const { companySettings } = useCompanySettings();
-  const { formattedTime, formattedDate } = useDigitalClock();
+  const { formattedTime, formattedDate, formattedDay } = useDigitalClock();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -1148,7 +1148,7 @@ const Index = () => {
               {formattedTime}
             </span>
             <span className="text-sm text-cyan-300/80">
-              {formattedDate}
+              {formattedDay}, {formattedDate}
             </span>
           </div>
         </div>
