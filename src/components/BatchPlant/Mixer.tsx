@@ -484,123 +484,145 @@ export const Mixer = ({
         </>
       )}
       
-      {/* Circular timer display - ALWAYS VISIBLE - ENLARGED */}
-      {(
-        <g transform="translate(509, 145)">
-          {/* Background box - ENLARGED 50% */}
-          <rect
-            x="-82"
-            y="-97"
-            width="165"
-            height="195"
-            rx="12"
-            className="fill-slate-900/90 stroke-cyan-500"
-            strokeWidth="3"
+      {/* Circular timer display - MODERN CIRCULAR DESIGN */}
+      <g transform="translate(509, 145)">
+        {/* Outer dark ring - frame */}
+        <circle
+          cx="0"
+          cy="0"
+          r="75"
+          className="fill-slate-800"
+          style={{
+            filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5))'
+          }}
+        />
+        
+        {/* Inner light circle */}
+        <circle
+          cx="0"
+          cy="0"
+          r="65"
+          className="fill-slate-100"
+        />
+        
+        {/* Tick marks around the circle (60 marks like a clock) */}
+        {Array.from({ length: 60 }).map((_, i) => (
+          <line
+            key={i}
+            x1="0"
+            y1="-52"
+            x2="0"
+            y2={i % 5 === 0 ? "-58" : "-55"}
+            stroke={isDoorMode ? "#ef4444" : "#3b82f6"}
+            strokeWidth={i % 5 === 0 ? "2" : "1"}
+            opacity={i % 5 === 0 ? "0.8" : "0.4"}
+            transform={`rotate(${i * 6})`}
+          />
+        ))}
+        
+        {/* Progress ring background */}
+        <circle
+          cx="0"
+          cy="0"
+          r="45"
+          className="fill-none"
+          stroke="#e2e8f0"
+          strokeWidth="8"
+        />
+        
+        {/* Progress ring */}
+        <circle
+          cx="0"
+          cy="0"
+          r="45"
+          className="fill-none"
+          stroke={isDoorMode ? "#ef4444" : "#06b6d4"}
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={
+            progressPercentage >= 99.5 
+              ? (isDoorMode ? circumference : 0)  
+              : progressPercentage <= 0.5 
+                ? (isDoorMode ? 0 : circumference)  
+                : strokeDashoffset
+          }
+          transform="rotate(-90)"
+          style={{ 
+            transition: 'stroke-dashoffset 0.3s ease-out',
+            filter: (isTimerActive || isDoorMode) 
+              ? isDoorMode 
+                ? 'drop-shadow(0 0 8px rgba(239, 68, 68, 0.6))' 
+                : 'drop-shadow(0 0 8px rgba(6, 182, 212, 0.6))' 
+              : 'none'
+          }}
+        />
+        
+        {/* Timer countdown number - big centered */}
+        <text
+          x="0"
+          y="12"
+          className="text-5xl font-bold"
+          textAnchor="middle"
+          fill={isDoorMode ? "#ef4444" : "#0891b2"}
+          style={{ 
+            fontFamily: 'monospace'
+          }}
+        >
+          {isDoorMode 
+            ? Math.ceil(doorTimeRemaining)
+            : (isTimerActive ? Math.ceil(mixingTimeRemaining) : 0)
+          }
+        </text>
+        
+        {/* Unit label - "dtk" */}
+        <text
+          x="0"
+          y="32"
+          className="text-base font-medium"
+          textAnchor="middle"
+          fill={isDoorMode ? "#ef4444" : "#0891b2"}
+        >
+          dtk
+        </text>
+        
+        {/* Label above circle */}
+        <text
+          x="0"
+          y="-88"
+          className="text-sm font-semibold"
+          textAnchor="middle"
+          fill="#ffffff"
+        >
+          {isDoorMode ? "PINTU DUMPING" : "WAKTU MIXING"}
+        </text>
+        
+        {/* Mixing count below */}
+        <text
+          x="0"
+          y="100"
+          className="text-base font-semibold"
+          textAnchor="middle"
+          fill="#ffffff"
+        >
+          Mix {currentMixing} Dari {totalMixing}
+        </text>
+        
+        {/* Indicator dot - synced with progress */}
+        {(isTimerActive || isDoorMode) && (
+          <circle
+            cx="0"
+            cy="-45"
+            r="5"
+            fill={isDoorMode ? "#fca5a5" : "#22d3ee"}
+            transform={`rotate(${isDoorMode ? -progressPercentage * 3.6 : progressPercentage * 3.6} 0 0)`}
             style={{
-              filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5))'
+              transition: 'transform 0.3s ease-out',
+              filter: 'drop-shadow(0 0 4px currentColor)'
             }}
           />
-          
-          {/* Background circle - ENLARGED 50% */}
-          <circle
-            cx="0"
-            cy="0"
-            r={radius}
-            className="fill-slate-800/90 stroke-cyan-500"
-            strokeWidth="4"
-          />
-          
-          {/* Progress ring background - ENLARGED 50% */}
-          <circle
-            cx="0"
-            cy="0"
-            r={45}
-            className="fill-none stroke-slate-600"
-            strokeWidth="12"
-            opacity="0.3"
-          />
-          
-          {/* Progress ring - ENLARGED 50% */}
-          <circle
-            cx="0"
-            cy="0"
-            r={45}
-            className={isDoorMode ? "fill-none stroke-red-500" : "fill-none stroke-cyan-500"}
-            strokeWidth="12"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={
-              // Snap ke 0 atau circumference untuk precision
-              progressPercentage >= 99.5 
-                ? (isDoorMode ? circumference : 0)  
-                : progressPercentage <= 0.5 
-                  ? (isDoorMode ? 0 : circumference)  
-                  : strokeDashoffset
-            }
-            transform="rotate(-90)"
-            style={{ 
-              transition: 'stroke-dashoffset 0.3s ease-out',
-              filter: (isTimerActive || isDoorMode) 
-                ? isDoorMode 
-                  ? 'drop-shadow(0 0 12px rgba(239, 68, 68, 0.6))' 
-                  : 'drop-shadow(0 0 12px rgba(6, 182, 212, 0.6))' 
-                : 'none'
-            }}
-          />
-          
-          {/* Timer countdown number - ENLARGED 50% */}
-          <text
-            x="0"
-            y="22"
-            className="fill-white text-7xl font-bold"
-            textAnchor="middle"
-            style={{ 
-              textShadow: '0 0 15px rgba(0,0,0,0.9)',
-              fontFamily: 'monospace'
-            }}
-          >
-            {isDoorMode 
-              ? Math.ceil(doorTimeRemaining)
-              : (isTimerActive ? Math.ceil(mixingTimeRemaining) : 0)
-            }
-          </text>
-          
-          {/* Label above circle - ENLARGED 50% */}
-          <text
-            x="0"
-            y="-63"
-            className={isDoorMode ? "fill-red-400 text-[18px] font-semibold" : "fill-white text-[18px] font-semibold"}
-            textAnchor="middle"
-          >
-            {isDoorMode ? "PINTU DUMPING" : "WAKTU MIXING"}
-          </text>
-          
-          {/* Mixing count below - ENLARGED 50% + NEW FORMAT */}
-          <text
-            x="0"
-            y="72"
-            className="fill-white text-[21px] font-semibold"
-            textAnchor="middle"
-          >
-            Mix {currentMixing} Dari {totalMixing}
-          </text>
-          
-          {/* Indicator dot - animate only when active - ENLARGED 50% - SYNCED WITH PROGRESS */}
-          {(isTimerActive || isDoorMode) && (
-            <circle
-              cx="38"
-              cy="-8"
-              r="6"
-              className={isDoorMode ? "fill-red-400" : "fill-yellow-400"}
-              transform={`rotate(${isDoorMode ? -progressPercentage * 3.6 : progressPercentage * 3.6} 0 0)`}
-              style={{
-                transition: 'transform 0.3s ease-out',
-                filter: 'drop-shadow(0 0 6px currentColor)'
-              }}
-            />
-          )}
-        </g>
-      )}
+        )}
+      </g>
     </g>
   );
 };
