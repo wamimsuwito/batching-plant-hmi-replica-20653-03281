@@ -49,6 +49,7 @@ import defaultLogo from "@/assets/default-company-logo.png";
 import { useCompanySettings } from "@/hooks/useCompanySettings";
 import { AlertNotificationCenter } from "@/components/AlertNotificationCenter";
 import { useAlertMonitor } from "@/hooks/useAlertMonitor";
+import { useDigitalClock } from "@/hooks/useDigitalClock";
 
 const Index = () => {
   const [isRunning, setIsRunning] = useState(false);
@@ -94,6 +95,7 @@ const Index = () => {
   const [operatorLoginOpen, setOperatorLoginOpen] = useState(false);
   const { user, logout, isAdmin } = useAuth();
   const { companySettings } = useCompanySettings();
+  const { formattedTime, formattedDate } = useDigitalClock();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -1133,13 +1135,22 @@ const Index = () => {
 
       {/* Main HMI Panel */}
       <main className="flex-1 p-4 relative">
-        {/* Logo Perusahaan - Top Right (Outside overflow-hidden) */}
-        <div className="absolute top-6 right-6 z-20 flex flex-col items-center bg-black/30 backdrop-blur-sm border border-white/30 rounded-lg p-3 shadow-lg">
+        {/* Logo Perusahaan & Jam Digital - Top Right (Outside overflow-hidden) */}
+        <div className="absolute top-6 right-6 z-20 flex items-center gap-4 bg-black/30 backdrop-blur-sm border border-white/30 rounded-lg p-3 shadow-lg">
           <img 
             src={companySettings.logo || defaultLogo} 
             alt={companySettings.name} 
             className="w-24 h-24 object-contain"
           />
+          {/* Digital Clock */}
+          <div className="flex flex-col items-center justify-center bg-black/50 rounded-lg px-4 py-2 border border-cyan-500/50">
+            <span className="text-2xl font-mono font-bold text-cyan-400 tracking-wider">
+              {formattedTime}
+            </span>
+            <span className="text-sm text-cyan-300/80">
+              {formattedDate}
+            </span>
+          </div>
         </div>
         
         <div className="w-full h-[calc(100vh-100px)] border-4 border-hmi-border bg-hmi-panel relative overflow-hidden">
